@@ -22,6 +22,7 @@ type Meta struct {
 	Limit      int        `json:"limit,omitempty"`
 	Offset     int        `json:"offset"`
 	LastUpdate *time.Time `json:"last_update,omitempty"`
+	Duration   int64      `json:"duration_ms,omitempty"`
 }
 
 // NewResponse takes a data object, meta object, and desired status code to
