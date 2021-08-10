@@ -174,10 +174,14 @@ func ProjectsFromSPDX(doc interface{}, includeDependencies bool) ([]projects.Pro
 
 		// check if version, org, or name are not empty strings
 		if len(pkg.Version) > 0 || len(pkg.Organization) > 0 || len(pkg.Name) > 0 {
+			v := pkg.Version
+			if pkg.Version == "NOASSERTION" {
+				v = ""
+			}
 			proj.Aliases = []aliases.Alias{{
 				Name:    pkg.Name,
 				Org:     pkg.Organization,
-				Version: pkg.Version,
+				Version: v,
 			}}
 		}
 
