@@ -139,6 +139,59 @@ func TestSPDX(t *testing.T) {
 			Expect(p[1].Aliases[0].Version).To(Equal(spdxDependencyPackage.PackageVersion))
 			Expect(p[1].Aliases[0].Org).To(Equal(spdxPackage.PackageSupplierOrganization))
 		})
+
+		g.It("should convert NOASSERTION version to blank string", func() {
+			spdxDocumentRef := spdx.MakeDocElementID("", "DOCUMENT")
+			spdxRef := spdx.MakeDocElementID("", "some-cool-pkg")
+			spdxDependencyRef := spdx.MakeDocElementID("", "some-dep")
+			spdxPackage := spdx.Package2_1{
+				PackageName:                 "some-cool-pkg",
+				PackageSPDXIdentifier:       spdxRef.ElementRefID,
+				PackageVersion:              "NOASSERTION",
+				PackageSupplierOrganization: "The Org",
+				PackageDownloadLocation:     "https://github.com/some-org/some-cool-pkg.git@my-cool-branch",
+				PackageDescription:          "Some description",
+			}
+			spdxDependencyPackage := spdx.Package2_1{
+				PackageName:                 "some-dep",
+				PackageSPDXIdentifier:       spdxDependencyRef.ElementRefID,
+				PackageVersion:              "NOASSERTION",
+				PackageSupplierOrganization: "The Org",
+				PackageDescription:          "Some dep description",
+			}
+			packages := make(map[spdx.ElementID]*spdx.Package2_1)
+			packages[spdxRef.ElementRefID] = &spdxPackage
+			packages[spdxDependencyRef.ElementRefID] = &spdxDependencyPackage
+
+			relationships := []*spdx.Relationship2_1{{
+				RefA:         spdxDocumentRef,
+				Relationship: "DESCRIBES",
+				RefB:         spdxRef,
+			}, {
+				RefA:         spdxRef,
+				Relationship: "DEPENDS_ON",
+				RefB:         spdxDependencyRef,
+			}}
+
+			doc := spdx.Document2_1{
+				CreationInfo: &spdx.CreationInfo2_1{
+					DocumentName:      "SPDX SBOM",
+					DocumentNamespace: "http://ionchannel.io",
+					CreatorPersons:    []string{"Monsieur Package Creator (mpc@mail.com)"},
+					CreatorComment:    "some cool package SBOM",
+				},
+				Packages:      packages,
+				Relationships: relationships,
+			}
+
+			p, err := ProjectsFromSPDX(&doc, true)
+
+			Expect(err).To(BeNil())
+			Expect(p).NotTo(BeNil())
+			Expect(p[0].Aliases[0].Version).To(Equal(""))
+			Expect(p[1].Aliases[0].Version).To(Equal(""))
+		})
+
 	})
 	g.Describe("SPDX v2.2", func() {
 		g.It("should return the top-level project when no dependencies requested", func() {
