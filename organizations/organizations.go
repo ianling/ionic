@@ -8,11 +8,13 @@ import (
 
 const (
 	// OrganizationsCreateOrganizationEndpoint is the endpoint for creating an organization
-	OrganizationsCreateOrganizationEndpoint = "v1/organizations/createOrganizations"
+	OrganizationsCreateOrganizationEndpoint = "v1/organizations/createOrganization"
 	// OrganizationsGetOrganizationEndpoint is the endpoint for getting an organization
-	OrganizationsGetOrganizationEndpoint = "v1/teams/getTeam"
+	OrganizationsGetOrganizationEndpoint = "v1/organizations/getOrganization"
 	// OrganizationsGetOrganizationsEndpoint is the endpoint for getting organizations
-	OrganizationsGetOrganizationsEndpoint = "v1/teams/getTeams"
+	OrganizationsGetOrganizationsEndpoint = "v1/organizations/getOrganizations"
+	// OrganizationsUpdateOrganizationEndpoint is the endpoint for updating an organization
+	OrganizationsUpdateOrganizationEndpoint = "v1/organizations/updateOrganization"
 )
 
 // Organization is a logical collection of teams.
