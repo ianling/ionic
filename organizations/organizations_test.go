@@ -9,12 +9,11 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestTeam(t *testing.T) {
+func TestOrganization(t *testing.T) {
 	g := goblin.Goblin(t)
 	RegisterFailHandler(func(m string, _ ...int) { g.Fail(m) })
 
 	g.Describe("Organization Object Validation", func() {
-
 		g.It("should return string in JSON", func() {
 			createdAt := time.Date(2018, 07, 07, 13, 42, 47, 651387237, time.UTC)
 			updatedAt := time.Date(2018, 07, 07, 13, 42, 47, 651387237, time.UTC)
