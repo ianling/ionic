@@ -48,21 +48,21 @@ type RuleEvaluationSummary struct {
 
 // ProjectPassFailHistory represents a summary of one day's analysis results for a project.
 type ProjectPassFailHistory struct {
-	TeamID        string    `json:"team_id"`
-	ProjectID     string    `json:"project_id"`
+	TeamID    string `json:"team_id"`
+	ProjectID string `json:"project_id"`
 	// AnalysisID is the ID of the last analysis ran on a particular date.
-	AnalysisID    string    `json:"analysis_id"`
+	AnalysisID string `json:"analysis_id"`
 	// Status is true if the last analysis ran on a particular date was passing, otherwise it is false
-	Status        bool      `json:"pass"`
+	Status bool `json:"pass"`
 	// FailCount is the total number of the project's analyses that failed on a particular date
-	FailCount     int       `json:"fail_count"`
+	FailCount int `json:"fail_count"`
 	// PassCount is the total number of the project's analyses that passed on a particular date
-	PassCount     int       `json:"pass_count"`
+	PassCount int `json:"pass_count"`
 	// CreatedAt is the date this data is about
-	CreatedAt     time.Time `json:"created_at"`
+	CreatedAt time.Time `json:"created_at"`
 	// StatusFlipped indicates whether or not the project's status flipped from passing to failing, or vice versa,
 	// on this day, or if this day's status differs from the previous day's.
-	StatusFlipped bool      `json:"status_flipped"`
+	StatusFlipped bool `json:"status_flipped"`
 }
 
 // ProjectRulesetHistory represents history of a project's ruleset changing

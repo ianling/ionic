@@ -138,3 +138,29 @@ func (ic *IonClient) GetUserNames(ids []string, teamID, token string) ([]users.N
 
 	return s, nil
 }
+
+// UpdateOwnUserPreferences takes a Preferences object and returns any errors that occurred while updating
+// your preferences.
+func (ic *IonClient) UpdateOwnUserPreferences(preferences users.Preferences, token string) error {
+	return ic.UpdateUserPreferences("", preferences, token)
+}
+
+// UpdateUserPreferences takes a user ID and a Preferences object and returns any errors that occurred while updating
+// the user's preferences.
+func (ic *IonClient) UpdateUserPreferences(userID string, preferences users.Preferences, token string) error {
+	params := &url.Values{}
+	params.Set("user_id", userID)
+
+	b, err := json.Marshal(preferences)
+	if err != nil {
+		return fmt.Errorf("failed to marshal request body: %v", err.Error())
+	}
+
+	buff := bytes.NewBuffer(b)
+	_, err = ic.Post(users.UsersUpdatePreferencesEndpoint, token, params, *buff, nil)
+	if err != nil {
+		return fmt.Errorf("failed to update user preferences: %v", err.Error())
+	}
+
+	return nil
+}
