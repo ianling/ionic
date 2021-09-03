@@ -2,6 +2,7 @@ package spdx
 
 import (
 	"fmt"
+	"github.com/ion-channel/ionic/util"
 	"regexp"
 	"strings"
 
@@ -134,28 +135,7 @@ func ProjectsFromSPDX(doc interface{}, includeDependencies bool) ([]projects.Pro
 				source = pkg.DownloadLocation
 			}
 
-			// try to figure out which branch to monitor. The branch name will be after the last '@'.
-			var foundBranchName bool
-			branchDelimiterIndex := strings.LastIndex(source, "@")
-			if branchDelimiterIndex != -1 {
-				// if there is a ':' after the last '@', we know we do not have a branch name,
-				// because branch names cannot contain colons. A git URL with an '@' that does not denote a branch will
-				// always also contain a colon.
-				possibleBranch := source[branchDelimiterIndex+1:]
-				// this thing could be a branch name, or it could be a commit hash.
-				// To determine which it is, check if it looks like a commit hash (exactly 40 lower-case hex characters)
-				commitHashRegex := regexp.MustCompile("[a-f0-9]{40}")
-				if !strings.Contains(possibleBranch, ":") && !commitHashRegex.MatchString(possibleBranch) {
-					branch = possibleBranch
-					foundBranchName = true
-					// now we need to remove the branch name from the source
-					source = source[0:branchDelimiterIndex]
-				}
-			}
-			if !foundBranchName {
-				// use the remote's default branch
-				branch = "HEAD"
-			}
+			source, branch = util.ParseGitURL(source)
 		} else {
 			source = pkg.DownloadLocation
 			ptype = "artifact"
