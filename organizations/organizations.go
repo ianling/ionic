@@ -35,7 +35,7 @@ type OrganizationRole string
 
 const (
 	// OrganizationRoleAdmin is the administrator role in an organization
-	OrganizationRoleAdmin  = "admin"
+	OrganizationRoleAdmin = "admin"
 	// OrganizationRoleMember is the regular member role in an organization
 	OrganizationRoleMember = "member"
 )
