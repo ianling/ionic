@@ -73,7 +73,7 @@ func TestCommunity(t *testing.T) {
 				SetMethods("GET").
 				SetPayload([]byte(sampleValidSearchRepoResponse)).
 				SetStatus(http.StatusOK)
-			searchResults, err := client.SearchRepo("monsooncommerce", "blaToken")
+			searchResults, _, err := client.SearchRepo("monsooncommerce", nil, "blaToken")
 			Expect(err).NotTo(HaveOccurred())
 
 			hitRecords := server.HitRecords()

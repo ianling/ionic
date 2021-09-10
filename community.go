@@ -7,6 +7,8 @@ import (
 	"net/url"
 
 	"github.com/ion-channel/ionic/community"
+	"github.com/ion-channel/ionic/pagination"
+	"github.com/ion-channel/ionic/responses"
 )
 
 // GetRepo takes in a repository string and calls the Ion API to get
@@ -82,18 +84,18 @@ func (ic *IonClient) GetReposForActor(name, token string) ([]community.Repo, err
 // SearchRepo takes a query `org AND name` and
 // calls the Ion API to retrieve the information, then forms a slice of
 // Ionic community.Repo objects
-func (ic *IonClient) SearchRepo(q, token string) ([]community.Repo, error) {
+func (ic *IonClient) SearchRepo(q string, page *pagination.Pagination, token string) ([]community.Repo, *responses.Meta, error) {
 	params := &url.Values{}
 	params.Set("q", q)
 
-	b, _, err := ic.Get(community.SearchRepoEndpoint, token, params, nil, nil)
+	b, m, err := ic.Get(community.SearchRepoEndpoint, token, params, nil, page)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get repo: %v", err.Error())
+		return nil, nil, fmt.Errorf("failed to get repo: %v", err.Error())
 	}
 	var results []community.Repo
 	err = json.Unmarshal(b, &results)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal getRepo results: %v (%v)", err.Error(), string(b))
+		return nil, nil, fmt.Errorf("failed to unmarshal getRepo results: %v (%v)", err.Error(), string(b))
 	}
-	return results, nil
+	return results, m, nil
 }

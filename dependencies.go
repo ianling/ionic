@@ -13,6 +13,8 @@ import (
 	"strings"
 
 	"github.com/hashicorp/go-version"
+	"github.com/ion-channel/ionic/pagination"
+	"github.com/ion-channel/ionic/responses"
 	"github.com/ion-channel/ionic/scans"
 
 	"github.com/ion-channel/ionic/dependencies"
@@ -143,20 +145,20 @@ func (ic *IonClient) GetVersionsForDependency(packageName, ecosystem, token stri
 // SearchDependencies takes a query `org AND name` and
 // calls the Ion API to retrieve the information, then forms a slice of
 // Ionic dependencies.Dependency objects
-func (ic *IonClient) SearchDependencies(q, token string) ([]dependencies.Dependency, error) {
+func (ic *IonClient) SearchDependencies(q string, page *pagination.Pagination, token string) ([]dependencies.Dependency, *responses.Meta, error) {
 	params := &url.Values{}
 	params.Set("q", q)
 
-	b, _, err := ic.Get(dependencies.ResolveDependencySearchEndpoint, token, params, nil, nil)
+	b, m, err := ic.Get(dependencies.ResolveDependencySearchEndpoint, token, params, nil, page)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get dependencies: %v", err.Error())
+		return nil, nil, fmt.Errorf("failed to get dependencies: %v", err.Error())
 	}
 	var results []dependencies.Dependency
 	err = json.Unmarshal(b, &results)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal search results: %v (%v)", err.Error(), string(b))
+		return nil, nil, fmt.Errorf("failed to unmarshal search results: %v (%v)", err.Error(), string(b))
 	}
-	return results, nil
+	return results, m, nil
 }
 
 // GetDependencyVersions takes a package name, an ecosystem to find the
