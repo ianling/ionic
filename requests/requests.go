@@ -89,7 +89,7 @@ func _do(client *http.Client, method string, baseURL *url.URL, endpoint, token s
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, errors.Errors(string(body), resp.StatusCode, "api: error response")
+		return nil, errors.Errors(string(body), resp.StatusCode, "api error response: %s", string(body))
 	}
 
 	if strings.ToUpper(method) == "HEAD" || strings.ToUpper(method) == "DELETE" {
