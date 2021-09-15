@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/ion-channel/ionic/pagination"
 	"github.com/ion-channel/ionic/requests"
@@ -20,10 +21,12 @@ const (
 	maxPagingLimit      = 100
 )
 
-// IonClient represnets a communication layer with the Ion Channel API
+// IonClient represents a communication layer with the Ion Channel API
 type IonClient struct {
 	baseURL *url.URL
 	client  *http.Client
+	session *Session
+	sessionAutoRenewStop chan struct{}
 }
 
 // New takes the base URL of the API and returns a client for talking to the API
@@ -95,4 +98,60 @@ func (ic *IonClient) Put(endpoint, token string, params *url.Values, payload byt
 // encounters with the API.
 func (ic *IonClient) Patch(endpoint, token string, params *url.Values, payload bytes.Buffer, headers http.Header) (json.RawMessage, error) {
 	return requests.Patch(ic.client, ic.baseURL, endpoint, token, params, payload, headers)
+}
+
+// SetSession sets the client's internal Session that can be used to authenticate when making API requests.
+// The session can safely be set to null.
+// Example: myClient.GetSelf(myClient.Session().BearerToken)
+func (ic *IonClient) SetSession(session *Session) {
+	ic.session = session
+}
+
+// Session returns the client's internal Session.
+// This Session is set and renewed automatically if the EnableSessionAutoRenew method is used.
+func (ic *IonClient) Session() *Session {
+	return ic.session
+}
+
+// EnableSessionAutoRenew enables the periodic automatic renewal of the IonClient session using the given
+// login information, ensuring that the client will always have a valid session token.
+// To make the client stop automatically renewing its session, use the DisableSessionAutoRenew method.
+func (ic *IonClient) EnableSessionAutoRenew(username, password string) error {
+	// try to log in with these credentials immediately, abort if it fails
+	session, err := ic.Login(username, password)
+	if err != nil {
+		return err
+	}
+
+	ic.session = session
+
+	go ic.autoRenewSessionWorker(username, password)
+
+	return nil
+}
+
+// DisableSessionAutoRenew makes the IonClient stop automatically renewing its session.
+func (ic *IonClient) DisableSessionAutoRenew() {
+	close(ic.sessionAutoRenewStop)
+}
+
+func (ic *IonClient) autoRenewSessionWorker(username, password string) {
+	ticker := time.NewTicker(7 * time.Minute) // sessions expire after 15 minutes
+	ic.sessionAutoRenewStop = make(chan struct{})
+
+	for {
+		select {
+		case <- ticker.C:
+			session, err := ic.Login(username, password)
+			if err != nil {
+				fmt.Printf("ERROR - failed to automatically renew IonClient session: %s", err.Error())
+				continue // don't blow everything up in case it was just a temporary issue
+			}
+
+			ic.session = session
+		case <- ic.sessionAutoRenewStop:
+			ticker.Stop()
+			return
+		}
+	}
 }
