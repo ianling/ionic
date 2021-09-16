@@ -161,6 +161,23 @@ func (ic *IonClient) GetRuleSets(teamID, token string, page *pagination.Paginati
 	return rs, nil
 }
 
+// GetDefaultRuleSets returns a slice containing all the global default rulesets available to all teams,
+// or an error.
+func (ic *IonClient) GetDefaultRuleSets(token string) ([]rulesets.RuleSet, error) {
+	b, _, err := ic.Get(rulesets.GetDefaultRuleSetsEndpoint, token, nil, nil, pagination.AllItems)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get default rulesets: %s", err.Error())
+	}
+
+	var rs []rulesets.RuleSet
+	err = json.Unmarshal(b, &rs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal rulesets: %s", err.Error())
+	}
+
+	return rs, nil
+}
+
 // RuleSetExists takes a ruleSetID, teamId and token string and checks against api to see if ruleset exists.
 // It returns whether or not ruleset exists and any errors it encounters with the API.
 func (ic *IonClient) RuleSetExists(ruleSetID, teamID, token string) (bool, error) {

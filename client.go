@@ -23,9 +23,9 @@ const (
 
 // IonClient represents a communication layer with the Ion Channel API
 type IonClient struct {
-	baseURL *url.URL
-	client  *http.Client
-	session *Session
+	baseURL              *url.URL
+	client               *http.Client
+	session              *Session
 	sessionAutoRenewStop chan struct{}
 }
 
@@ -141,7 +141,7 @@ func (ic *IonClient) autoRenewSessionWorker(username, password string) {
 
 	for {
 		select {
-		case <- ticker.C:
+		case <-ticker.C:
 			session, err := ic.Login(username, password)
 			if err != nil {
 				fmt.Printf("ERROR - failed to automatically renew IonClient session: %s", err.Error())
@@ -149,7 +149,7 @@ func (ic *IonClient) autoRenewSessionWorker(username, password string) {
 			}
 
 			ic.session = session
-		case <- ic.sessionAutoRenewStop:
+		case <-ic.sessionAutoRenewStop:
 			ticker.Stop()
 			return
 		}

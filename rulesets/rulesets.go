@@ -24,11 +24,13 @@ const (
 	GetRuleSetEndpoint = "v1/ruleset/getRuleset"
 	// GetRuleSetsEndpoint is a string representation of the current endpoint for getting rulesets (plural)
 	GetRuleSetsEndpoint = "v1/ruleset/getRulesets"
-	//RulesetsGetRulesEndpoint is a string representation of the current endpoint for getting rules.
+	// GetDefaultRuleSetsEndpoint is the endpoint for getting all the global default rulesets
+	GetDefaultRuleSetsEndpoint = "v1/ruleset/getDefaultRulesets"
+	// RulesetsGetRulesEndpoint is a string representation of the current endpoint for getting rules.
 	RulesetsGetRulesEndpoint = "v1/ruleset/getRules"
-	//RulesetsGetRulesetNames is a string representation of the current endpoint for getting ruleset names.
+	// RulesetsGetRulesetNames is a string representation of the current endpoint for getting ruleset names.
 	RulesetsGetRulesetNames = "v1/ruleset/getRulesetNames"
-	//GetRulesetAnalysesStatuses is a string representation of the current endpoint for getting analyses statuses.
+	// GetRulesetAnalysesStatuses is a string representation of the current endpoint for getting analyses statuses.
 	GetRulesetAnalysesStatuses = "v1/ruleset/getAnalysesStatuses"
 )
 
