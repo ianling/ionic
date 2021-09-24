@@ -45,7 +45,7 @@ func fromString(sbomContents string, fileType cyclonedx.BOMFileFormat) (*cyclone
 
 func projectFromComponent(component cyclonedx.Component) projects.Project {
 	var projectAliases []aliases.Alias
-	if len(component.Name) > 0 && len(component.Publisher) > 0 && len(component.Version) > 0 {
+	if len(component.Name) > 0 || len(component.Publisher) > 0 || len(component.Version) > 0 {
 		projectAliases = []aliases.Alias{{
 			Name:    component.Name,
 			Org:     component.Publisher,
@@ -82,18 +82,24 @@ func projectFromComponent(component cyclonedx.Component) projects.Project {
 
 // ProjectsFromCycloneDX parses components from a CycloneDX SBOM into Projects.
 func ProjectsFromCycloneDX(sbom *cyclonedx.BOM, includeDependencies bool) ([]projects.Project, error) {
-	sbomProjects := []projects.Project{}
-
 	if sbom.Metadata == nil || sbom.Metadata.Component == nil {
 		return nil, fmt.Errorf("no top-level component defined in CycloneDX SBOM")
 	}
 
-	sbomProjects = append(sbomProjects, projectFromComponent(*sbom.Metadata.Component))
+	sbomProjects := []projects.Project{projectFromComponent(*sbom.Metadata.Component)}
 
 	if includeDependencies {
 		// get all the components in the SBOM
 		for _, component := range *sbom.Components {
-			sbomProjects = append(sbomProjects, projectFromComponent(component))
+			project := projectFromComponent(component)
+
+			// don't include duplicates
+			// (e.g. if two dependencies share a transitive dependency, only count the transitive dependency once)
+			if projects.ProjectSliceContains(sbomProjects, project) {
+				continue
+			}
+
+			sbomProjects = append(sbomProjects, project)
 		}
 	}
 

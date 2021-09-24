@@ -16,3 +16,13 @@ const (
 	// AddAliasEndpoint allows the user to attach an alias to a project.  Consists of org, name, version. Requires team id and project id.
 	AddAliasEndpoint = "v1/project/addAlias"
 )
+
+// Equal checks if a given Alias is equivalent to another Alias, based on the name, org, and version information
+// they contain. Returns true if they are equivalent.
+func (a Alias) Equal(x Alias) bool {
+	if a.Name == x.Name && a.Version == x.Version && a.Org == x.Org {
+		return true
+	}
+
+	return false
+}
