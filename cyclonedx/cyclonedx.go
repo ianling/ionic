@@ -45,7 +45,7 @@ func fromString(sbomContents string, fileType cyclonedx.BOMFileFormat) (*cyclone
 
 func projectFromComponent(component cyclonedx.Component) projects.Project {
 	var projectAliases []aliases.Alias
-	if len(component.Name) > 0 && len(component.Publisher) > 0 && len(component.Version) > 0 {
+	if len(component.Name) > 0 || len(component.Publisher) > 0 || len(component.Version) > 0 {
 		projectAliases = []aliases.Alias{{
 			Name:    component.Name,
 			Org:     component.Publisher,
