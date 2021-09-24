@@ -165,6 +165,11 @@ func ProjectsFromSPDX(doc interface{}, includeDependencies bool) ([]projects.Pro
 			}}
 		}
 
+		// make sure we don't already have an equivalent project
+		if projects.ProjectSliceContains(projs, proj) {
+			continue
+		}
+
 		projs = append(projs, proj)
 
 	}

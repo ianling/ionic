@@ -3,6 +3,7 @@ package projects
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/ion-channel/ionic/aliases"
 	"net/http"
 	"net/url"
 	"testing"
@@ -435,6 +436,70 @@ func TestProject(t *testing.T) {
 				Expect(*newPf.ID).To(Equal("coolproject"))
 				Expect(newPf.IDs).NotTo(BeNil())
 				Expect(*newPf.IDs).To(Equal([]string{"aaaa", "bbbb", "cccc"}))
+			})
+		})
+		g.Describe("ProjectSliceContains", func() {
+			g.It("should return true when project with matching alias found in slice", func() {
+				project := Project{Aliases: []aliases.Alias{{
+					Name:    "some project",
+					Version: "1.0.0",
+					Org:     "Ion Channel",
+				}}}
+
+				projectList := []Project{project}
+
+				Expect(ProjectSliceContains(projectList, project)).To(BeTrue())
+			})
+
+			g.It("should return false when no projects with matching aliases found in slice", func() {
+				project := Project{Aliases: []aliases.Alias{{
+					Name:    "some project",
+					Version: "1.0.0",
+					Org:     "Ion Channel",
+				}}}
+
+				project2 := Project{Aliases: []aliases.Alias{{
+					Name:    "some other project",
+					Version: "1.0.1",
+					Org:     "Ion Channel",
+				}}}
+
+				projectList := []Project{project}
+
+				Expect(ProjectSliceContains(projectList, project2)).To(BeFalse())
+			})
+
+			g.It("should return true when project with matching source found in slice", func() {
+				pType := "git"
+				pSource := "https://github.com/ion-channel/ionic"
+				project := Project{
+					Type:   &pType,
+					Source: &pSource,
+				}
+
+				projectList := []Project{project}
+
+				Expect(ProjectSliceContains(projectList, project)).To(BeTrue())
+			})
+
+			g.It("should return false when no projects with matching source found in slice", func() {
+				pType := "git"
+				pSource := "https://github.com/ion-channel/ionic"
+				project := Project{
+					Type:   &pType,
+					Source: &pSource,
+				}
+
+				pType2 := "git"
+				pSource2 := "https://github.com/facebook/react"
+				project2 := Project{
+					Type:   &pType2,
+					Source: &pSource2,
+				}
+
+				projectList := []Project{project}
+
+				Expect(ProjectSliceContains(projectList, project2)).To(BeFalse())
 			})
 		})
 	})

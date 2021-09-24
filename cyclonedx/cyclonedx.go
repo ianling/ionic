@@ -82,18 +82,24 @@ func projectFromComponent(component cyclonedx.Component) projects.Project {
 
 // ProjectsFromCycloneDX parses components from a CycloneDX SBOM into Projects.
 func ProjectsFromCycloneDX(sbom *cyclonedx.BOM, includeDependencies bool) ([]projects.Project, error) {
-	sbomProjects := []projects.Project{}
-
 	if sbom.Metadata == nil || sbom.Metadata.Component == nil {
 		return nil, fmt.Errorf("no top-level component defined in CycloneDX SBOM")
 	}
 
-	sbomProjects = append(sbomProjects, projectFromComponent(*sbom.Metadata.Component))
+	sbomProjects := []projects.Project{projectFromComponent(*sbom.Metadata.Component)}
 
 	if includeDependencies {
 		// get all the components in the SBOM
 		for _, component := range *sbom.Components {
-			sbomProjects = append(sbomProjects, projectFromComponent(component))
+			project := projectFromComponent(component)
+
+			// don't include duplicates
+			// (e.g. if two dependencies share a transitive dependency, only count the transitive dependency once)
+			if projects.ProjectSliceContains(sbomProjects, project) {
+				continue
+			}
+
+			sbomProjects = append(sbomProjects, project)
 		}
 	}
 
