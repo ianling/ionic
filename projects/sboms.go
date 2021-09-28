@@ -28,6 +28,7 @@ type SBOMEntry struct {
 	Selected       bool          `json:"selected"`
 	LocationInSBOM int           `json:"location_in_sbom"`
 	Source         SourceDetails `json:"source"`
+	ErrMsg         string        `json:"error_message"`
 }
 
 // SBOM represents a software list containing zero or more SBOMEntry objects.
