@@ -33,9 +33,14 @@ type SBOMEntry struct {
 // SBOM represents a software list containing zero or more SBOMEntry objects.
 type SBOM struct {
 	ID         string      `json:"id"`
+	Name       string      `json:"sbom_name"`
+	Version    string      `json:"sbom_version"`
+	Supplier   string      `json:"supplier_name"`
 	SbomType   string      `json:"sbom_type"`
 	SbomStatus string      `json:"sbom_status"`
 	CreatedAt  time.Time   `json:"created_at"`
+	UpdatedAt  time.Time   `json:"updated_at"`
+	EntryCount int         `json:"entry_count"`
 	Entries    []SBOMEntry `json:"entries"`
 	TeamID     string      `json:"team_id"`
 	OrgID      string      `json:"org_id"`
