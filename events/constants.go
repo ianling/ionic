@@ -1,54 +1,54 @@
 package events
 
 const (
-	// AnalysisFailed constant for analysis failed event action
+	// AnalysisFailed occurs when an analysis has failed
 	AnalysisFailed = "analysis_failed"
-	// AnalysisFinished constant for analysis finished event action
+	// AnalysisFinished occurs when an analysis has finished
 	AnalysisFinished = "analysis_finished"
-	// AnalysisPassed constant for analysis passed event action
+	// AnalysisPassed occurs when an analysis has passed
 	AnalysisPassed = "analysis_passed"
-	// DeliveryFailed constant for delivery failed event action
+	// DeliveryFailed occurs when a delivery has failed
 	DeliveryFailed = "delivery_failed"
-	// ArtifactDeliveryFailed constant for artifact_delivery failed event action
+	// ArtifactDeliveryFailed occurs when an artifact delivery has failed
 	ArtifactDeliveryFailed = "artifact_delivery_failed"
-	// ReportDeliveryFailed constant for report_delivery failed event action
+	// ReportDeliveryFailed occurs when a report delivery has failed
 	ReportDeliveryFailed = "report_delivery_failed"
-	// SevaDeliveryFailed constant for seva_delivery failed event action
+	// SevaDeliveryFailed occurs when seva delivery has failed
 	SevaDeliveryFailed = "seva_delivery_failed"
-	// DeliveryFinished constant for delivery finished event action
+	// DeliveryFinished occurs when a delivery has finished
 	DeliveryFinished = "delivery_finished"
-	// ArtifactDeliveryFinished constant for artifact_delivery finished event action
+	// ArtifactDeliveryFinished occurs when an artifact delivery has finished
 	ArtifactDeliveryFinished = "artifact_delivery_finished"
-	// ReportDeliveryFinished constant for report_delivery finished event action
+	// ReportDeliveryFinished occurs when a report delivery has finished
 	ReportDeliveryFinished = "report_delivery_finished"
-	// SevaDeliveryFinished constant for seva_delivery finished event action
+	// SevaDeliveryFinished occurs when a seva delivery has finished
 	SevaDeliveryFinished = "seva_delivery_finished"
-	// DeliveryCanceled constant for delivery canceled event action
+	// DeliveryCanceled occurs when a delivery has been canceled
 	DeliveryCanceled = "delivery_canceled"
-	// ArtifactDeliveryCanceled constant for artifact_delivery canceled event action
+	// ArtifactDeliveryCanceled occurs when an artifact delivery has been canceled
 	ArtifactDeliveryCanceled = "artifact_delivery_canceled"
-	// ReportDeliveryCanceled constant for report_delivery canceled event action
+	// ReportDeliveryCanceled occurs when a report delivery has been canceled
 	ReportDeliveryCanceled = "report_delivery_canceled"
-	// SevaDeliveryCanceled constant for seva_delivery canceled event action
+	// SevaDeliveryCanceled occurs when a seva delivery has been canceled
 	SevaDeliveryCanceled = "seva_delivery_canceled"
-	// ProjectAdded constant for project added event action
+	// ProjectAdded occurs when a project is added
 	ProjectAdded = "project_added"
-	// VersionAdded constant for version added event action
+	// VersionAdded occurs when a version is added
 	VersionAdded = "version_added"
-	// VulnerablityAdded constant for vulnerablity added event action
-	VulnerablityAdded = "vulnerablity_added"
-	// AccountCreated constant for account created event action
+	// AccountCreated occurs when an account is created
 	AccountCreated = "account_created"
-	// ForgotPassword constant for forgot password event action
+	// ForgotPassword occurs when a user triggers a password reset
 	ForgotPassword = "forgot_password"
-	// PasswordChanged constant for password changed event action
+	// PasswordChanged occurs when a user's password is changed
 	PasswordChanged = "password_changed"
-	// UserSignup constant for user signup event action
+	// UserSignup occurs when a user signs up
 	UserSignup = "user_signup"
-	// UserSignupStarted constant for user signup process initiation
+	// UserSignupStarted occurs when a user begins the signup process
 	UserSignupStarted = "user_signup_started"
-	// VulnerabilityAdded constant for vulnerability added event action
+	// VulnerabilityAdded occurs when a vulnerability is added
 	VulnerabilityAdded = "vulnerability_added"
-	// VulnerabilityUpdated constant for vulnerability updated event action
+	// VulnerabilityUpdated occurs when a vulnerability is updated
 	VulnerabilityUpdated = "vulnerability_updated"
+	// ProjectFlipped occurs when a project's latest analysis has flipped from passing to failing
+	ProjectFlipped = "project_flipped"
 )

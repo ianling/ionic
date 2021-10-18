@@ -2,44 +2,46 @@ package events
 
 import (
 	"encoding/json"
-	"fmt"
-
-	"github.com/ion-channel/ionic/users"
 )
 
-var validUserEventActions = map[string]string{
-	AccountCreated:    AccountCreated,
-	ForgotPassword:    ForgotPassword,
-	PasswordChanged:   PasswordChanged,
-	UserSignup:        UserSignup,
-	UserSignupStarted: UserSignupStarted,
-}
-
-// UserEventAction represents possible actions related to a user event
-type UserEventAction string
-
-// UnmarshalJSON is a custom unmarshaller for enforcing a user event action is
-// a valid value and returns an error if the value is invalid
-func (a *UserEventAction) UnmarshalJSON(b []byte) error {
-	var aStr string
-	err := json.Unmarshal(b, &aStr)
-	if err != nil {
-		return err
+type (
+	// UserEvent represents the user related segment of an Event within Ion Channel.
+	// Action is the specific type of User Event that occurred,
+	// Data is information relevant to the type of event, defined by one of the other structs in this file.
+	UserEvent struct {
+		Action string          `json:"action"`
+		Data   json.RawMessage `json:"data"`
 	}
 
-	_, ok := validUserEventActions[aStr]
-	if !ok {
-		return fmt.Errorf("invalid user event action")
+	// ProjectFlippedData represents the Data portion of a ProjectFlipped event
+	ProjectFlippedData struct {
+		Projects []struct {
+			ID  string
+			URL string
+		}
+		Email string
 	}
 
-	*a = UserEventAction(validUserEventActions[aStr])
-	return nil
-}
+	// InviteDetails represents the Data portion of several events related to a user being invited
+	InviteDetails struct {
+		Email		string
+		AcceptLink  string
+		UserName    string
+		AccountName string
+	}
 
-// UserEvent represents the user releated segement of an Event within Ion Channel
-type UserEvent struct {
-	Action UserEventAction `json:"action"`
-	User   users.User      `json:"user"`
-	URL    string          `json:"url"`
-	Team   string          `json:"team"`
-}
+	// AccountCreatedData represents the Data portion of an AccountCreated event
+	AccountCreatedData struct {
+		InviteDetails
+	}
+
+	// UserSignupData represents the Data portion of an UserSignup event
+	UserSignupData struct {
+		InviteDetails
+	}
+
+	// UserSignupStartedData represents the Data portion of an UserSignupStarted event
+	UserSignupStartedData struct {
+		InviteDetails
+	}
+)
