@@ -24,7 +24,6 @@ func TestUser(t *testing.T) {
 				ID:                "someid",
 				Email:             "some_email",
 				Username:          "some_user",
-				ChatHandle:        "some_chat_handle",
 				CreatedAt:         createdAt,
 				UpdatedAt:         updatedAt,
 				LastActive:        lastActive,
@@ -36,7 +35,7 @@ func TestUser(t *testing.T) {
 				Teams:             nil,
 			}
 
-			Expect(fmt.Sprintf("%v", u)).To(Equal(`{"id":"someid","email":"some_email","username":"some_user","chat_handle":"some_chat_handle","created_at":"2018-07-07T13:42:47.651387237Z","updated_at":"2018-07-07T13:42:47.651387237Z","last_active_at":"2018-07-07T13:42:47.651387237Z","externally_managed":true,"metadata":null,"sys_admin":true,"system":false,"organizations":null,"teams":null}`))
+			Expect(fmt.Sprintf("%v", u)).To(Equal(`{"id":"someid","email":"some_email","username":"some_user","created_at":"2018-07-07T13:42:47.651387237Z","updated_at":"2018-07-07T13:42:47.651387237Z","last_active_at":"2018-07-07T13:42:47.651387237Z","externally_managed":true,"metadata":null,"sys_admin":true,"system":false,"organizations":null,"teams":null}`))
 
 		})
 
@@ -49,7 +48,6 @@ func TestUser(t *testing.T) {
 				ID:                "someid",
 				Email:             "some_email",
 				Username:          "some_user",
-				ChatHandle:        "some_chat_handle",
 				CreatedAt:         createdAt,
 				UpdatedAt:         updatedAt,
 				LastActive:        lastActive,
@@ -74,7 +72,6 @@ func TestUser(t *testing.T) {
 				ID:                "someid",
 				Email:             "some_email",
 				Username:          "some_user",
-				ChatHandle:        "some_chat_handle",
 				CreatedAt:         createdAt,
 				UpdatedAt:         updatedAt,
 				LastActive:        lastActive,
