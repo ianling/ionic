@@ -43,6 +43,14 @@ type Analysis struct {
 	Public        bool         `json:"public" xml:"public"`
 }
 
+// NotEvaluatedAnalysis is a representation of an Ion Channel Analysis without evaluation details.
+// An Analysis contains an analysis Summary and some additional data, such as the scan summaries.
+type NotEvaluatedAnalysis struct {
+	NotEvaluatedSummary
+	ScanSummaries []scans.Scan `json:"scan_summaries" xml:"scan_summaries"`
+	Public        bool         `json:"public" xml:"public"`
+}
+
 // Summary is a representation of a summarized Ion Channel Analysis.
 // A Summary contains basic information about the analysis, such as the analysis ID, project ID, status, and
 // information regarding what triggered the analysis.
@@ -63,6 +71,31 @@ type Summary struct {
 	Passed        bool      `json:"passed" xml:"passed"`
 	RulesetID     string    `json:"ruleset_id" xml:"ruleset_id"`
 	RulesetName   string    `json:"ruleset_name" xml:"ruleset_name"`
+	Status        string    `json:"status" xml:"status"`
+	CreatedAt     time.Time `json:"created_at" xml:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at" xml:"updated_at"`
+	Duration      float64   `json:"duration" xml:"duration"`
+	TriggerHash   string    `json:"trigger_hash" xml:"trigger_hash"`
+	TriggerText   string    `json:"trigger_text" xml:"trigger_text"`
+	TriggerAuthor string    `json:"trigger_author" xml:"trigger_author"`
+	Trigger       string    `json:"trigger" xml:"trigger"`
+}
+
+// NotEvaluatedSummary contains report information. It doesn't know about pass/fail status.
+type NotEvaluatedSummary struct {
+	ID string `json:"id" xml:"id"`
+	// AnalysisID is an alias for ID, retained for backwards compatibility
+	AnalysisID    string    `json:"analysis_id" xml:"analysis_id"`
+	TeamID        string    `json:"team_id" xml:"team_id"`
+	ProjectID     string    `json:"project_id" xml:"project_id"`
+	Name          string    `json:"name" xml:"name"`
+	Text          *string   `json:"text" xml:"text"`
+	Type          string    `json:"type" xml:"type"`
+	Source        string    `json:"source" xml:"source"`
+	Branch        string    `json:"branch" xml:"branch"`
+	Description   string    `json:"description" xml:"description"`
+	Summary       string    `json:"summary" xml:"summary"`
+	RulesetID     string    `json:"ruleset_id" xml:"ruleset_id"`
 	Status        string    `json:"status" xml:"status"`
 	CreatedAt     time.Time `json:"created_at" xml:"created_at"`
 	UpdatedAt     time.Time `json:"updated_at" xml:"updated_at"`
