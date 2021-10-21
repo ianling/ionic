@@ -34,5 +34,5 @@ func TestSessions(t *testing.T) {
 }
 
 const (
-	SampleSessionResponse = `{"data":{"jwt":"supersecretkey","user":{"id":"userid","created_at":"2016-08-17T21:07:29.697Z","updated_at":"2017-04-27T22:11:00.404Z","username":"ion","email":"ion@ion.ion","chat_handle":null,"last_active_at":"2017-04-27T22:11:00.396Z","sys_admin":true,"teams":{"adminteamid":"admin"}}},"meta":{"copyright":"Copyright 2016 Ion Channel Corporation","authors":["kitplummer","Olio Apps"],"version":"v1"},"links":{"self":"https://janice.ionchannel.testing/v1/sessions/login","created":"https://janice.ionchannel.testing/v1/sessions/login"},"timestamps":{"created":"2017-04-27T22:11:10.546+00:00","updated":"2017-04-27T22:11:10.546+00:00"}}`
+	SampleSessionResponse = `{"data":{"jwt":"supersecretkey","user":{"id":"userid","created_at":"2016-08-17T21:07:29.697Z","updated_at":"2017-04-27T22:11:00.404Z","username":"ion","email":"ion@ion.ion","last_active_at":"2017-04-27T22:11:00.396Z","sys_admin":true,"teams":{"adminteamid":"admin"}}},"meta":{"copyright":"Copyright 2016 Ion Channel Corporation","authors":["kitplummer","Olio Apps"],"version":"v1"},"links":{"self":"https://janice.ionchannel.testing/v1/sessions/login","created":"https://janice.ionchannel.testing/v1/sessions/login"},"timestamps":{"created":"2017-04-27T22:11:10.546+00:00","updated":"2017-04-27T22:11:10.546+00:00"}}`
 )
