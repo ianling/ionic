@@ -27,6 +27,7 @@ func TestUser(t *testing.T) {
 				CreatedAt:         createdAt,
 				UpdatedAt:         updatedAt,
 				LastActive:        lastActive,
+				Status:            "active",
 				ExternallyManaged: true,
 				Metadata:          nil,
 				SysAdmin:          true,
@@ -35,7 +36,7 @@ func TestUser(t *testing.T) {
 				Teams:             nil,
 			}
 
-			Expect(fmt.Sprintf("%v", u)).To(Equal(`{"id":"someid","email":"some_email","username":"some_user","created_at":"2018-07-07T13:42:47.651387237Z","updated_at":"2018-07-07T13:42:47.651387237Z","last_active_at":"2018-07-07T13:42:47.651387237Z","externally_managed":true,"metadata":null,"sys_admin":true,"system":false,"organizations":null,"teams":null}`))
+			Expect(fmt.Sprintf("%v", u)).To(Equal(`{"id":"someid","email":"some_email","username":"some_user","created_at":"2018-07-07T13:42:47.651387237Z","updated_at":"2018-07-07T13:42:47.651387237Z","last_active_at":"2018-07-07T13:42:47.651387237Z","status":"active","externally_managed":true,"metadata":null,"sys_admin":true,"system":false,"organizations":null,"teams":null}`))
 
 		})
 

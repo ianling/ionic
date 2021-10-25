@@ -24,7 +24,7 @@ type (
 
 	// InviteDetails represents the Data portion of several events related to a user being invited
 	InviteDetails struct {
-		Email		string
+		Email       string
 		AcceptLink  string
 		UserName    string
 		AccountName string
