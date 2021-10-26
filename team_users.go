@@ -44,28 +44,6 @@ func (ic *IonClient) CreateTeamUser(opts CreateTeamUserOptions, token string) (*
 	return &tu, nil
 }
 
-// GetTeamUser takes a team id and returns the Ion Channel representation of that
-// team.  An error is returned for client communications and unmarshalling
-// errors.
-func (ic *IonClient) GetTeamUser(teamID, userID, token string) (*teamusers.TeamUser, error) {
-	params := &url.Values{}
-	params.Set("team_id", teamID)
-	params.Set("user_id", userID)
-
-	b, _, err := ic.Get(teamusers.TeamsGetTeamUserEndpoint, token, params, nil, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get team: %v", err.Error())
-	}
-
-	var teamU teamusers.TeamUser
-	err = json.Unmarshal(b, &teamU)
-	if err != nil {
-		return nil, fmt.Errorf("cannot parse team: %v", err.Error())
-	}
-
-	return &teamU, nil
-}
-
 // UpdateTeamUser takes a teamUser object in the desired state and then makes the calls to update the teamUser.
 // It returns the update teamUser and any errors it encounters with the API.
 func (ic *IonClient) UpdateTeamUser(teamuser *teamusers.TeamUser, token string) (*teamusers.TeamUser, error) {
@@ -93,7 +71,6 @@ func (ic *IonClient) UpdateTeamUser(teamuser *teamusers.TeamUser, token string) 
 }
 
 // DeleteTeamUser takes a teamUser object and then makes the call to delete the teamUser.
-// Once the delete call has been made, a GetTeamUser call is made to validate the deletion.
 // It returns any errors it encounters with the API.
 func (ic *IonClient) DeleteTeamUser(teamuser *teamusers.TeamUser, token string) error {
 	params := &url.Values{}
@@ -109,18 +86,5 @@ func (ic *IonClient) DeleteTeamUser(teamuser *teamusers.TeamUser, token string) 
 		return fmt.Errorf("failed to delete team user: %v", err.Error())
 	}
 
-	params = &url.Values{}
-	params.Set("team_id", teamuser.TeamID)
-	params.Set("user_id", teamuser.UserID)
-
-	b, _, err := ic.Get(teamusers.TeamsGetTeamUserEndpoint, token, params, nil, nil)
-	if err == nil {
-		var teamU teamusers.TeamUser
-		err = json.Unmarshal(b, &teamU)
-		if err != nil {
-			return fmt.Errorf("cannot parse team: %v", err.Error())
-		}
-		return fmt.Errorf("failed to validate team user deletion: %v", b)
-	}
 	return nil
 }
