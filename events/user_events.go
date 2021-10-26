@@ -44,4 +44,11 @@ type (
 	UserSignupStartedData struct {
 		InviteDetails
 	}
+
+	// ForgotPasswordData represents the Data portion of a ForgotPassword event
+	ForgotPasswordData struct {
+		Email    string
+		Username string
+		URL      string
+	}
 )
