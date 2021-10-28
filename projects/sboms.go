@@ -29,6 +29,9 @@ type SBOMEntry struct {
 	LocationInSBOM int           `json:"location_in_sbom"`
 	Source         SourceDetails `json:"source"`
 	ErrMsg         string        `json:"error_message"`
+	ProductID      string        `json:"product_id"` // CPE
+	PackageID      string        `json:"package_id"` // PURL
+	Repo           string        `json:"repo"`
 }
 
 // SBOM represents a software list containing zero or more SBOMEntry objects.
