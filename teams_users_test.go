@@ -25,19 +25,6 @@ func TestTeamUsers(t *testing.T) {
 			client, _ = New(fmt.Sprintf("http://%v:%v", h, p))
 		})
 
-		g.It("should get a team user", func() {
-			server.AddPath("/v1/teamUsers/getTeamUser").
-				SetMethods("GET").
-				SetPayload([]byte(SampleValidTeamUser)).
-				SetStatus(http.StatusOK)
-
-			tu, err := client.GetTeamUser("team", "user", "atoken")
-			Expect(err).To(BeNil())
-			Expect(tu.TeamID).To(Equal("team"))
-			Expect(tu.UserID).To(Equal("user"))
-			Expect(tu.Role).To(Equal("paper"))
-		})
-
 		g.It("should create a team user", func() {
 			server.AddPath("/v1/teamUsers/createTeamUser").
 				SetMethods("POST").
@@ -87,10 +74,6 @@ func TestTeamUsers(t *testing.T) {
 				SetMethods("DELETE").
 				SetStatus(http.StatusNoContent)
 
-			server.AddPath("/v1/teamUsers/getTeamUser").
-				SetMethods("GET").
-				SetStatus(http.StatusUnprocessableEntity)
-
 			tu := &teamusers.TeamUser{
 				ID: "someid",
 			}
@@ -100,38 +83,13 @@ func TestTeamUsers(t *testing.T) {
 			Expect(tu.ID).To(Equal("someid"))
 
 			hr := server.HitRecords()
-			Expect(len(hr)).To(Equal(2))
+			Expect(len(hr)).To(Equal(1))
 			Expect(hr[0].Verb).To(Equal("DELETE"))
-			Expect(hr[1].Verb).To(Equal("GET"))
-		})
-
-		g.It("should return an error if it fails to validate the user was deleted", func() {
-			server.AddPath("/v1/teamUsers/deleteTeamUser").
-				SetMethods("DELETE").
-				SetStatus(http.StatusNoContent)
-
-			server.AddPath("/v1/teamUsers/getTeamUser").
-				SetMethods("GET").
-				SetPayload([]byte(SampleValidTeamUser)).
-				SetStatus(http.StatusOK)
-
-			tu := &teamusers.TeamUser{
-				ID: "someid",
-			}
-
-			err := client.DeleteTeamUser(tu, "atoken")
-
-			hr := server.HitRecords()
-			Expect(len(hr)).To(Equal(2))
-			Expect(hr[0].Verb).To(Equal("DELETE"))
-			Expect(err.Error()).To(ContainSubstring("failed to validate team user deletion:"))
 		})
 	})
 }
 
 const (
-	SampleValidTeamUser  = `{"data":{"id":"teamuser","created_at":"2016-09-09T22:06:49.487Z","updated_at":"2016-09-09T22:06:49.487Z","team_id":"team","user_id":"user","role":"paper"}}`
 	SampleCreateTeamUser = `{"data":{"id":"teamuser","created_at":"2018-01-05T23:59:58.160Z","updated_at":"2018-01-05T23:59:58.160Z","team_id":"team","user_id":"user","role":"admin","status":"active"}}`
 	SampleUpdateTeamUser = `{"data":{"id":"someid","created_at":"2018-01-05T23:59:58.160Z","updated_at":"2018-01-05T23:59:58.160Z","team_id":"team","user_id":"user","role":"member","status":"active"}}`
-	SampleDeleteTeamUser = `{"data":{"message": "Deleted Team User: someid"}}`
 )
