@@ -51,4 +51,10 @@ type (
 		Username string
 		URL      string
 	}
+
+	// PasswordChangedData represents the Data portion of a PasswordChanged event
+	PasswordChangedData struct {
+		Email    string
+		Username string
+	}
 )
