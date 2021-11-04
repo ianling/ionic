@@ -48,6 +48,8 @@ type SBOMEntry struct {
 	ProductID      string        `json:"product_id"` // CPE
 	PackageID      string        `json:"package_id"` // PURL
 	Repo           string        `json:"repo"`
+	CreatedAt      time.Time     `json:"created_at"`
+	UpdatedAt      time.Time     `json:"updated_at"`
 }
 
 // SBOM represents a software list containing zero or more SBOMEntry objects.
