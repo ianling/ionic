@@ -58,6 +58,7 @@ type Project struct {
 	Branch           *string                          `json:"branch,omitempty"`
 	Description      *string                          `json:"description,omitempty"`
 	Active           bool                             `json:"active"`
+	Draft            bool                             `json:"draft"`
 	ChatChannel      string                           `json:"chat_channel"`
 	CreatedAt        time.Time                        `json:"created_at"`
 	UpdatedAt        time.Time                        `json:"updated_at"`
@@ -366,6 +367,7 @@ type Filter struct {
 	Source  *string   `sql:"source"`
 	Type    *string   `sql:"type"`
 	Active  *bool     `sql:"active"`
+	Draft *bool `sql:"draft"`
 	Monitor *bool     `sql:"should_monitor"`
 }
 
