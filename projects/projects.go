@@ -75,7 +75,7 @@ type Project struct {
 	Tags             []tags.Tag                       `json:"tags"`
 	RulesetHistory   []rulesets.ProjectRulesetHistory `json:"ruleset_history"`
 	SBOMID           string                           `json:"sbom_id"`
-	PositionInSBOM   int                              `json:"position_in_sbom"`
+	LocationInSBOM   int                              `json:"location_in_sbom"`
 }
 
 // RulesetID represents a ruleset ID
