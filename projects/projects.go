@@ -58,6 +58,7 @@ type Project struct {
 	Branch           *string                          `json:"branch,omitempty"`
 	Description      *string                          `json:"description,omitempty"`
 	Active           bool                             `json:"active"`
+	Draft            bool                             `json:"draft"`
 	ChatChannel      string                           `json:"chat_channel"`
 	CreatedAt        time.Time                        `json:"created_at"`
 	UpdatedAt        time.Time                        `json:"updated_at"`
@@ -73,6 +74,8 @@ type Project struct {
 	Aliases          []aliases.Alias                  `json:"aliases"`
 	Tags             []tags.Tag                       `json:"tags"`
 	RulesetHistory   []rulesets.ProjectRulesetHistory `json:"ruleset_history"`
+	SBOMID           string                           `json:"sbom_id"`
+	PositionInSBOM   int                              `json:"position_in_sbom"`
 }
 
 // RulesetID represents a ruleset ID
@@ -361,12 +364,15 @@ type Filter struct {
 	// ID filters on a single ID
 	ID *string `sql:"id"`
 	// IDs filters on one or more IDs
-	IDs     *[]string `sql:"id"`
-	TeamID  *string   `sql:"team_id"`
-	Source  *string   `sql:"source"`
-	Type    *string   `sql:"type"`
-	Active  *bool     `sql:"active"`
-	Monitor *bool     `sql:"should_monitor"`
+	IDs            *[]string `sql:"id"`
+	TeamID         *string   `sql:"team_id"`
+	SBOMID         *string   `sql:"sbom_id"`
+	LocationInSBOM *int      `sql:"location_in_sbom"`
+	Source         *string   `sql:"source"`
+	Type           *string   `sql:"type"`
+	Active         *bool     `sql:"active"`
+	Draft          *bool     `sql:"draft"`
+	Monitor        *bool     `sql:"should_monitor"`
 }
 
 // ParseParam takes a param string, breaks it apart, and repopulates it into a

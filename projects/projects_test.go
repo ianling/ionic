@@ -97,46 +97,6 @@ func TestProject(t *testing.T) {
 			Expect(fs["type"]).To(Equal("missing type"))
 		})
 
-		g.It("should return string in JSON", func() {
-			id := "someid"
-			teamID := "someteamiD"
-			rulesetID := "someruleset"
-			name := "coolproject"
-			projectType := "artifact"
-			source := "http://%v:%v/goodurl"
-			branch := "master"
-			desc := "the coolest project around"
-			createdAt := time.Date(2018, 07, 07, 13, 42, 47, 651387237, time.UTC)
-			updatedAt := time.Date(2018, 07, 07, 13, 42, 47, 651387237, time.UTC)
-
-			p := Project{
-				ID:             &id,
-				TeamID:         &teamID,
-				RulesetID:      &rulesetID,
-				Name:           &name,
-				Type:           &projectType,
-				Source:         &source,
-				Branch:         &branch,
-				Description:    &desc,
-				Active:         true,
-				ChatChannel:    "#thechan",
-				CreatedAt:      createdAt,
-				UpdatedAt:      updatedAt,
-				DeployKey:      "thekey",
-				Monitor:        false,
-				POCName:        "youknowit",
-				POCEmail:       "you@know.it",
-				Username:       "knowit",
-				Password:       "supersecret",
-				KeyFingerprint: "supersecret",
-				Private:        true,
-				Aliases:        nil,
-				Tags:           nil,
-			}
-			Expect(fmt.Sprintf("%v", p)).To(Equal(`{"id":"someid","team_id":"someteamiD","ruleset_id":"someruleset","name":"coolproject","type":"artifact","source":"http://%v:%v/goodurl","branch":"master","description":"the coolest project around","active":true,"chat_channel":"#thechan","created_at":"2018-07-07T13:42:47.651387237Z","updated_at":"2018-07-07T13:42:47.651387237Z","deploy_key":"thekey","should_monitor":false,"monitor_frequency":"","poc_name":"youknowit","poc_email":"you@know.it","username":"knowit","password":"supersecret","key_fingerprint":"supersecret","private":true,"aliases":null,"tags":null,"ruleset_history":null}`))
-
-		})
-
 		g.Describe("Type", func() {
 			g.BeforeEach(func() {
 				server.AddPath("/v1/ruleset/getRuleset").
@@ -506,9 +466,9 @@ func TestProject(t *testing.T) {
 }
 
 const (
-	sampleValidProject      = `{"id":"someid","team_id":"someteamid","ruleset_id":"someruleset","name":"coolproject","type":"artifact","source":"http://%v:%v/goodurl","branch":"master","description":"the coolest project around","active":true,"chat_channel":"#thechan","created_at":"2018-08-07T13:42:47.258415155-07:00","updated_at":"2018-08-07T13:42:47.258415176-07:00","deploy_key":"thekey","should_monitor":false,"poc_name":"youknowit","poc_email":"you@know.it","username":"knowit","password":"supersecret","key_fingerprint":"supersecret","aliases":null,"tags":null}`
-	sampleInvalidProject    = `{"id":"someid","team_id":"someteamid","ruleset_id":"someruleset","source":"http://%v:%v/badurl","description":"the coolest project around","active":true,"chat_channel":"#thechan","created_at":"2018-08-07T13:46:06.529187652-07:00","updated_at":"2018-08-07T13:46:06.529187674-07:00","deploy_key":"","should_monitor":false,"poc_name":"youknowit","poc_email":"you@know.it","username":"knowit","password":"supersecret","key_fingerprint":"supersecret","aliases":null,"tags":null}`
-	sampleValidBlankProject = `{"id":"","team_id":"someteamid","ruleset_id":"someruleset","name":"coolproject","type":"artifact","source":"http://%v:%v/goodurl","branch":"master","description":"the coolest project around","active":true,"chat_channel":"#thechan","created_at":"2018-08-07T13:42:47.258415155-07:00","updated_at":"2018-08-07T13:42:47.258415176-07:00","deploy_key":"","should_monitor":false,"poc_name":"youknowit","poc_email":"you@know.it","username":"knowit","password":"supersecret","key_fingerprint":"supersecret","aliases":null,"tags":null}`
+	sampleValidProject      = `{"id":"someid","team_id":"someteamid","ruleset_id":"someruleset","name":"coolproject","type":"artifact","source":"http://%v:%v/goodurl","branch":"master","description":"the coolest project around","active":true,"draft":false,"chat_channel":"#thechan","created_at":"2018-08-07T13:42:47.258415155-07:00","updated_at":"2018-08-07T13:42:47.258415176-07:00","deploy_key":"thekey","should_monitor":false,"poc_name":"youknowit","poc_email":"you@know.it","username":"knowit","password":"supersecret","key_fingerprint":"supersecret","aliases":null,"tags":null}`
+	sampleInvalidProject    = `{"id":"someid","team_id":"someteamid","ruleset_id":"someruleset","source":"http://%v:%v/badurl","description":"the coolest project around","active":true,"draft":false,"chat_channel":"#thechan","created_at":"2018-08-07T13:46:06.529187652-07:00","updated_at":"2018-08-07T13:46:06.529187674-07:00","deploy_key":"","should_monitor":false,"poc_name":"youknowit","poc_email":"you@know.it","username":"knowit","password":"supersecret","key_fingerprint":"supersecret","aliases":null,"tags":null}`
+	sampleValidBlankProject = `{"id":"","team_id":"someteamid","ruleset_id":"someruleset","name":"coolproject","type":"artifact","source":"http://%v:%v/goodurl","branch":"master","description":"the coolest project around","active":true,"draft":false,"chat_channel":"#thechan","created_at":"2018-08-07T13:42:47.258415155-07:00","updated_at":"2018-08-07T13:42:47.258415176-07:00","deploy_key":"","should_monitor":false,"poc_name":"youknowit","poc_email":"you@know.it","username":"knowit","password":"supersecret","key_fingerprint":"supersecret","aliases":null,"tags":null}`
 
 	sampleValidKey = `-----BEGIN RSA PRIVATE KEY-----
 MIIJKAIBAAKCAgEAn3PJ6JFW9mG5ryvZ7TA3k6lSaxe2kSL9cyBoo9aK7FV94bET
