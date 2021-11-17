@@ -49,24 +49,24 @@ const (
 
 // SBOMEntry represents a single entry within an SBOM.
 type SBOMEntry struct {
-	ID             string        `json:"id"`
-	SBOMID         string        `json:"sbom_id"`
-	Type           string        `json:"type"`
-	Confidence     float32       `json:"confidence"`
-	Name           string        `json:"name"`
-	Org            string        `json:"org"`
-	Version        string        `json:"version"`
-	IonID          string        `json:"ion_id"`
-	Selected       bool          `json:"selected"`
-	LocationInSBOM int           `json:"location_in_sbom"`
-	Source         SourceDetails `json:"source"`
-	ErrMsg         string        `json:"error_message"`
-	ProductID      string        `json:"product_id"` // CPE
-	PackageID      string        `json:"package_id"` // PURL
-	Repo           string        `json:"repo"`
-	CreatedAt      time.Time     `json:"created_at"`
-	UpdatedAt      time.Time     `json:"updated_at"`
-	Status         string        `json:"status"`
+	ID             string          `json:"id"`
+	SBOMID         string          `json:"sbom_id"`
+	Type           SBOMEntryType   `json:"type"`
+	Confidence     float32         `json:"confidence"`
+	Name           string          `json:"name"`
+	Org            string          `json:"org"`
+	Version        string          `json:"version"`
+	IonID          string          `json:"ion_id"`
+	Selected       bool            `json:"selected"`
+	LocationInSBOM int             `json:"location_in_sbom"`
+	Source         SourceDetails   `json:"source"`
+	ErrMsg         string          `json:"error_message"`
+	ProductID      string          `json:"product_id"` // CPE
+	PackageID      string          `json:"package_id"` // PURL
+	Repo           string          `json:"repo"`
+	CreatedAt      time.Time       `json:"created_at"`
+	UpdatedAt      time.Time       `json:"updated_at"`
+	Status         SBOMEntryStatus `json:"status"`
 }
 
 // SBOM represents a software list containing zero or more SBOMEntry objects.
