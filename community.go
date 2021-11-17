@@ -31,9 +31,9 @@ func (ic *IonClient) GetRepo(repo, token string) (*community.Repo, error) {
 
 // GetReposInCommonOptions encapsulates params for repos in common requests
 type GetReposInCommonOptions struct {
-	Subject    string   `json:"subject"`
-	Comparands []string `json:"comparands"`
-	ByActor    bool     `json:"by_actor"`
+	Subject   string `json:"subject"`
+	Comparand string `json:"comparand"`
+	ByActor   bool   `json:"by_actor"`
 }
 
 // GetReposInCommonOutput encapsulates params for repos in common requests

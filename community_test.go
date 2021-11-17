@@ -50,8 +50,8 @@ func TestCommunity(t *testing.T) {
 				SetStatus(http.StatusOK)
 
 			options := GetReposInCommonOptions{
-				Subject:    "monsooncommerce",
-				Comparands: []string{"other", "repo"},
+				Subject:   "monsooncommerce",
+				Comparand: "repo",
 			}
 
 			searchResults, err := client.GetReposInCommon(options, "blaToken")
