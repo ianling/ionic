@@ -9,13 +9,6 @@ const (
 	GetSbomsEndpoint = "v1/project/getSBOMs"
 )
 
-// SourceDetails contains the original package information retrieved directly from an uploaded SBOM.
-type SourceDetails struct {
-	Name    string `json:"sbom_name"`
-	Org     string `json:"sbom_org"`
-	Version string `json:"sbom_version"`
-}
-
 // SBOMSearchResultType represents a search result's type
 type SBOMSearchResultType string
 
