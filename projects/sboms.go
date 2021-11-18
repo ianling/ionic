@@ -16,20 +16,70 @@ type SourceDetails struct {
 	Version string `json:"sbom_version"`
 }
 
-// SBOMEntryType represents a search result's type
-type SBOMEntryType string
+// SBOMSearchResultType represents a search result's type
+type SBOMSearchResultType string
 
 const (
-	// SBOMEntryTypePackage represents the Package search result type
-	SBOMEntryTypePackage SBOMEntryType = "package"
-	// SBOMEntryTypeRepo represents the Repo search result type
-	SBOMEntryTypeRepo SBOMEntryType = "repo"
-	// SBOMEntryTypeProduct represents the Product search result type
-	SBOMEntryTypeProduct SBOMEntryType = "product"
-	// SBOMEntryTypeError denotes that the search result represents an error.
+	// SBOMSearchResultTypePackage represents the Package search result type
+	SBOMSearchResultTypePackage SBOMSearchResultType = "package"
+	// SBOMSearchResultTypeRepo represents the Repo search result type
+	SBOMSearchResultTypeRepo SBOMSearchResultType = "repo"
+	// SBOMSearchResultTypeProduct represents the Product search result type
+	SBOMSearchResultTypeProduct SBOMSearchResultType = "product"
+	// SBOMSearchResultTypeError denotes that the search result represents an error.
 	// The error message can be found in the ErrMsg field
-	SBOMEntryTypeError SBOMEntryType = "error"
+	SBOMSearchResultTypeError SBOMSearchResultType = "error"
 )
+
+// SBOMSearchResultGeneric contains the fields common to all SBOM search result types
+type SBOMSearchResultGeneric struct {
+	ID         string  `json:"id"`
+	Confidence float32 `json:"confidence"`
+	Selected   bool    `json:"selected"`
+}
+
+// SBOMPackageSearchResult contains the fields specific to Package search results
+type SBOMPackageSearchResult struct {
+	SBOMSearchResultGeneric
+	PURL string `json:"purl"`
+}
+
+// SBOMProductSearchResult contains the fields specific to Product search results
+type SBOMProductSearchResult struct {
+	SBOMSearchResultGeneric
+	CPE string `json:"cpe"`
+}
+
+// SBOMRepoSearchResult contains the fields specific to Repo search results
+type SBOMRepoSearchResult struct {
+	SBOMSearchResultGeneric
+	RepoURL string `json:"repo_url"`
+}
+
+// SBOMSearchResults is a container for all the different search result types we can find for an SBOM entry
+type SBOMSearchResults struct {
+	Package []SBOMPackageSearchResult `json:"package"`
+	Product []SBOMProductSearchResult `json:"product"`
+	Repo    []SBOMRepoSearchResult    `json:"repo"`
+}
+
+// SBOMEntrySuggestionType is an enum of the different types of suggestions the API can make to your SBOM search query
+type SBOMEntrySuggestionType string
+
+const (
+	// SBOMEntrySuggestionTypeName represents the Name suggestion type
+	SBOMEntrySuggestionTypeName    SBOMEntrySuggestionType = "name"
+	// SBOMEntrySuggestionTypeOrg represents the Org suggestion type
+	SBOMEntrySuggestionTypeOrg     SBOMEntrySuggestionType = "org"
+	// SBOMEntrySuggestionTypeVersion represents the Version suggestion type
+	SBOMEntrySuggestionTypeVersion SBOMEntrySuggestionType = "version"
+)
+
+// SBOMSuggestion represents a change the API recommends making to your SBOM search query
+type SBOMSuggestion struct {
+	Type  SBOMEntrySuggestionType `json:"type"`
+	Value string                  `json:"value"`
+}
 
 // SBOMEntryStatus represents a search result's status
 type SBOMEntryStatus string
@@ -49,24 +99,17 @@ const (
 
 // SBOMEntry represents a single entry within an SBOM.
 type SBOMEntry struct {
-	ID             string          `json:"id"`
-	SBOMID         string          `json:"sbom_id"`
-	Type           SBOMEntryType   `json:"type"`
-	Confidence     float32         `json:"confidence"`
-	Name           string          `json:"name"`
-	Org            string          `json:"org"`
-	Version        string          `json:"version"`
-	IonID          string          `json:"ion_id"`
-	Selected       bool            `json:"selected"`
-	LocationInSBOM int             `json:"location_in_sbom"`
-	Source         SourceDetails   `json:"source"`
-	ErrMsg         string          `json:"error_message"`
-	ProductID      string          `json:"product_id"` // CPE
-	PackageID      string          `json:"package_id"` // PURL
-	Repo           string          `json:"repo"`
-	CreatedAt      time.Time       `json:"created_at"`
-	UpdatedAt      time.Time       `json:"updated_at"`
-	Status         SBOMEntryStatus `json:"status"`
+	ID             string            `json:"id"`
+	SBOMID         string            `json:"sbom_id"`
+	LocationInSBOM int               `json:"location_in_sbom"`
+	Name           string            `json:"name"`
+	Org            string            `json:"org"`
+	Version        string            `json:"version"`
+	Status         SBOMEntryStatus   `json:"status"`
+	SearchResults  SBOMSearchResults `json:"search_results"`
+	Suggestions    []SBOMSuggestion  `json:"suggestions"`
+	CreatedAt      time.Time         `json:"created_at"`
+	UpdatedAt      time.Time         `json:"updated_at"`
 }
 
 // SBOM represents a software list containing zero or more SBOMEntry objects.
