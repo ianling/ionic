@@ -29,6 +29,9 @@ type SBOMSearchResultGeneric struct {
 	ID         string  `json:"id"`
 	Confidence float32 `json:"confidence"`
 	Selected   bool    `json:"selected"`
+	Name       string  `json:"name"`
+	Org        string  `json:"org"`
+	Version    string  `json:"version"`
 }
 
 // SBOMPackageSearchResult contains the fields specific to Package search results
@@ -54,24 +57,6 @@ type SBOMSearchResults struct {
 	Package []SBOMPackageSearchResult `json:"package"`
 	Product []SBOMProductSearchResult `json:"product"`
 	Repo    []SBOMRepoSearchResult    `json:"repo"`
-}
-
-// SBOMEntrySuggestionType is an enum of the different types of suggestions the API can make to your SBOM search query
-type SBOMEntrySuggestionType string
-
-const (
-	// SBOMEntrySuggestionTypeName represents the Name suggestion type
-	SBOMEntrySuggestionTypeName    SBOMEntrySuggestionType = "name"
-	// SBOMEntrySuggestionTypeOrg represents the Org suggestion type
-	SBOMEntrySuggestionTypeOrg     SBOMEntrySuggestionType = "org"
-	// SBOMEntrySuggestionTypeVersion represents the Version suggestion type
-	SBOMEntrySuggestionTypeVersion SBOMEntrySuggestionType = "version"
-)
-
-// SBOMSuggestion represents a change the API recommends making to your SBOM search query
-type SBOMSuggestion struct {
-	Type  SBOMEntrySuggestionType `json:"type"`
-	Value string                  `json:"value"`
 }
 
 // SBOMEntryStatus represents a search result's status
@@ -100,7 +85,6 @@ type SBOMEntry struct {
 	Version        string            `json:"version"`
 	Status         SBOMEntryStatus   `json:"status"`
 	SearchResults  SBOMSearchResults `json:"search_results"`
-	Suggestions    []SBOMSuggestion  `json:"suggestions"`
 	CreatedAt      time.Time         `json:"created_at"`
 	UpdatedAt      time.Time         `json:"updated_at"`
 }
