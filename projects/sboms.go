@@ -15,7 +15,6 @@ type SBOM struct {
 	Name       string      `json:"sbom_name"`
 	Version    string      `json:"sbom_version"`
 	Supplier   string      `json:"supplier_name"`
-	SbomType   string      `json:"sbom_type"`
 	SbomStatus string      `json:"sbom_status"`
 	CreatedAt  time.Time   `json:"created_at"`
 	UpdatedAt  time.Time   `json:"updated_at"`
