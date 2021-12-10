@@ -19,12 +19,14 @@ type packageInfo struct {
 	DownloadLocation string
 	Description      string
 	Organization     string
+	CPE              string
+	PURL             string
 }
 
 // packageInfoFromPackage takes either an spdx.Package2_1 or spdx.Package2_2 and returns a packageInfo object.
 // This is used to convert SPDX packages to version-agnostic representations of the data we need.
 func packageInfoFromPackage(spdxPackage interface{}) packageInfo {
-	var name, version, downloadLocation, description, organization string
+	var name, version, downloadLocation, description, organization, cpe, purl string
 
 	switch spdxPackage.(type) {
 	case spdx.Package2_1:
@@ -34,6 +36,14 @@ func packageInfoFromPackage(spdxPackage interface{}) packageInfo {
 		downloadLocation = packageTyped.PackageDownloadLocation
 		description = packageTyped.PackageDescription
 		organization = packageTyped.PackageSupplierOrganization
+
+		for _, externalRef := range packageTyped.PackageExternalReferences {
+			if externalRef.Category == "SECURITY" && (externalRef.RefType == "cpe22Type" || externalRef.RefType == "cpe23Type") {
+				cpe = externalRef.Locator
+			} else if externalRef.Category == "PACKAGE-MANAGER" && externalRef.RefType == "purl" {
+				purl = externalRef.Locator
+			}
+		}
 	case spdx.Package2_2:
 		packageTyped := spdxPackage.(spdx.Package2_2)
 		name = packageTyped.PackageName
@@ -41,6 +51,14 @@ func packageInfoFromPackage(spdxPackage interface{}) packageInfo {
 		downloadLocation = packageTyped.PackageDownloadLocation
 		description = packageTyped.PackageDescription
 		organization = packageTyped.PackageSupplierOrganization
+
+		for _, externalRef := range packageTyped.PackageExternalReferences {
+			if externalRef.Category == "SECURITY" && (externalRef.RefType == "cpe22Type" || externalRef.RefType == "cpe23Type") {
+				cpe = externalRef.Locator
+			} else if externalRef.Category == "PACKAGE-MANAGER" && externalRef.RefType == "purl" {
+				purl = externalRef.Locator
+			}
+		}
 	}
 
 	return packageInfo{
@@ -49,6 +67,8 @@ func packageInfoFromPackage(spdxPackage interface{}) packageInfo {
 		DownloadLocation: downloadLocation,
 		Description:      description,
 		Organization:     organization,
+		CPE:              cpe,
+		PURL:             purl,
 	}
 }
 

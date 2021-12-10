@@ -75,6 +75,8 @@ func projectFromComponent(component cyclonedx.Component) projects.Project {
 		Active:  true,
 		Monitor: true,
 		Aliases: projectAliases,
+		PURL:    component.PackageURL,
+		CPE:     component.CPE,
 	}
 
 	return project
