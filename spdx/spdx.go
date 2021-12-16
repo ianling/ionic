@@ -170,6 +170,8 @@ func ProjectsFromSPDX(doc interface{}, includeDependencies bool) ([]projects.Pro
 			Name:        &pkg.Name,
 			Active:      true,
 			Monitor:     true,
+			CPE:         pkg.CPE,
+			PURL:        pkg.PURL,
 		}
 
 		// check if version, org, or name are not empty strings
