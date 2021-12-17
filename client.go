@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 
 	"github.com/ion-channel/ionic/pagination"
@@ -27,6 +28,8 @@ type IonClient struct {
 	client               *http.Client
 	session              *Session
 	sessionAutoRenewStop chan struct{}
+	// mutex is used to lock access to the Session when it is being updated
+	mutex sync.Mutex
 }
 
 // New takes the base URL of the API and returns a client for talking to the API
@@ -104,12 +107,17 @@ func (ic *IonClient) Patch(endpoint, token string, params *url.Values, payload b
 // The session can safely be set to null.
 // Example: myClient.GetSelf(myClient.Session().BearerToken)
 func (ic *IonClient) SetSession(session *Session) {
+	ic.mutex.Lock()
 	ic.session = session
+	ic.mutex.Unlock()
 }
 
 // Session returns the client's internal Session.
 // This Session is set and renewed automatically if the EnableSessionAutoRenew method is used.
 func (ic *IonClient) Session() *Session {
+	ic.mutex.Lock()
+	defer ic.mutex.Unlock()
+
 	return ic.session
 }
 
@@ -123,7 +131,7 @@ func (ic *IonClient) EnableSessionAutoRenew(username, password string) error {
 		return err
 	}
 
-	ic.session = session
+	ic.SetSession(session)
 
 	go ic.autoRenewSessionWorker(username, password)
 
@@ -148,7 +156,7 @@ func (ic *IonClient) autoRenewSessionWorker(username, password string) {
 				continue // don't blow everything up in case it was just a temporary issue
 			}
 
-			ic.session = session
+			ic.SetSession(session)
 		case <-ic.sessionAutoRenewStop:
 			ticker.Stop()
 			return
