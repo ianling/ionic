@@ -29,9 +29,22 @@ type ByIDsAndTeamID struct {
 	IDs    []string `json:"ids"`
 }
 
-func do(client *http.Client, method string, baseURL *url.URL, endpoint, token string, params *url.Values, payload bytes.Buffer, headers http.Header, page *pagination.Pagination) (json.RawMessage, *responses.Meta, error) {
-	if page == nil || page.Limit > 0 {
-		ir, err := _do(client, method, baseURL, endpoint, token, params, payload, headers, page)
+// request is an internal container for all the relevant data that makes up an HTTP request
+type request struct {
+	Client     http.Client
+	Headers    http.Header
+	Method     string
+	BaseURL    url.URL
+	Endpoint   string
+	Params     url.Values
+	Payload    bytes.Buffer
+	Pagination pagination.Pagination
+	Token      string
+}
+
+func do(req request) (json.RawMessage, *responses.Meta, error) {
+	if req.Pagination == (pagination.Pagination{}) || req.Pagination.Limit > 0 {
+		ir, err := _do(req)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -39,13 +52,12 @@ func do(client *http.Client, method string, baseURL *url.URL, endpoint, token st
 		return ir.Data, &ir.Meta, nil
 	}
 
-	page = pagination.New(0, maxPagingLimit)
-	var data json.RawMessage
-	data = append(data, []byte("[")...)
+	req.Pagination = pagination.New(0, maxPagingLimit)
+	data := []byte("[")
 
 	total := 1
-	for page.Offset < total {
-		ir, err := _do(client, method, baseURL, endpoint, token, params, payload, headers, page)
+	for req.Pagination.Offset < total {
+		ir, err := _do(req)
 		if err != nil {
 			err.Prepend("api: paging")
 			return nil, nil, err
@@ -53,7 +65,7 @@ func do(client *http.Client, method string, baseURL *url.URL, endpoint, token st
 
 		data = append(data, ir.Data[1:len(ir.Data)-1]...)
 		data = append(data, []byte(",")...)
-		page.Up()
+		req.Pagination.Up()
 		total = ir.Meta.TotalCount
 	}
 
@@ -61,23 +73,23 @@ func do(client *http.Client, method string, baseURL *url.URL, endpoint, token st
 	return data, &responses.Meta{TotalCount: total}, nil
 }
 
-func _do(client *http.Client, method string, baseURL *url.URL, endpoint, token string, params *url.Values, payload bytes.Buffer, headers http.Header, page *pagination.Pagination) (*responses.IonResponse, *errors.IonError) {
-	u := createURL(baseURL, endpoint, params, page)
+func _do(req request) (*responses.IonResponse, *errors.IonError) {
+	u := createURL(req.BaseURL, req.Endpoint, req.Params, req.Pagination)
 
-	req, err := http.NewRequest(strings.ToUpper(method), u.String(), &payload)
+	httpReq, err := http.NewRequest(strings.ToUpper(req.Method), u.String(), &req.Payload)
 	if err != nil {
 		return nil, errors.Errors("no body", 0, "http request: failed to create: %v", err.Error())
 	}
 
-	if headers != nil {
-		req.Header = headers
+	if req.Headers != nil {
+		httpReq.Header = req.Headers
 	}
 
-	if token != "" {
-		req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", token))
+	if req.Token != "" {
+		httpReq.Header.Add("Authorization", fmt.Sprintf("Bearer %v", req.Token))
 	}
 
-	resp, err := client.Do(req)
+	resp, err := req.Client.Do(httpReq)
 	if err != nil {
 		return nil, errors.Errors("no body", 0, "http request: failed: %v", err.Error())
 	}
@@ -92,7 +104,7 @@ func _do(client *http.Client, method string, baseURL *url.URL, endpoint, token s
 		return nil, errors.Errors(string(body), resp.StatusCode, "api error response: %s", string(body))
 	}
 
-	if strings.ToUpper(method) == "HEAD" || strings.ToUpper(method) == "DELETE" {
+	if strings.ToUpper(req.Method) == "HEAD" || strings.ToUpper(req.Method) == "DELETE" {
 		return &responses.IonResponse{}, nil
 	}
 
@@ -105,37 +117,55 @@ func _do(client *http.Client, method string, baseURL *url.URL, endpoint, token s
 	return &ir, nil
 }
 
-func createURL(baseURL *url.URL, endpoint string, params *url.Values, page *pagination.Pagination) *url.URL {
-	u := *baseURL
-	u.Path = endpoint
+func createURL(baseURL url.URL, endpoint string, params url.Values, page pagination.Pagination) url.URL {
+	baseURL.Path = endpoint
 
-	vals := &url.Values{}
-	if params != nil {
-		vals = params
+	if params == nil {
+		params = url.Values{}
 	}
 
-	if page != nil {
-		page.AddParams(vals)
+	// add pagination params to the URL if given
+	if page != (pagination.Pagination{}) {
+		page.AddParams(&params)
 	}
 
-	u.RawQuery = vals.Encode()
-	return &u
+	baseURL.RawQuery = params.Encode()
+	return baseURL
 }
 
 // Delete takes a client, baseURL, endpoint, token, params, and headers to pass as a delete call to the
 // API.  It will return a json RawMessage for the response and any errors it
 // encounters with the API.
 // It is used internally by the SDK
-func Delete(client *http.Client, baseURL *url.URL, endpoint, token string, params *url.Values, headers http.Header) (json.RawMessage, error) {
-	r, _, err := do(client, "DELETE", baseURL, endpoint, token, params, bytes.Buffer{}, headers, nil)
+func Delete(client http.Client, baseURL url.URL, endpoint, token string, params url.Values, headers http.Header) (json.RawMessage, error) {
+	req := request{
+		Client:   client,
+		Headers:  headers,
+		Method:   "DELETE",
+		BaseURL:  baseURL,
+		Endpoint: endpoint,
+		Params:   params,
+		Token:    token,
+	}
+	r, _, err := do(req)
 	return r, err
 }
 
 // Head takes a client, baseURL, endpoint, token, params, headers, and pagination params to pass as a
 // head call to the API.  It will return any errors it encounters with the API.
 // It is used internally by the SDK
-func Head(client *http.Client, baseURL *url.URL, endpoint, token string, params *url.Values, headers http.Header, page *pagination.Pagination) error {
-	_, _, err := do(client, "HEAD", baseURL, endpoint, token, params, bytes.Buffer{}, headers, page)
+func Head(client http.Client, baseURL url.URL, endpoint, token string, params url.Values, headers http.Header, page pagination.Pagination) error {
+	req := request{
+		Client:     client,
+		Headers:    headers,
+		Method:     "HEAD",
+		BaseURL:    baseURL,
+		Endpoint:   endpoint,
+		Params:     params,
+		Token:      token,
+		Pagination: page,
+	}
+	_, _, err := do(req)
 	return err
 }
 
@@ -143,8 +173,18 @@ func Head(client *http.Client, baseURL *url.URL, endpoint, token string, params 
 // get call to the API.  It will return a json RawMessage for the response and
 // any errors it encounters with the API.
 // It is used internally by the SDK
-func Get(client *http.Client, baseURL *url.URL, endpoint, token string, params *url.Values, headers http.Header, page *pagination.Pagination) (json.RawMessage, *responses.Meta, error) {
-	r, m, err := do(client, "GET", baseURL, endpoint, token, params, bytes.Buffer{}, headers, page)
+func Get(client http.Client, baseURL url.URL, endpoint, token string, params url.Values, headers http.Header, page pagination.Pagination) (json.RawMessage, *responses.Meta, error) {
+	req := request{
+		Client:     client,
+		Headers:    headers,
+		Method:     "GET",
+		BaseURL:    baseURL,
+		Endpoint:   endpoint,
+		Params:     params,
+		Token:      token,
+		Pagination: page,
+	}
+	r, m, err := do(req)
 	return r, m, err
 }
 
@@ -152,8 +192,18 @@ func Get(client *http.Client, baseURL *url.URL, endpoint, token string, params *
 // to the API.  It will return a json RawMessage for the response and any errors
 // it encounters with the API.
 // It is used internally by the SDK
-func Post(client *http.Client, baseURL *url.URL, endpoint, token string, params *url.Values, payload bytes.Buffer, headers http.Header) (json.RawMessage, error) {
-	r, _, err := do(client, "POST", baseURL, endpoint, token, params, payload, headers, nil)
+func Post(client http.Client, baseURL url.URL, endpoint, token string, params url.Values, payload bytes.Buffer, headers http.Header) (json.RawMessage, error) {
+	req := request{
+		Client:   client,
+		Headers:  headers,
+		Method:   "POST",
+		BaseURL:  baseURL,
+		Endpoint: endpoint,
+		Params:   params,
+		Token:    token,
+		Payload:  payload,
+	}
+	r, _, err := do(req)
 	return r, err
 }
 
@@ -161,8 +211,18 @@ func Post(client *http.Client, baseURL *url.URL, endpoint, token string, params 
 // the API.  It will return a json RawMessage for the response and any errors it
 // encounters with the API.
 // It is used internally by the SDK
-func Put(client *http.Client, baseURL *url.URL, endpoint, token string, params *url.Values, payload bytes.Buffer, headers http.Header) (json.RawMessage, error) {
-	r, _, err := do(client, "PUT", baseURL, endpoint, token, params, payload, headers, nil)
+func Put(client http.Client, baseURL url.URL, endpoint, token string, params url.Values, payload bytes.Buffer, headers http.Header) (json.RawMessage, error) {
+	req := request{
+		Client:   client,
+		Headers:  headers,
+		Method:   "PUT",
+		BaseURL:  baseURL,
+		Endpoint: endpoint,
+		Params:   params,
+		Token:    token,
+		Payload:  payload,
+	}
+	r, _, err := do(req)
 	return r, err
 }
 
@@ -170,7 +230,17 @@ func Put(client *http.Client, baseURL *url.URL, endpoint, token string, params *
 // the API.  It will return a json RawMessage for the response and any errors it
 // encounters with the API.
 // It is used internally by the SDK
-func Patch(client *http.Client, baseURL *url.URL, endpoint, token string, params *url.Values, payload bytes.Buffer, headers http.Header) (json.RawMessage, error) {
-	r, _, err := do(client, "PATCH", baseURL, endpoint, token, params, payload, headers, nil)
+func Patch(client http.Client, baseURL url.URL, endpoint, token string, params url.Values, payload bytes.Buffer, headers http.Header) (json.RawMessage, error) {
+	req := request{
+		Client:   client,
+		Headers:  headers,
+		Method:   "PATCH",
+		BaseURL:  baseURL,
+		Endpoint: endpoint,
+		Params:   params,
+		Token:    token,
+		Payload:  payload,
+	}
+	r, _, err := do(req)
 	return r, err
 }

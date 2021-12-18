@@ -71,7 +71,7 @@ func TestProducts(t *testing.T) {
 				SetMethods("GET").
 				SetPayload([]byte(sampleBunsenSearchResponse)).
 				SetStatus(http.StatusOK)
-			products, _, err := client.GetProductSearch("less+mahVersion", nil, "someapikey")
+			products, _, err := client.GetProductSearch("less+mahVersion", pagination.Pagination{}, "someapikey")
 			Expect(err).To(BeNil())
 			hitRecords := server.HitRecords()
 			Expect(hitRecords).To(HaveLen(1))
@@ -91,7 +91,7 @@ func TestProducts(t *testing.T) {
 				Offset: 0,
 				Limit:  100,
 			}
-			products, _, err := client.GetProductSearch("less+mahVersion", &page, "someapikey")
+			products, _, err := client.GetProductSearch("less+mahVersion", page, "someapikey")
 			Expect(err).To(BeNil())
 			hitRecords := server.HitRecords()
 			Expect(hitRecords).To(HaveLen(1))
@@ -108,7 +108,7 @@ func TestProducts(t *testing.T) {
 				SetMethods("GET").
 				SetPayload([]byte(sampleBunsenSearchResponse)).
 				SetStatus(http.StatusOK)
-			products, _, err := client.GetProductSearch("less", nil, "someapikey")
+			products, _, err := client.GetProductSearch("less", pagination.Pagination{}, "someapikey")
 			Expect(err).To(BeNil())
 			hitRecords := server.HitRecords()
 			Expect(hitRecords).To(HaveLen(1))

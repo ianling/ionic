@@ -22,7 +22,7 @@ type AddAliasOptions struct {
 //AddAlias takes a project and adds an alias to it. It returns the
 // project stored or an error encountered by the API
 func (ic *IonClient) AddAlias(alias AddAliasOptions, token string) (*aliases.Alias, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("project_id", alias.ProjectID)
 
 	b, err := json.Marshal(alias)

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/ion-channel/ionic/pagination"
 	"net/url"
 
 	"github.com/ion-channel/ionic/tags"
@@ -69,11 +70,11 @@ func (ic *IonClient) UpdateTag(id, teamID, name, description, token string) (*ta
 // GetTag takes a tag ID and a team ID. It returns the details of a singular
 // tag and any errors encountered with the API.
 func (ic *IonClient) GetTag(id, teamID, token string) (*tags.Tag, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("id", id)
 	params.Set("team_id", teamID)
 
-	b, _, err := ic.Get(tags.GetTagEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(tags.GetTagEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get tag: %v", err.Error())
 	}
@@ -90,10 +91,10 @@ func (ic *IonClient) GetTag(id, teamID, token string) (*tags.Tag, error) {
 // GetTags takes a team ID. It returns the details of a singular tag and any
 // errors encountered with the API.
 func (ic *IonClient) GetTags(teamID, token string) ([]tags.Tag, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("team_id", teamID)
 
-	b, _, err := ic.Get(tags.GetTagsEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(tags.GetTagsEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get tag: %v", err.Error())
 	}
@@ -110,10 +111,10 @@ func (ic *IonClient) GetTags(teamID, token string) ([]tags.Tag, error) {
 // GetRawTags takes a team ID. It returns the details of a singular tag and any
 // errors encountered with the API.
 func (ic *IonClient) GetRawTags(teamID, token string) (json.RawMessage, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("team_id", teamID)
 
-	b, _, err := ic.Get(tags.GetTagsEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(tags.GetTagsEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get tag: %v", err.Error())
 	}
@@ -124,11 +125,11 @@ func (ic *IonClient) GetRawTags(teamID, token string) (json.RawMessage, error) {
 // GetRawTag takes a tag ID and a team ID. It returns the details of a singular
 // tag and any errors encountered with the API.
 func (ic *IonClient) GetRawTag(id, teamID, token string) (json.RawMessage, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("id", id)
 	params.Set("team_id", teamID)
 
-	b, _, err := ic.Get(tags.GetTagEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(tags.GetTagEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get tag: %v", err.Error())
 	}

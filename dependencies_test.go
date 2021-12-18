@@ -2,6 +2,7 @@ package ionic
 
 import (
 	"fmt"
+	"github.com/ion-channel/ionic/pagination"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -136,7 +137,7 @@ func TestDependencies(t *testing.T) {
 			tf.Write([]byte(samplePomSnippet))
 			tf.Close()
 
-			deps, _, err := client.SearchDependencies("some org", nil, "atoken")
+			deps, _, err := client.SearchDependencies("some org", pagination.Pagination{}, "atoken")
 
 			Expect(err).To(BeNil())
 			Expect(deps[0].Version).To(Equal("1.16.3"))

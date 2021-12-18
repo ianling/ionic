@@ -18,7 +18,7 @@ const (
 )
 
 // AllItems is a convenience for requesting all items of a given entity
-var AllItems = &Pagination{Offset: 0, Limit: MaximumLimit}
+var AllItems = Pagination{Offset: 0, Limit: MaximumLimit}
 
 // Pagination represents the necessary elements for a paginated request
 type Pagination struct {
@@ -28,8 +28,8 @@ type Pagination struct {
 
 // New takes an offset and limit.  It returns a newly created Pagination object
 // and prevents the offset and limit from being set to illegal values.
-func New(offset, limit int) *Pagination {
-	p := &Pagination{
+func New(offset, limit int) Pagination {
+	p := Pagination{
 		Offset: offset,
 		Limit:  limit,
 	}
@@ -49,7 +49,7 @@ func New(offset, limit int) *Pagination {
 // or from the headers. The URL query params are favored over the header values
 // if both are provided. It will defer to defaults if the pagination params are
 // not found.
-func ParseFromRequest(req *http.Request) *Pagination {
+func ParseFromRequest(req *http.Request) Pagination {
 	var oStr, lStr string
 
 	if req.URL != nil {

@@ -24,9 +24,9 @@ const (
 
 // IonClient represents a communication layer with the Ion Channel API
 type IonClient struct {
-	baseURL              *url.URL
-	client               *http.Client
-	session              *Session
+	baseURL              url.URL
+	client               http.Client
+	session              Session
 	sessionAutoRenewStop chan struct{}
 	// mutex is used to lock access to the Session when it is being updated
 	mutex sync.Mutex
@@ -42,20 +42,20 @@ func New(baseURL string) (*IonClient, error) {
 		},
 	}
 
-	return NewWithClient(baseURL, c)
+	return NewWithClient(baseURL, *c)
 }
 
 // NewWithClient takes the base URL of the API and an existing HTTP client.  It
 // returns a client for talking to the API and an error if any issues
 // instantiating the client are encountered
-func NewWithClient(baseURL string, client *http.Client) (*IonClient, error) {
+func NewWithClient(baseURL string, client http.Client) (*IonClient, error) {
 	u, err := url.Parse(baseURL)
 	if err != nil {
 		return nil, fmt.Errorf("ionic: client initialization: %v", err.Error())
 	}
 
 	ic := &IonClient{
-		baseURL: u,
+		baseURL: *u,
 		client:  client,
 	}
 
@@ -65,48 +65,48 @@ func NewWithClient(baseURL string, client *http.Client) (*IonClient, error) {
 // Delete takes an endpoint, token, params, and headers to pass as a delete call to the
 // API.  It will return a json RawMessage for the response and any errors it
 // encounters with the API.
-func (ic *IonClient) Delete(endpoint, token string, params *url.Values, headers http.Header) (json.RawMessage, error) {
+func (ic *IonClient) Delete(endpoint, token string, params url.Values, headers http.Header) (json.RawMessage, error) {
 	return requests.Delete(ic.client, ic.baseURL, endpoint, token, params, headers)
 }
 
 // Head takes an endpoint, token, params, headers, and pagination params to pass as a
 // head call to the API.  It will return any errors it encounters with the API.
-func (ic *IonClient) Head(endpoint, token string, params *url.Values, headers http.Header, page *pagination.Pagination) error {
+func (ic *IonClient) Head(endpoint, token string, params url.Values, headers http.Header, page pagination.Pagination) error {
 	return requests.Head(ic.client, ic.baseURL, endpoint, token, params, headers, page)
 }
 
 // Get takes an endpoint, token, params, headers, and pagination params to pass as a
 // get call to the API.  It will return a json RawMessage for the response and
 // any errors it encounters with the API.
-func (ic *IonClient) Get(endpoint, token string, params *url.Values, headers http.Header, page *pagination.Pagination) (json.RawMessage, *responses.Meta, error) {
+func (ic *IonClient) Get(endpoint, token string, params url.Values, headers http.Header, page pagination.Pagination) (json.RawMessage, *responses.Meta, error) {
 	return requests.Get(ic.client, ic.baseURL, endpoint, token, params, headers, page)
 }
 
 // Post takes an endpoint, token, params, payload, and headers to pass as a post call
 // to the API.  It will return a json RawMessage for the response and any errors
 // it encounters with the API.
-func (ic *IonClient) Post(endpoint, token string, params *url.Values, payload bytes.Buffer, headers http.Header) (json.RawMessage, error) {
+func (ic *IonClient) Post(endpoint, token string, params url.Values, payload bytes.Buffer, headers http.Header) (json.RawMessage, error) {
 	return requests.Post(ic.client, ic.baseURL, endpoint, token, params, payload, headers)
 }
 
 // Put takes an endpoint, token, params, payload, and headers to pass as a put call to
 // the API.  It will return a json RawMessage for the response and any errors it
 // encounters with the API.
-func (ic *IonClient) Put(endpoint, token string, params *url.Values, payload bytes.Buffer, headers http.Header) (json.RawMessage, error) {
+func (ic *IonClient) Put(endpoint, token string, params url.Values, payload bytes.Buffer, headers http.Header) (json.RawMessage, error) {
 	return requests.Put(ic.client, ic.baseURL, endpoint, token, params, payload, headers)
 }
 
 // Patch takes an endpoint, token, params, payload, and headers to pass as a patch call to
 // the API.  It will return a json RawMessage for the response and any errors it
 // encounters with the API.
-func (ic *IonClient) Patch(endpoint, token string, params *url.Values, payload bytes.Buffer, headers http.Header) (json.RawMessage, error) {
+func (ic *IonClient) Patch(endpoint, token string, params url.Values, payload bytes.Buffer, headers http.Header) (json.RawMessage, error) {
 	return requests.Patch(ic.client, ic.baseURL, endpoint, token, params, payload, headers)
 }
 
 // SetSession sets the client's internal Session that can be used to authenticate when making API requests.
 // The session can safely be set to null.
 // Example: myClient.GetSelf(myClient.Session().BearerToken)
-func (ic *IonClient) SetSession(session *Session) {
+func (ic *IonClient) SetSession(session Session) {
 	ic.mutex.Lock()
 	ic.session = session
 	ic.mutex.Unlock()
@@ -114,7 +114,7 @@ func (ic *IonClient) SetSession(session *Session) {
 
 // Session returns the client's internal Session.
 // This Session is set and renewed automatically if the EnableSessionAutoRenew method is used.
-func (ic *IonClient) Session() *Session {
+func (ic *IonClient) Session() Session {
 	ic.mutex.Lock()
 	defer ic.mutex.Unlock()
 

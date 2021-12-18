@@ -3,6 +3,7 @@ package ionic
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/ion-channel/ionic/pagination"
 	"github.com/ion-channel/ionic/projects"
 	"net/url"
 )
@@ -12,10 +13,10 @@ import (
 func (ic *IonClient) GetSbom(id, token string) (projects.SBOM, error) {
 	var sbom projects.SBOM
 
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("id", id)
 
-	b, _, err := ic.Get(projects.GetSbomEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(projects.GetSbomEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return sbom, fmt.Errorf("failed to get SBOM: %s", err.Error())
 	}
@@ -31,11 +32,11 @@ func (ic *IonClient) GetSbom(id, token string) (projects.SBOM, error) {
 // GetSboms takes an organization ID, and a status to filter on, if given.
 // Returns the organization's SBOMs, filtered on the status if given, or any error that occurred.
 func (ic *IonClient) GetSboms(orgID, status, token string) ([]projects.SBOM, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("org_id", orgID)
 	params.Set("status", status)
 
-	b, _, err := ic.Get(projects.GetSbomsEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(projects.GetSbomsEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get SBOMs: %s", err.Error())
 	}

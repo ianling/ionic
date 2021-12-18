@@ -15,12 +15,12 @@ import (
 // analysis found.  If the analysis is not found it will return an error, and
 // will return an error for any other API issues it encounters.
 func (ic *IonClient) GetAnalysis(id, teamID, projectID, token string) (*analyses.Analysis, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("id", id)
 	params.Set("team_id", teamID)
 	params.Set("project_id", projectID)
 
-	b, _, err := ic.Get(analyses.AnalysisGetAnalysisEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(analyses.AnalysisGetAnalysisEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get analysis: %v", err.Error())
 	}
@@ -38,11 +38,11 @@ func (ic *IonClient) GetAnalysis(id, teamID, projectID, token string) (*analyses
 // latest analysis found.  If the analysis is not found it will return an error, and
 // will return an error for any other API issues it encounters.
 func (ic *IonClient) GetLatestAnalysis(teamID, projectID, token string) (*analyses.Analysis, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("team_id", teamID)
 	params.Set("project_id", projectID)
 
-	b, _, err := ic.Get(analyses.AnalysisGetLatestAnalysisEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(analyses.AnalysisGetLatestAnalysisEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get analysis: %v", err.Error())
 	}
@@ -58,8 +58,8 @@ func (ic *IonClient) GetLatestAnalysis(teamID, projectID, token string) (*analys
 
 // GetAnalyses takes a team ID, project ID, and token. It returns a slice of
 // analyses for the project or an error for any API issues it encounters.
-func (ic *IonClient) GetAnalyses(teamID, projectID, token string, page *pagination.Pagination) ([]analyses.Analysis, error) {
-	params := &url.Values{}
+func (ic *IonClient) GetAnalyses(teamID, projectID, token string, page pagination.Pagination) ([]analyses.Analysis, error) {
+	params := url.Values{}
 	params.Set("team_id", teamID)
 	params.Set("project_id", projectID)
 
@@ -81,11 +81,11 @@ func (ic *IonClient) GetAnalyses(teamID, projectID, token string, page *paginati
 // analysis found.  If the analysis is not found it will return an error, and
 // will return an error for any other API issues it encounters.
 func (ic *IonClient) GetLatestPublicAnalysis(projectID, branch string) (*analyses.Analysis, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("project_id", projectID)
 	params.Set("branch", branch)
 
-	b, _, err := ic.Get(analyses.AnalysisGetLatestPublicAnalysisEndpoint, "", params, nil, nil)
+	b, _, err := ic.Get(analyses.AnalysisGetLatestPublicAnalysisEndpoint, "", params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get analysis: %v", err.Error())
 	}
@@ -103,10 +103,10 @@ func (ic *IonClient) GetLatestPublicAnalysis(projectID, branch string) (*analyse
 // analysis found.  If the analysis is not found it will return an error, and
 // will return an error for any other API issues it encounters.
 func (ic *IonClient) GetPublicAnalysis(id string) (*analyses.Analysis, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("id", id)
 
-	b, _, err := ic.Get(analyses.AnalysisGetPublicAnalysisEndpoint, "", params, nil, nil)
+	b, _, err := ic.Get(analyses.AnalysisGetPublicAnalysisEndpoint, "", params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get analysis: %v", err.Error())
 	}
@@ -123,12 +123,12 @@ func (ic *IonClient) GetPublicAnalysis(id string) (*analyses.Analysis, error) {
 // GetRawAnalysis takes an analysis ID, team ID, project ID, and token.  It returns the
 // raw JSON from the API.  It returns an error for any API issues it encounters.
 func (ic *IonClient) GetRawAnalysis(id, teamID, projectID, token string) (json.RawMessage, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("id", id)
 	params.Set("team_id", teamID)
 	params.Set("project_id", projectID)
 
-	b, _, err := ic.Get(analyses.AnalysisGetAnalysisEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(analyses.AnalysisGetAnalysisEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get analysis: %v", err.Error())
 	}
@@ -138,8 +138,8 @@ func (ic *IonClient) GetRawAnalysis(id, teamID, projectID, token string) (json.R
 
 // GetRawAnalyses takes a team ID, project ID, and token. It returns the raw
 // JSON from the API. It returns an error for any API issue it encounters.
-func (ic *IonClient) GetRawAnalyses(teamID, projectID, token string, page *pagination.Pagination) (json.RawMessage, error) {
-	params := &url.Values{}
+func (ic *IonClient) GetRawAnalyses(teamID, projectID, token string, page pagination.Pagination) (json.RawMessage, error) {
+	params := url.Values{}
 	params.Set("team_id", teamID)
 	params.Set("project_id", projectID)
 
@@ -183,11 +183,11 @@ func (ic *IonClient) GetLatestAnalysisIDs(teamID string, projectIDs []string, to
 // latest analysis summary for the project. It returns an error for any API
 // issues it encounters.
 func (ic *IonClient) GetLatestAnalysisSummary(teamID, projectID, token string) (*analyses.Summary, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("team_id", teamID)
 	params.Set("project_id", projectID)
 
-	b, _, err := ic.Get(analyses.AnalysisGetLatestAnalysisSummaryEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(analyses.AnalysisGetLatestAnalysisSummaryEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get latest analysis: %v", err.Error())
 	}
@@ -233,11 +233,11 @@ func (ic *IonClient) GetLatestAnalysisSummaries(teamID string, projectIDs []stri
 // GetRawLatestAnalysisSummary takes a team ID, project ID, and token. It returns the
 // raw JSON from the API.  It returns an error for any API issues it encounters.
 func (ic *IonClient) GetRawLatestAnalysisSummary(teamID, projectID, token string) (json.RawMessage, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("team_id", teamID)
 	params.Set("project_id", projectID)
 
-	b, _, err := ic.Get(analyses.AnalysisGetLatestAnalysisSummaryEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(analyses.AnalysisGetLatestAnalysisSummaryEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get latest analysis: %v", err.Error())
 	}

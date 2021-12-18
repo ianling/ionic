@@ -104,7 +104,7 @@ func (p Project) String() string {
 }
 
 // ProjectReachable checks if the artifact URL is reachable
-func (p *Project) ProjectReachable(client *http.Client, baseURL *url.URL, token string) (map[string]string, error) {
+func (p *Project) ProjectReachable(client http.Client) (map[string]string, error) {
 	invalidFields := make(map[string]string)
 	var projErr error
 	if p.Type != nil {
@@ -155,7 +155,7 @@ func (p *Project) ProjectReachable(client *http.Client, baseURL *url.URL, token 
 }
 
 // ValidateRequiredFields verifies the project contains the fields required
-func (p *Project) ValidateRequiredFields(client *http.Client, baseURL *url.URL, token string) (map[string]string, error) {
+func (p *Project) ValidateRequiredFields() (map[string]string, error) {
 	invalidFields := make(map[string]string)
 	var projErr error
 
@@ -192,18 +192,6 @@ func (p *Project) ValidateRequiredFields(client *http.Client, baseURL *url.URL, 
 	if p.Description == nil {
 		invalidFields["description"] = "missing description"
 		projErr = ErrInvalidProject
-	}
-
-	if p.RulesetID != nil && p.TeamID != nil {
-		exists, err := rulesets.RuleSetExists(client, baseURL, *p.RulesetID, *p.TeamID, token)
-		if err != nil {
-			return nil, fmt.Errorf("failed to determine if ruleset exists: %v", err.Error())
-		}
-
-		if !exists {
-			invalidFields["ruleset_id"] = "ruleset id does not match to a valid ruleset"
-			projErr = ErrInvalidProject
-		}
 	}
 
 	p.POCEmail = strings.TrimSpace(p.POCEmail)
@@ -248,13 +236,13 @@ func (p *Project) ValidateRequiredFields(client *http.Client, baseURL *url.URL, 
 	return invalidFields, projErr
 }
 
-// Validate takes an http client, baseURL, and token; returns a slice of fields as a string and
+// Validate takes an http client; returns a slice of fields as a string and
 // an error. The fields will be a list of fields that did not pass the
 // validation. An error will only be returned if any of the fields fail their
 // validation.
 // Since this also checks for project reachability, ValidateRequiredFields
 // can be used to skip that check.
-func (p *Project) Validate(client *http.Client, baseURL *url.URL, token string) (map[string]string, error) {
+func (p *Project) Validate(client http.Client) (map[string]string, error) {
 	invalidFields := make(map[string]string)
 	var projErr error
 
@@ -291,18 +279,6 @@ func (p *Project) Validate(client *http.Client, baseURL *url.URL, token string) 
 	if p.Description == nil {
 		invalidFields["description"] = "missing description"
 		projErr = ErrInvalidProject
-	}
-
-	if p.RulesetID != nil && p.TeamID != nil {
-		exists, err := rulesets.RuleSetExists(client, baseURL, *p.RulesetID, *p.TeamID, token)
-		if err != nil {
-			return nil, fmt.Errorf("failed to determine if ruleset exists: %v", err.Error())
-		}
-
-		if !exists {
-			invalidFields["ruleset_id"] = "ruleset id does not match to a valid ruleset"
-			projErr = ErrInvalidProject
-		}
 	}
 
 	p.POCEmail = strings.TrimSpace(p.POCEmail)
@@ -380,7 +356,7 @@ type Filter struct {
 // ParseParam takes a param string, breaks it apart, and repopulates it into a
 // struct for further use. Any invalid or incomplete interpretations of a field
 // will be ignored and only valid entries put into the struct.
-func ParseParam(param string) *Filter {
+func ParseParam(param string) Filter {
 	pf := Filter{}
 
 	fvs := strings.Split(param, ",")
@@ -422,7 +398,7 @@ func ParseParam(param string) *Filter {
 		}
 	}
 
-	return &pf
+	return pf
 }
 
 // Param converts the non nil fields of the Project Filter into a string usable

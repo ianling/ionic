@@ -27,10 +27,10 @@ type CreateProjectsResponse struct {
 	} `json:"errors"`
 }
 
-//CreateProject takes a project object, teamId, and token to use. It returns the
+// CreateProject takes a project object, teamId, and token to use. It returns the
 // project stored or an error encountered by the API
 func (ic *IonClient) CreateProject(project *projects.Project, teamID, token string) (*projects.Project, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("team_id", teamID)
 
 	b, err := json.Marshal(project)
@@ -49,7 +49,7 @@ func (ic *IonClient) CreateProject(project *projects.Project, teamID, token stri
 		return nil, fmt.Errorf("failed to read response from create: %v", err.Error())
 	}
 
-	fields, err := p.Validate(ic.client, ic.baseURL, token)
+	fields, err := p.Validate(ic.client)
 	if err != nil {
 		var errs []string
 		for _, msg := range fields {
@@ -66,7 +66,7 @@ func (ic *IonClient) CreateProject(project *projects.Project, teamID, token stri
 // be with their info returned, and a list of any errors encountered during the
 // process.
 func (ic *IonClient) CreateProjectsFromCSV(csvFile, teamID, token string) (*CreateProjectsResponse, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("team_id", teamID)
 
 	var buf bytes.Buffer
@@ -110,11 +110,11 @@ func (ic *IonClient) CreateProjectsFromCSV(csvFile, teamID, token string) (*Crea
 // an error if it receives a bad response from the API or fails to unmarshal the
 // JSON response from the API.
 func (ic *IonClient) GetProject(id, teamID, token string) (*projects.Project, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("id", id)
 	params.Set("team_id", teamID)
 
-	b, _, err := ic.Get(projects.GetProjectEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(projects.GetProjectEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get project: %v", err.Error())
 	}
@@ -131,11 +131,11 @@ func (ic *IonClient) GetProject(id, teamID, token string) (*projects.Project, er
 // GetRawProject takes a project ID, team ID, and token. It returns the raw json of the
 // project.  It also returns any API errors it may encounter.
 func (ic *IonClient) GetRawProject(id, teamID, token string) (json.RawMessage, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("id", id)
 	params.Set("team_id", teamID)
 
-	b, _, err := ic.Get(projects.GetProjectEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(projects.GetProjectEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get project: %v", err.Error())
 	}
@@ -145,8 +145,8 @@ func (ic *IonClient) GetRawProject(id, teamID, token string) (json.RawMessage, e
 
 // GetProjects takes a team ID and returns the projects for that team.  It
 // returns an error for any API errors it may encounter.
-func (ic *IonClient) GetProjects(teamID, token string, page *pagination.Pagination, filter *projects.Filter) ([]projects.Project, error) {
-	params := &url.Values{}
+func (ic *IonClient) GetProjects(teamID, token string, page pagination.Pagination, filter *projects.Filter) ([]projects.Project, error) {
+	params := url.Values{}
 	params.Set("team_id", teamID)
 
 	if filter != nil {
@@ -171,11 +171,11 @@ func (ic *IonClient) GetProjects(teamID, token string, page *pagination.Paginati
 // project from the API. It returns the project and any errors it encounters
 // with the API.
 func (ic *IonClient) GetProjectByURL(uri, teamID, token string) (*projects.Project, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("url", uri)
 	params.Set("team_id", teamID)
 
-	b, _, err := ic.Get(projects.GetProjectByURLEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(projects.GetProjectByURLEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get projects by url: %v", err.Error())
 	}
@@ -189,16 +189,16 @@ func (ic *IonClient) GetProjectByURL(uri, teamID, token string) (*projects.Proje
 	return &p, nil
 }
 
-//UpdateProject takes a project to update and token to use. It returns the
+// UpdateProject takes a project to update and token to use. It returns the
 // project stored or an error encountered by the API
 func (ic *IonClient) UpdateProject(project *projects.Project, token string) (*projects.Project, error) {
-	params := &url.Values{}
+	params := url.Values{}
 
 	if project.ID == nil {
 		return nil, fmt.Errorf("%v: %v", projects.ErrInvalidProject, "missing id")
 	}
 
-	fields, err := project.Validate(ic.client, ic.baseURL, token)
+	fields, err := project.Validate(ic.client)
 	if err != nil {
 		var errs []string
 		for _, msg := range fields {
@@ -241,10 +241,10 @@ func (ic *IonClient) UpdateProject(project *projects.Project, token string) (*pr
 
 // GetUsedRulesetIds takes a team ID and returns rulesets used by all projects in that team
 func (ic *IonClient) GetUsedRulesetIds(teamID, token string) ([]projects.RulesetID, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("team_id", teamID)
 
-	b, _, err := ic.Get(projects.GetUsedRulesetIdsEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(projects.GetUsedRulesetIdsEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get team's ruleset ids: %v", err.Error())
 	}

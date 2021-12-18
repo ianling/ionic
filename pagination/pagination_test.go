@@ -47,11 +47,11 @@ func TestPagination(t *testing.T) {
 
 		g.Describe("URL Params", func() {
 			g.It("should append the url pagination params", func() {
-				params := &url.Values{}
+				params := url.Values{}
 				params.Set("foo", "bar")
 				p := Pagination{Limit: 10, Offset: 20}
 
-				p.AddParams(params)
+				p.AddParams(&params)
 				Expect(params.Get("foo")).To(Equal("bar"))
 				Expect(params.Get("limit")).To(Equal("10"))
 				Expect(params.Get("offset")).To(Equal("20"))

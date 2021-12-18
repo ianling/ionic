@@ -30,7 +30,7 @@ const (
 // be with their info returned, and a list of any errors encountered during the
 // process.
 func (ic *IonClient) ResolveDependenciesInFile(o dependencies.DependencyResolutionRequest, token string) (*dependencies.DependencyResolutionResponse, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("type", o.Ecosystem)
 	if o.Flatten {
 		params.Set("flatten", "true")
@@ -92,11 +92,11 @@ func (ic *IonClient) ResolveDependenciesInFile(o dependencies.DependencyResoluti
 // representation of the latest version and any errors it encounters with the
 // API.
 func (ic *IonClient) GetLatestVersionForDependency(packageName, ecosystem, token string) (*dependencies.Dependency, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("name", packageName)
 	params.Set("type", ecosystem)
 
-	b, _, err := ic.Get(dependencies.GetLatestVersionForDependencyEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(dependencies.GetLatestVersionForDependencyEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get latest version for dependency: %v", err.Error())
 	}
@@ -116,11 +116,11 @@ func (ic *IonClient) GetLatestVersionForDependency(packageName, ecosystem, token
 // representation of the latest versions and any errors it encounters with the
 // API.
 func (ic *IonClient) GetVersionsForDependency(packageName, ecosystem, token string) ([]dependencies.Dependency, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("name", packageName)
 	params.Set("type", ecosystem)
 
-	b, _, err := ic.Get(dependencies.GetVersionsForDependencyEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(dependencies.GetVersionsForDependencyEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get latest version for dependency: %v", err.Error())
 	}
@@ -146,8 +146,8 @@ func (ic *IonClient) GetVersionsForDependency(packageName, ecosystem, token stri
 // SearchDependencies takes a query `org AND name` and
 // calls the Ion API to retrieve the information, then forms a slice of
 // Ionic dependencies.Dependency objects
-func (ic *IonClient) SearchDependencies(q string, page *pagination.Pagination, token string) ([]dependencies.Dependency, *responses.Meta, error) {
-	params := &url.Values{}
+func (ic *IonClient) SearchDependencies(q string, page pagination.Pagination, token string) ([]dependencies.Dependency, *responses.Meta, error) {
+	params := url.Values{}
 	params.Set("q", q)
 
 	b, m, err := ic.Get(dependencies.ResolveDependencySearchEndpoint, token, params, nil, page)
@@ -167,14 +167,14 @@ func (ic *IonClient) SearchDependencies(q string, page *pagination.Pagination, t
 // If version is supplied, it will return all known versions greater than what was given
 // It returns a slice of Ionic dependencies.Dependency objects
 func (ic *IonClient) GetDependencyVersions(packageName, ecosystem, version, token string) ([]dependencies.Dependency, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("name", packageName)
 	params.Set("type", ecosystem)
 	if version != "" {
 		params.Set("version", version)
 	}
 
-	b, _, err := ic.Get(dependencies.GetDependencyVersions, token, params, nil, nil)
+	b, _, err := ic.Get(dependencies.GetDependencyVersions, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get dependency versions: %v", err.Error())
 	}

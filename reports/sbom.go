@@ -27,8 +27,8 @@ type SBOMExportOptions struct {
 }
 
 // Params converts an SBOMExportOptions object into a URL param object for use in making an API request
-func (options SBOMExportOptions) Params() *url.Values {
-	params := &url.Values{}
+func (options SBOMExportOptions) Params() url.Values {
+	params := url.Values{}
 	params.Set("sbom_type", string(options.Format))
 	params.Set("include_dependencies", strconv.FormatBool(options.IncludeDependencies))
 
