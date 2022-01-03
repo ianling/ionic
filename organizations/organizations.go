@@ -9,6 +9,8 @@ import (
 const (
 	// OrganizationsCreateEndpoint is the endpoint for creating an organization
 	OrganizationsCreateEndpoint = "v1/organizations/createOrganization"
+	// OrganizationsGetOwnEndpoint is the endpoint for getting the organizations the user belongs to
+	OrganizationsGetOwnEndpoint = "v1/organizations/getOwnOrganizations"
 	// OrganizationsGetEndpoint is the endpoint for getting an organization
 	OrganizationsGetEndpoint = "v1/organizations/getOrganization"
 	// OrganizationsGetBulkEndpoint is the endpoint for getting organizations
@@ -29,6 +31,15 @@ type Organization struct {
 	DeletedAt *time.Time `json:"deleted_at"`
 	Name      string     `json:"name"`
 }
+
+type (
+	// UserOrganizationRole represents a particular user's role in an organization.
+	UserOrganizationRole struct {
+		Organization Organization `json:"organization"`
+		UserID       string       `json:"user_id"`
+		Role         string       `json:"role"`
+	}
+)
 
 // OrganizationRole is the type for constants that enumerate the different roles a user can have in an organization.
 type OrganizationRole string

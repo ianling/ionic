@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+
 	"github.com/ion-channel/ionic/organizations"
 	"github.com/ion-channel/ionic/requests"
 )
@@ -41,6 +42,22 @@ func (ic *IonClient) CreateOrganization(opts CreateOrganizationOptions, token st
 	}
 
 	return &org, nil
+}
+
+// GetOwnOrganizations takes a token and returns a list of organizations the user belongs to.
+func (ic *IonClient) GetOwnOrganizations(token string) (*[]organizations.UserOrganizationRole, error) {
+	resp, _, err := ic.Get(organizations.OrganizationsGetOwnEndpoint, token, nil, nil, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get own organizations: %v", err.Error())
+	}
+
+	var orgs []organizations.UserOrganizationRole
+	err = json.Unmarshal(resp, &orgs)
+	if err != nil {
+		return nil, fmt.Errorf("cannot parse own organizations: %v", err.Error())
+	}
+
+	return &orgs, nil
 }
 
 // GetOrganization takes an organization id and returns the Ion Channel representation of that organization.
