@@ -20,7 +20,7 @@ func TestClient(t *testing.T) {
 			b, _ := url.Parse("http://google.com")
 
 			u := createURL(*b, e, nil, pagination.Pagination{})
-			Expect(u.String()).To(Equal(fmt.Sprintf("%v/%v", b, e)))
+			Expect(u).To(Equal(fmt.Sprintf("%v/%v", b, e)))
 		})
 
 		g.It("should create a url with empty params", func() {
@@ -29,7 +29,7 @@ func TestClient(t *testing.T) {
 			p := url.Values{}
 
 			u := createURL(*b, e, p, pagination.Pagination{})
-			Expect(u.String()).To(Equal(fmt.Sprintf("%v/%v", b, e)))
+			Expect(u).To(Equal(fmt.Sprintf("%v/%v", b, e)))
 		})
 
 		g.It("should create a url with params", func() {
@@ -39,7 +39,7 @@ func TestClient(t *testing.T) {
 			p.Set("foo", "bar")
 
 			u := createURL(*b, e, p, pagination.Pagination{})
-			Expect(u.String()).To(Equal(fmt.Sprintf("%v/%v?%v", b, e, p.Encode())))
+			Expect(u).To(Equal(fmt.Sprintf("%v/%v?%v", b, e, p.Encode())))
 		})
 
 		g.It("should create a url with pagination params", func() {
@@ -50,7 +50,7 @@ func TestClient(t *testing.T) {
 			p := pagination.Pagination{Offset: o, Limit: l}
 
 			u := createURL(*b, e, nil, p)
-			Expect(u.String()).To(Equal(fmt.Sprintf("%v/%v?limit=%v&offset=%v", b, e, l, o)))
+			Expect(u).To(Equal(fmt.Sprintf("%v/%v?limit=%v&offset=%v", b, e, l, o)))
 		})
 	})
 }

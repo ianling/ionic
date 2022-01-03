@@ -29,17 +29,22 @@ type ByIDsAndTeamID struct {
 	IDs    []string `json:"ids"`
 }
 
+// RequestModifier is a function that takes a request, modifies it in some way, and then returns it to be executed by
+// the IonClient.
+type RequestModifier func(req *http.Request) *http.Request
+
 // request is an internal container for all the relevant data that makes up an HTTP request
 type request struct {
-	Client     http.Client
-	Headers    http.Header
-	Method     string
-	BaseURL    url.URL
-	Endpoint   string
-	Params     url.Values
-	Payload    bytes.Buffer
-	Pagination pagination.Pagination
-	Token      string
+	Client          http.Client
+	Headers         http.Header
+	Method          string
+	BaseURL         url.URL
+	Endpoint        string
+	Params          url.Values
+	Payload         bytes.Buffer
+	Pagination      pagination.Pagination
+	Token           string
+	RequestModifier RequestModifier
 }
 
 func do(req request) (json.RawMessage, *responses.Meta, error) {
@@ -76,7 +81,7 @@ func do(req request) (json.RawMessage, *responses.Meta, error) {
 func _do(req request) (*responses.IonResponse, *errors.IonError) {
 	u := createURL(req.BaseURL, req.Endpoint, req.Params, req.Pagination)
 
-	httpReq, err := http.NewRequest(strings.ToUpper(req.Method), u.String(), &req.Payload)
+	httpReq, err := http.NewRequest(strings.ToUpper(req.Method), u, &req.Payload)
 	if err != nil {
 		return nil, errors.Errors("no body", 0, "http request: failed to create: %v", err.Error())
 	}
@@ -87,6 +92,10 @@ func _do(req request) (*responses.IonResponse, *errors.IonError) {
 
 	if req.Token != "" {
 		httpReq.Header.Add("Authorization", fmt.Sprintf("Bearer %v", req.Token))
+	}
+
+	if req.RequestModifier != nil {
+		req.RequestModifier(httpReq)
 	}
 
 	resp, err := req.Client.Do(httpReq)
@@ -117,7 +126,7 @@ func _do(req request) (*responses.IonResponse, *errors.IonError) {
 	return &ir, nil
 }
 
-func createURL(baseURL url.URL, endpoint string, params url.Values, page pagination.Pagination) url.URL {
+func createURL(baseURL url.URL, endpoint string, params url.Values, page pagination.Pagination) string {
 	baseURL.Path = endpoint
 
 	if params == nil {
@@ -130,22 +139,23 @@ func createURL(baseURL url.URL, endpoint string, params url.Values, page paginat
 	}
 
 	baseURL.RawQuery = params.Encode()
-	return baseURL
+	return baseURL.String()
 }
 
 // Delete takes a client, baseURL, endpoint, token, params, and headers to pass as a delete call to the
 // API.  It will return a json RawMessage for the response and any errors it
 // encounters with the API.
 // It is used internally by the SDK
-func Delete(client http.Client, baseURL url.URL, endpoint, token string, params url.Values, headers http.Header) (json.RawMessage, error) {
+func Delete(client http.Client, baseURL url.URL, endpoint, token string, params url.Values, headers http.Header, requestModifer RequestModifier) (json.RawMessage, error) {
 	req := request{
-		Client:   client,
-		Headers:  headers,
-		Method:   "DELETE",
-		BaseURL:  baseURL,
-		Endpoint: endpoint,
-		Params:   params,
-		Token:    token,
+		Client:          client,
+		Headers:         headers,
+		Method:          "DELETE",
+		BaseURL:         baseURL,
+		Endpoint:        endpoint,
+		Params:          params,
+		Token:           token,
+		RequestModifier: requestModifer,
 	}
 	r, _, err := do(req)
 	return r, err
@@ -154,16 +164,17 @@ func Delete(client http.Client, baseURL url.URL, endpoint, token string, params 
 // Head takes a client, baseURL, endpoint, token, params, headers, and pagination params to pass as a
 // head call to the API.  It will return any errors it encounters with the API.
 // It is used internally by the SDK
-func Head(client http.Client, baseURL url.URL, endpoint, token string, params url.Values, headers http.Header, page pagination.Pagination) error {
+func Head(client http.Client, baseURL url.URL, endpoint, token string, params url.Values, headers http.Header, page pagination.Pagination, requestModifer RequestModifier) error {
 	req := request{
-		Client:     client,
-		Headers:    headers,
-		Method:     "HEAD",
-		BaseURL:    baseURL,
-		Endpoint:   endpoint,
-		Params:     params,
-		Token:      token,
-		Pagination: page,
+		Client:          client,
+		Headers:         headers,
+		Method:          "HEAD",
+		BaseURL:         baseURL,
+		Endpoint:        endpoint,
+		Params:          params,
+		Token:           token,
+		Pagination:      page,
+		RequestModifier: requestModifer,
 	}
 	_, _, err := do(req)
 	return err
@@ -173,16 +184,17 @@ func Head(client http.Client, baseURL url.URL, endpoint, token string, params ur
 // get call to the API.  It will return a json RawMessage for the response and
 // any errors it encounters with the API.
 // It is used internally by the SDK
-func Get(client http.Client, baseURL url.URL, endpoint, token string, params url.Values, headers http.Header, page pagination.Pagination) (json.RawMessage, *responses.Meta, error) {
+func Get(client http.Client, baseURL url.URL, endpoint, token string, params url.Values, headers http.Header, page pagination.Pagination, requestModifer RequestModifier) (json.RawMessage, *responses.Meta, error) {
 	req := request{
-		Client:     client,
-		Headers:    headers,
-		Method:     "GET",
-		BaseURL:    baseURL,
-		Endpoint:   endpoint,
-		Params:     params,
-		Token:      token,
-		Pagination: page,
+		Client:          client,
+		Headers:         headers,
+		Method:          "GET",
+		BaseURL:         baseURL,
+		Endpoint:        endpoint,
+		Params:          params,
+		Token:           token,
+		Pagination:      page,
+		RequestModifier: requestModifer,
 	}
 	r, m, err := do(req)
 	return r, m, err
@@ -192,16 +204,17 @@ func Get(client http.Client, baseURL url.URL, endpoint, token string, params url
 // to the API.  It will return a json RawMessage for the response and any errors
 // it encounters with the API.
 // It is used internally by the SDK
-func Post(client http.Client, baseURL url.URL, endpoint, token string, params url.Values, payload bytes.Buffer, headers http.Header) (json.RawMessage, error) {
+func Post(client http.Client, baseURL url.URL, endpoint, token string, params url.Values, payload bytes.Buffer, headers http.Header, requestModifer RequestModifier) (json.RawMessage, error) {
 	req := request{
-		Client:   client,
-		Headers:  headers,
-		Method:   "POST",
-		BaseURL:  baseURL,
-		Endpoint: endpoint,
-		Params:   params,
-		Token:    token,
-		Payload:  payload,
+		Client:          client,
+		Headers:         headers,
+		Method:          "POST",
+		BaseURL:         baseURL,
+		Endpoint:        endpoint,
+		Params:          params,
+		Token:           token,
+		Payload:         payload,
+		RequestModifier: requestModifer,
 	}
 	r, _, err := do(req)
 	return r, err
@@ -211,16 +224,17 @@ func Post(client http.Client, baseURL url.URL, endpoint, token string, params ur
 // the API.  It will return a json RawMessage for the response and any errors it
 // encounters with the API.
 // It is used internally by the SDK
-func Put(client http.Client, baseURL url.URL, endpoint, token string, params url.Values, payload bytes.Buffer, headers http.Header) (json.RawMessage, error) {
+func Put(client http.Client, baseURL url.URL, endpoint, token string, params url.Values, payload bytes.Buffer, headers http.Header, requestModifer RequestModifier) (json.RawMessage, error) {
 	req := request{
-		Client:   client,
-		Headers:  headers,
-		Method:   "PUT",
-		BaseURL:  baseURL,
-		Endpoint: endpoint,
-		Params:   params,
-		Token:    token,
-		Payload:  payload,
+		Client:          client,
+		Headers:         headers,
+		Method:          "PUT",
+		BaseURL:         baseURL,
+		Endpoint:        endpoint,
+		Params:          params,
+		Token:           token,
+		Payload:         payload,
+		RequestModifier: requestModifer,
 	}
 	r, _, err := do(req)
 	return r, err
@@ -230,16 +244,17 @@ func Put(client http.Client, baseURL url.URL, endpoint, token string, params url
 // the API.  It will return a json RawMessage for the response and any errors it
 // encounters with the API.
 // It is used internally by the SDK
-func Patch(client http.Client, baseURL url.URL, endpoint, token string, params url.Values, payload bytes.Buffer, headers http.Header) (json.RawMessage, error) {
+func Patch(client http.Client, baseURL url.URL, endpoint, token string, params url.Values, payload bytes.Buffer, headers http.Header, requestModifer RequestModifier) (json.RawMessage, error) {
 	req := request{
-		Client:   client,
-		Headers:  headers,
-		Method:   "PATCH",
-		BaseURL:  baseURL,
-		Endpoint: endpoint,
-		Params:   params,
-		Token:    token,
-		Payload:  payload,
+		Client:          client,
+		Headers:         headers,
+		Method:          "PATCH",
+		BaseURL:         baseURL,
+		Endpoint:        endpoint,
+		Params:          params,
+		Token:           token,
+		Payload:         payload,
+		RequestModifier: requestModifer,
 	}
 	r, _, err := do(req)
 	return r, err

@@ -20,6 +20,8 @@ const (
 	maxIdleConns        = 25
 	maxIdleConnsPerHost = 25
 	maxPagingLimit      = 100
+
+	DefaultBaseURL = "https://api.ionchannel.io"
 )
 
 // IonClient represents a communication layer with the Ion Channel API
@@ -30,77 +32,105 @@ type IonClient struct {
 	sessionAutoRenewStop chan struct{}
 	// mutex is used to lock access to the Session when it is being updated
 	mutex sync.Mutex
+	// requestModifier is a function that is run on every request
+	requestModifier requests.RequestModifier
+}
+
+// IonClientOptions represents the options available when creating a new IonClient.
+// All the options are optional and will be replaced with working defaults if left empty/nil.
+type IonClientOptions struct {
+	BaseURL         string
+	Client          *http.Client
+	RequestModifier requests.RequestModifier
 }
 
 // New takes the base URL of the API and returns a client for talking to the API
-// and an error if any issues instantiating the client are encountered
+// and an error if any issues instantiating the client are encountered.
+// DEPRECATED: this function is deprecated as of 2022/01/01. Use NewWithOptions instead.
 func New(baseURL string) (*IonClient, error) {
-	c := &http.Client{
-		Transport: &http.Transport{
-			MaxIdleConnsPerHost: maxIdleConnsPerHost,
-			MaxIdleConns:        maxIdleConns,
-		},
+	return NewWithOptions(IonClientOptions{BaseURL: baseURL})
+}
+
+// NewWithOptions takes an IonClientOptions to construct a client for talking to the API.
+// Returns the client and any error that occurs.
+func NewWithOptions(options IonClientOptions) (*IonClient, error) {
+	if options.BaseURL == "" {
+		options.BaseURL = DefaultBaseURL
 	}
 
-	return NewWithClient(baseURL, *c)
+	if options.Client == nil {
+		options.Client = &http.Client{
+			Transport: &http.Transport{
+				MaxIdleConnsPerHost: maxIdleConnsPerHost,
+				MaxIdleConns:        maxIdleConns,
+			},
+		}
+	}
+
+	u, err := url.Parse(options.BaseURL)
+	if err != nil {
+		return nil, fmt.Errorf("ionic: invalid URL: %v", err.Error())
+	}
+
+	ic := &IonClient{
+		baseURL:         *u,
+		client:          *options.Client,
+		requestModifier: options.RequestModifier,
+	}
+
+	return ic, nil
 }
 
 // NewWithClient takes the base URL of the API and an existing HTTP client.  It
 // returns a client for talking to the API and an error if any issues
-// instantiating the client are encountered
+// instantiating the client are encountered.
+// DEPRECATED: this function is deprecated as of 2022/01/01. Use NewWithOptions instead.
 func NewWithClient(baseURL string, client http.Client) (*IonClient, error) {
-	u, err := url.Parse(baseURL)
-	if err != nil {
-		return nil, fmt.Errorf("ionic: client initialization: %v", err.Error())
-	}
-
-	ic := &IonClient{
-		baseURL: *u,
-		client:  client,
-	}
-
-	return ic, nil
+	return NewWithOptions(IonClientOptions{
+		BaseURL: baseURL,
+		Client:  &client,
+	})
 }
 
 // Delete takes an endpoint, token, params, and headers to pass as a delete call to the
 // API.  It will return a json RawMessage for the response and any errors it
 // encounters with the API.
 func (ic *IonClient) Delete(endpoint, token string, params url.Values, headers http.Header) (json.RawMessage, error) {
-	return requests.Delete(ic.client, ic.baseURL, endpoint, token, params, headers)
+	return requests.Delete(ic.client, ic.baseURL, endpoint, token, params, headers, ic.requestModifier)
 }
 
 // Head takes an endpoint, token, params, headers, and pagination params to pass as a
 // head call to the API.  It will return any errors it encounters with the API.
 func (ic *IonClient) Head(endpoint, token string, params url.Values, headers http.Header, page pagination.Pagination) error {
-	return requests.Head(ic.client, ic.baseURL, endpoint, token, params, headers, page)
+	return requests.Head(ic.client, ic.baseURL, endpoint, token, params, headers, page, ic.requestModifier)
 }
 
 // Get takes an endpoint, token, params, headers, and pagination params to pass as a
 // get call to the API.  It will return a json RawMessage for the response and
 // any errors it encounters with the API.
 func (ic *IonClient) Get(endpoint, token string, params url.Values, headers http.Header, page pagination.Pagination) (json.RawMessage, *responses.Meta, error) {
-	return requests.Get(ic.client, ic.baseURL, endpoint, token, params, headers, page)
+	return requests.Get(ic.client, ic.baseURL, endpoint, token, params, headers, page, ic.requestModifier)
 }
 
 // Post takes an endpoint, token, params, payload, and headers to pass as a post call
 // to the API.  It will return a json RawMessage for the response and any errors
 // it encounters with the API.
 func (ic *IonClient) Post(endpoint, token string, params url.Values, payload bytes.Buffer, headers http.Header) (json.RawMessage, error) {
-	return requests.Post(ic.client, ic.baseURL, endpoint, token, params, payload, headers)
+	return requests.Post(ic.client, ic.baseURL, endpoint, token, params, payload, headers, ic.requestModifier)
 }
 
 // Put takes an endpoint, token, params, payload, and headers to pass as a put call to
 // the API.  It will return a json RawMessage for the response and any errors it
 // encounters with the API.
 func (ic *IonClient) Put(endpoint, token string, params url.Values, payload bytes.Buffer, headers http.Header) (json.RawMessage, error) {
-	return requests.Put(ic.client, ic.baseURL, endpoint, token, params, payload, headers)
+	return requests.Put(ic.client, ic.baseURL, endpoint, token, params, payload, headers, ic.requestModifier)
 }
 
 // Patch takes an endpoint, token, params, payload, and headers to pass as a patch call to
 // the API.  It will return a json RawMessage for the response and any errors it
 // encounters with the API.
 func (ic *IonClient) Patch(endpoint, token string, params url.Values, payload bytes.Buffer, headers http.Header) (json.RawMessage, error) {
-	return requests.Patch(ic.client, ic.baseURL, endpoint, token, params, payload, headers)
+	return requests.Patch(ic.client, ic.baseURL, endpoint, token, params, payload, headers, ic.requestModifier)
 }
 
 // SetSession sets the client's internal Session that can be used to authenticate when making API requests.
