@@ -1,5 +1,6 @@
 // Package ionic provides a direct representation of the endpoints and objects
-// within the Ion Channel API
+// within the Ion Channel API.
+// Use NewDefault or NewWithOptions to create a client.
 package ionic
 
 import (
@@ -7,9 +8,12 @@ import (
     "context"
     "encoding/json"
     "fmt"
+    "log"
     "net/http"
     "net/url"
     "time"
+
+    "github.com/kelseyhightower/envconfig"
 
     "github.com/ion-channel/ionic/pagination"
     "github.com/ion-channel/ionic/requests"
@@ -22,8 +26,6 @@ const (
     maxIdleConns        = 25
     maxIdleConnsPerHost = 25
     maxPagingLimit      = 100
-
-    DefaultBaseURL = "https://api.ionchannel.io"
 
     ionClientContextKey contextKey = iota
 )
@@ -40,10 +42,11 @@ type IonClient struct {
 
 // IonClientOptions represents the options available when creating a new IonClient.
 // All the options are optional and will be replaced with working defaults if left empty/nil.
+// Some options can be set via environment variables; prefix the envconfig value with "IONIC_" to get the variable name.
 type IonClientOptions struct {
-    BaseURL         string
-    Client          *http.Client
-    RequestModifier requests.RequestModifier
+    BaseURL         string                   `envconfig:"BASE_URL" default:"https://api.ionchannel.io"`
+    Client          *http.Client             `ignored:"true"`
+    RequestModifier requests.RequestModifier `ignored:"true"`
 }
 
 // New takes the base URL of the API and returns a client for talking to the API
@@ -54,6 +57,7 @@ func New(baseURL string) (*IonClient, error) {
 }
 
 // NewDefault returns a new default IonClient.
+// Some defaults can be overridden using environment variables, see the IonClientOptions struct.
 func NewDefault() *IonClient {
     ic, _ := NewWithOptions(IonClientOptions{})
 
@@ -63,9 +67,16 @@ func NewDefault() *IonClient {
 // NewWithOptions takes an IonClientOptions to construct a client for talking to the API.
 // Returns the client and any error that occurs.
 // The defaults provided by an empty IonClientOptions object are sane and functional, so all the options are optional.
+// Some defaults can be overridden using environment variables, see the IonClientOptions struct.
 func NewWithOptions(options IonClientOptions) (*IonClient, error) {
+    var defaultOptions IonClientOptions
+    err := envconfig.Process("ionic", &defaultOptions)
+    if err != nil {
+        log.Fatalf("failed to initialize Ionic: %v", err.Error())
+    }
+
     if options.BaseURL == "" {
-        options.BaseURL = DefaultBaseURL
+        options.BaseURL = defaultOptions.BaseURL
     }
 
     if options.Client == nil {

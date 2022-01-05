@@ -17,6 +17,9 @@ github.com/google/uuid
 # github.com/hashicorp/go-version v1.3.0
 ## explicit
 github.com/hashicorp/go-version
+# github.com/kelseyhightower/envconfig v1.4.0
+## explicit
+github.com/kelseyhightower/envconfig
 # github.com/kr/pretty v0.1.0
 ## explicit
 # github.com/onsi/ginkgo v1.16.2
