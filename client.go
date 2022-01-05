@@ -4,6 +4,7 @@ package ionic
 
 import (
     "bytes"
+    "context"
     "encoding/json"
     "fmt"
     "net/http"
@@ -15,12 +16,16 @@ import (
     "github.com/ion-channel/ionic/responses"
 )
 
+type contextKey int
+
 const (
     maxIdleConns        = 25
     maxIdleConnsPerHost = 25
     maxPagingLimit      = 100
 
     DefaultBaseURL = "https://api.ionchannel.io"
+
+    ionClientContextKey contextKey = iota
 )
 
 // IonClient represents a communication layer with the Ion Channel API
@@ -48,8 +53,16 @@ func New(baseURL string) (*IonClient, error) {
     return NewWithOptions(IonClientOptions{BaseURL: baseURL})
 }
 
+// NewDefault returns a new default IonClient.
+func NewDefault() *IonClient {
+    ic, _ := NewWithOptions(IonClientOptions{})
+
+    return ic
+}
+
 // NewWithOptions takes an IonClientOptions to construct a client for talking to the API.
 // Returns the client and any error that occurs.
+// The defaults provided by an empty IonClientOptions object are sane and functional, so all the options are optional.
 func NewWithOptions(options IonClientOptions) (*IonClient, error) {
     if options.BaseURL == "" {
         options.BaseURL = DefaultBaseURL
@@ -89,12 +102,27 @@ func NewWithClient(baseURL string, client http.Client) (*IonClient, error) {
     })
 }
 
+// WithContext returns the given context with the given IonClient added to it.
+func WithContext(ionClient *IonClient, ctx context.Context) context.Context {
+    return context.WithValue(ctx, ionClientContextKey, ionClient)
+}
+
+// FromContext retrieves an IonClient from the given context, or returns a new default client if one is not found.
+func FromContext(ctx context.Context) *IonClient {
+    ionClient, ok := ctx.Value(ionClientContextKey).(*IonClient)
+    if !ok {
+        ionClient = NewDefault()
+    }
+
+    return ionClient
+}
+
 // WithRequestModifier can be used to create a new temporary IonClient with all the same options as the one this
 // method is called on.
 // NOTICE: the receiver (ic IonClient) is NOT a pointer, so the receiver is not mutated. This returns a copy.
-func (ic IonClient) WithRequestModifier(requestModifier requests.RequestModifier) IonClient {
+func (ic IonClient) WithRequestModifier(requestModifier requests.RequestModifier) *IonClient {
     ic.requestModifier = requestModifier
-    return ic
+    return &ic
 }
 
 // Delete takes an endpoint, token, params, and headers to pass as a delete call to the
