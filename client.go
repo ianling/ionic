@@ -36,17 +36,17 @@ type IonClient struct {
     client               http.Client
     session              Session
     sessionAutoRenewStop chan struct{}
-    // requestModifier is a function that is run on every request
-    requestModifier requests.RequestModifier
+    // the global context used for every request this IonClient makes
+    ctx context.Context
 }
 
 // IonClientOptions represents the options available when creating a new IonClient.
 // All the options are optional and will be replaced with working defaults if left empty/nil.
 // Some options can be set via environment variables; prefix the envconfig value with "IONIC_" to get the variable name.
 type IonClientOptions struct {
-    BaseURL         string                   `envconfig:"BASE_URL" default:"https://api.ionchannel.io"`
-    Client          *http.Client             `ignored:"true"`
-    RequestModifier requests.RequestModifier `ignored:"true"`
+    BaseURL string          `envconfig:"BASE_URL" default:"https://api.ionchannel.io"`
+    Client  *http.Client    `ignored:"true"`
+    Context context.Context `ignored:"true"`
 }
 
 // New takes the base URL of the API and returns a client for talking to the API
@@ -94,9 +94,9 @@ func NewWithOptions(options IonClientOptions) (*IonClient, error) {
     }
 
     ic := &IonClient{
-        baseURL:         *u,
-        client:          *options.Client,
-        requestModifier: options.RequestModifier,
+        baseURL: *u,
+        client:  *options.Client,
+        ctx:     options.Context,
     }
 
     return ic, nil
@@ -113,8 +113,8 @@ func NewWithClient(baseURL string, client http.Client) (*IonClient, error) {
     })
 }
 
-// WithContext returns the given context with the given IonClient added to it.
-func WithContext(ionClient *IonClient, ctx context.Context) context.Context {
+// InjectIntoContext returns the given context with the given IonClient added to it.
+func InjectIntoContext(ctx context.Context, ionClient *IonClient) context.Context {
     return context.WithValue(ctx, ionClientContextKey, ionClient)
 }
 
@@ -128,11 +128,11 @@ func FromContext(ctx context.Context) *IonClient {
     return ionClient
 }
 
-// WithRequestModifier can be used to create a new temporary IonClient with all the same options as the one this
+// WithContext can be used to create a new temporary IonClient with all the same options as the one this
 // method is called on.
 // NOTICE: the receiver (ic IonClient) is NOT a pointer, so the receiver is not mutated. This returns a copy.
-func (ic IonClient) WithRequestModifier(requestModifier requests.RequestModifier) *IonClient {
-    ic.requestModifier = requestModifier
+func (ic IonClient) WithContext(ctx context.Context) *IonClient {
+    ic.ctx = ctx
     return &ic
 }
 
@@ -140,41 +140,41 @@ func (ic IonClient) WithRequestModifier(requestModifier requests.RequestModifier
 // API.  It will return a json RawMessage for the response and any errors it
 // encounters with the API.
 func (ic *IonClient) Delete(endpoint, token string, params url.Values, headers http.Header) (json.RawMessage, error) {
-    return requests.Delete(ic.client, ic.baseURL, endpoint, token, params, headers, ic.requestModifier)
+    return requests.Delete(ic.ctx, ic.client, ic.baseURL, endpoint, token, params, headers)
 }
 
 // Head takes an endpoint, token, params, headers, and pagination params to pass as a
 // head call to the API.  It will return any errors it encounters with the API.
 func (ic *IonClient) Head(endpoint, token string, params url.Values, headers http.Header, page pagination.Pagination) error {
-    return requests.Head(ic.client, ic.baseURL, endpoint, token, params, headers, page, ic.requestModifier)
+    return requests.Head(ic.ctx, ic.client, ic.baseURL, endpoint, token, params, headers, page)
 }
 
 // Get takes an endpoint, token, params, headers, and pagination params to pass as a
 // get call to the API.  It will return a json RawMessage for the response and
 // any errors it encounters with the API.
 func (ic *IonClient) Get(endpoint, token string, params url.Values, headers http.Header, page pagination.Pagination) (json.RawMessage, *responses.Meta, error) {
-    return requests.Get(ic.client, ic.baseURL, endpoint, token, params, headers, page, ic.requestModifier)
+    return requests.Get(ic.ctx, ic.client, ic.baseURL, endpoint, token, params, headers, page)
 }
 
 // Post takes an endpoint, token, params, payload, and headers to pass as a post call
 // to the API.  It will return a json RawMessage for the response and any errors
 // it encounters with the API.
 func (ic *IonClient) Post(endpoint, token string, params url.Values, payload bytes.Buffer, headers http.Header) (json.RawMessage, error) {
-    return requests.Post(ic.client, ic.baseURL, endpoint, token, params, payload, headers, ic.requestModifier)
+    return requests.Post(ic.ctx, ic.client, ic.baseURL, endpoint, token, params, payload, headers)
 }
 
 // Put takes an endpoint, token, params, payload, and headers to pass as a put call to
 // the API.  It will return a json RawMessage for the response and any errors it
 // encounters with the API.
 func (ic *IonClient) Put(endpoint, token string, params url.Values, payload bytes.Buffer, headers http.Header) (json.RawMessage, error) {
-    return requests.Put(ic.client, ic.baseURL, endpoint, token, params, payload, headers, ic.requestModifier)
+    return requests.Put(ic.ctx, ic.client, ic.baseURL, endpoint, token, params, payload, headers)
 }
 
 // Patch takes an endpoint, token, params, payload, and headers to pass as a patch call to
 // the API.  It will return a json RawMessage for the response and any errors it
 // encounters with the API.
 func (ic *IonClient) Patch(endpoint, token string, params url.Values, payload bytes.Buffer, headers http.Header) (json.RawMessage, error) {
-    return requests.Patch(ic.client, ic.baseURL, endpoint, token, params, payload, headers, ic.requestModifier)
+    return requests.Patch(ic.ctx, ic.client, ic.baseURL, endpoint, token, params, payload, headers)
 }
 
 // SetSession sets the client's internal Session that can be used to authenticate when making API requests.
