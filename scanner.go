@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/ion-channel/ionic/pagination"
 	"github.com/ion-channel/ionic/scans"
 	"net/url"
 
@@ -54,7 +55,7 @@ func (ic *IonClient) AnalyzeProject(projectID, teamID, branch, token string) (*s
 // params can be provided to go along with the request, predominently for
 // internal purposes. It will return the IDs of the analyses created and any
 // errors it encounters with the request.
-func (ic *IonClient) AnalyzeProjects(teamID, token string, params *url.Values) ([]string, error) {
+func (ic *IonClient) AnalyzeProjects(teamID, token string, params url.Values) ([]string, error) {
 	request := &scanner.AnalyzeRequest{
 		TeamID: teamID,
 	}
@@ -86,12 +87,12 @@ func (ic *IonClient) AnalyzeProjects(teamID, token string, params *url.Values) (
 
 //GetAnalysisStatus takes an analysisID, teamID, and projectID and returns the analysis status or an error encountered by the API
 func (ic *IonClient) GetAnalysisStatus(analysisID, teamID, projectID, token string) (*scanner.AnalysisStatus, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("id", analysisID)
 	params.Set("team_id", teamID)
 	params.Set("project_id", projectID)
 
-	b, _, err := ic.Get(scanner.ScannerGetAnalysisStatusEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(scanner.ScannerGetAnalysisStatusEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get analysis status: %v", err.Error())
 	}
@@ -107,11 +108,11 @@ func (ic *IonClient) GetAnalysisStatus(analysisID, teamID, projectID, token stri
 
 //GetLatestAnalysisStatus takes a teamID, and projectID and returns the latest analysis status or an error encountered by the API
 func (ic *IonClient) GetLatestAnalysisStatus(teamID, projectID, token string) (*scanner.AnalysisStatus, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("team_id", teamID)
 	params.Set("project_id", projectID)
 
-	b, _, err := ic.Get(scanner.ScannerGetLatestAnalysisStatusEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(scanner.ScannerGetLatestAnalysisStatusEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get analysis: %v", err.Error())
 	}
@@ -127,10 +128,10 @@ func (ic *IonClient) GetLatestAnalysisStatus(teamID, projectID, token string) (*
 
 //GetLatestAnalysisStatuses takes a teamID and returns the latest analysis statuses or an error encountered by the API
 func (ic *IonClient) GetLatestAnalysisStatuses(teamID, token string) ([]scanner.AnalysisStatus, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("team_id", teamID)
 
-	b, _, err := ic.Get(scanner.ScannerGetLatestAnalysisStatusesEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(scanner.ScannerGetLatestAnalysisStatusesEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get analysis: %v", err.Error())
 	}
@@ -214,7 +215,7 @@ func (ic *IonClient) FindScans(parameters scans.SearchParameters, teamID, token 
 		return nil, fmt.Errorf("failed to marshal request body: %v", err.Error())
 	}
 
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("team_id", teamID)
 
 	r, err := ic.Post(scans.ScanFindScansEndpoint, token, params, *bytes.NewBuffer(b), nil)

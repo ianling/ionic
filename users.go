@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/ion-channel/ionic/pagination"
 	"net/url"
 
 	"github.com/ion-channel/ionic/errors"
@@ -59,7 +60,7 @@ func (ic *IonClient) CreateUser(email, username, password, token string) (*users
 // An error is returned if the client cannot talk to the API or the returned
 // user object is nil or blank
 func (ic *IonClient) GetSelf(token string) (*users.User, error) {
-	b, _, err := ic.Get(users.UsersGetSelfEndpoint, token, nil, nil, nil)
+	b, _, err := ic.Get(users.UsersGetSelfEndpoint, token, nil, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, errors.Prepend("get self", err)
 	}
@@ -77,10 +78,10 @@ func (ic *IonClient) GetSelf(token string) (*users.User, error) {
 // An error is returned if the client cannot talk to the API or the returned
 // user object is nil or blank
 func (ic *IonClient) GetUser(id, token string) (*users.User, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("id", id)
 
-	b, _, err := ic.Get(users.UsersGetUserEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(users.UsersGetUserEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, errors.Prepend("get user", err)
 	}
@@ -96,7 +97,7 @@ func (ic *IonClient) GetUser(id, token string) (*users.User, error) {
 
 // GetUsers requests and returns all users for a given installation
 func (ic *IonClient) GetUsers(token string) ([]users.User, error) {
-	b, _, err := ic.Get(users.UsersGetUsers, token, nil, nil, nil)
+	b, _, err := ic.Get(users.UsersGetUsers, token, nil, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, errors.Prepend("get users", err)
 	}
@@ -112,7 +113,7 @@ func (ic *IonClient) GetUsers(token string) ([]users.User, error) {
 
 //GetUserNames takes slice of ids and teamID and returns user names with their ids
 func (ic *IonClient) GetUserNames(ids []string, teamID, token string) ([]users.NameAndID, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("team_id", teamID)
 
 	byIDs := requests.ByIDs{
@@ -148,7 +149,7 @@ func (ic *IonClient) UpdateOwnUserPreferences(preferences users.Preferences, tok
 // UpdateUserPreferences takes a user ID and a Preferences object and returns any errors that occurred while updating
 // the user's preferences.
 func (ic *IonClient) UpdateUserPreferences(userID string, preferences users.Preferences, token string) error {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("user_id", userID)
 
 	b, err := json.Marshal(preferences)

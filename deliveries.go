@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/ion-channel/ionic/pagination"
 	"net/url"
 
 	"github.com/ion-channel/ionic/deliveries"
@@ -13,10 +14,10 @@ import (
 // an error if it receives a bad response from the API or fails to unmarshal the
 // JSON response from the API.
 func (ic *IonClient) GetDeliveryDestinations(teamID, token string) ([]deliveries.Destination, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("id", teamID)
 
-	b, _, err := ic.Get(deliveries.GetDestinationsEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(deliveries.GetDestinationsEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get deliveries: %v", err.Error())
 	}
@@ -32,7 +33,7 @@ func (ic *IonClient) GetDeliveryDestinations(teamID, token string) ([]deliveries
 
 // DeleteDeliveryDestination takes a team ID, and token. It returns errors.
 func (ic *IonClient) DeleteDeliveryDestination(destinationID, token string) error {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("id", destinationID)
 
 	_, err := ic.Delete(deliveries.DeleteDestinationEndpoint, token, params, nil)
@@ -45,7 +46,7 @@ func (ic *IonClient) DeleteDeliveryDestination(destinationID, token string) erro
 // CreateDeliveryDestinations takes *CreateDestination, and token
 // It returns a *CreateDestination and error
 func (ic *IonClient) CreateDeliveryDestinations(dest *deliveries.CreateDestination, token string) (*deliveries.CreateDestination, error) {
-	params := &url.Values{}
+	params := url.Values{}
 
 	b, err := json.Marshal(dest)
 	if err != nil {

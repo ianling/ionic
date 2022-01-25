@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/ion-channel/ionic/pagination"
 	"net/url"
 
 	"github.com/ion-channel/ionic/portfolios"
@@ -132,11 +133,11 @@ func (ic *IonClient) GetPortfolioStartedErroredSummary(ids []string, token strin
 
 // GetPortfolioAffectedProjects takes team id, external id, and a token (string) and returns a slice of affected projects
 func (ic *IonClient) GetPortfolioAffectedProjects(teamID, externalID, token string) ([]portfolios.AffectedProject, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("id", teamID)
 	params.Set("external_id", externalID)
 
-	r, _, err := ic.Get(portfolios.PortfolioGetAffectedProjectIdsEndpoint, token, params, nil, nil)
+	r, _, err := ic.Get(portfolios.PortfolioGetAffectedProjectIdsEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to request portfolio affected projects: %v", err.Error())
 	}
@@ -256,11 +257,11 @@ func (ic *IonClient) GetProjectsStatusHistory(ids []string, token string) ([]por
 // GetMttr takes team id and optional project ID and returns the mttr for project
 // If project id is not given, it will return mttr of all active projects on the team
 func (ic *IonClient) GetMttr(teamID, projectID string, token string) (*portfolios.Mttr, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("team_id", teamID)
 	params.Set("project_id", projectID)
 
-	r, _, err := ic.Get(portfolios.ReportsGetMttrEndpoint, token, params, nil, nil)
+	r, _, err := ic.Get(portfolios.ReportsGetMttrEndpoint, token, params, nil, pagination.Pagination{})
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to request mttr: %v", err.Error())
@@ -278,13 +279,13 @@ func (ic *IonClient) GetMttr(teamID, projectID string, token string) (*portfolio
 
 // GetProjectIdsByDependency takes team id, external id, and a token (string) and returns a slice of affected projects
 func (ic *IonClient) GetProjectIdsByDependency(teamID, name, org, version, token string) (*portfolios.ProjectsByDependency, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("team_id", teamID)
 	params.Set("name", name)
 	params.Set("org", org)
 	params.Set("version", version)
 
-	r, _, err := ic.Get(portfolios.PortfolioGetProjectIdsByDependencyEndpoint, token, params, nil, nil)
+	r, _, err := ic.Get(portfolios.PortfolioGetProjectIdsByDependencyEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to request portfolio get projects by dependency: %v", err.Error())
 	}

@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/ion-channel/ionic/organizations"
+	"github.com/ion-channel/ionic/pagination"
 	"github.com/ion-channel/ionic/requests"
 )
 
@@ -62,7 +63,7 @@ func (ic *IonClient) GetOwnOrganizations(token string) (*[]organizations.UserOrg
 
 // GetOrganization takes an organization id and returns the Ion Channel representation of that organization.
 func (ic *IonClient) GetOrganization(id, token string) (*organizations.Organization, error) {
-	b, _, err := ic.Get(fmt.Sprintf("%s/%s", organizations.OrganizationsGetEndpoint, id), token, nil, nil, nil)
+	b, _, err := ic.Get(fmt.Sprintf("%s/%s", organizations.OrganizationsGetEndpoint, id), token, nil, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get organization: %v", err.Error())
 	}

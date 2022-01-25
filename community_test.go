@@ -2,6 +2,7 @@ package ionic
 
 import (
 	"fmt"
+	"github.com/ion-channel/ionic/pagination"
 	"net/http"
 	"testing"
 
@@ -73,7 +74,7 @@ func TestCommunity(t *testing.T) {
 				SetMethods("GET").
 				SetPayload([]byte(sampleValidSearchRepoResponse)).
 				SetStatus(http.StatusOK)
-			searchResults, _, err := client.SearchRepo("monsooncommerce", nil, "blaToken")
+			searchResults, _, err := client.SearchRepo("monsooncommerce", pagination.Pagination{}, "blaToken")
 			Expect(err).NotTo(HaveOccurred())
 
 			hitRecords := server.HitRecords()

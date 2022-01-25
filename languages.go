@@ -8,7 +8,7 @@ import (
 	"github.com/ion-channel/ionic/languages"
 )
 
-//GetLanguages takes a text input and returns any matching languages
+// GetLanguages takes a text input and returns any matching languages
 func (ic *IonClient) GetLanguages(text string, token string) ([]languages.Language, error) {
 	b, err := ic.Post(languages.LanguagesGetLanguages, token, nil, *bytes.NewBuffer([]byte(text)), nil)
 	if err != nil {

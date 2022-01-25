@@ -43,8 +43,8 @@ func (ic *IonClient) AddVulnerability(newVuln *vulnerabilities.VulnerabilityInpu
 // version string over a specified pagination range.  If version is left blank,
 // it will not be considered in the search query.  An error is returned for
 // client communication and unmarshalling errors.
-func (ic *IonClient) GetVulnerabilities(product, version, token string, page *pagination.Pagination) ([]vulnerabilities.Vulnerability, error) {
-	params := &url.Values{}
+func (ic *IonClient) GetVulnerabilities(product, version, token string, page pagination.Pagination) ([]vulnerabilities.Vulnerability, error) {
+	params := url.Values{}
 	params.Set("product", product)
 	if version != "" {
 		params.Set("version", version)
@@ -109,10 +109,10 @@ func (ic *IonClient) GetVulnerabilitiesInFile(filePath, token string) ([]vulnera
 // GetVulnerability takes an ID string and returns the vulnerability found for
 // that ID.  An error is returned for API errors and marshalling errors.
 func (ic *IonClient) GetVulnerability(id, token string) (*vulnerabilities.Vulnerability, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("external_id", id)
 
-	b, _, err := ic.Get(vulnerabilities.GetVulnerabilityEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(vulnerabilities.GetVulnerabilityEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get vulnerability: %v", err.Error())
 	}
@@ -129,10 +129,10 @@ func (ic *IonClient) GetVulnerability(id, token string) (*vulnerabilities.Vulner
 // GetRawVulnerability takes an ID string and returns the raw json message
 // found for that ID.  An error is returned for API errors.
 func (ic *IonClient) GetRawVulnerability(id, token string) (json.RawMessage, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("external_id", id)
 
-	b, _, err := ic.Get(vulnerabilities.GetVulnerabilityEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(vulnerabilities.GetVulnerabilityEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get vulnerability: %v", err.Error())
 	}

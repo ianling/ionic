@@ -14,10 +14,10 @@ import (
 // GetProducts takes a product ID search string and token.  It returns the product found,
 // and any API errors it may encounters.
 func (ic *IonClient) GetProducts(idSearch, token string) ([]products.Product, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("external_id", idSearch)
 
-	b, _, err := ic.Get(products.GetProductEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(products.GetProductEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get raw product: %v", err.Error())
 	}
@@ -34,13 +34,13 @@ func (ic *IonClient) GetProducts(idSearch, token string) ([]products.Product, er
 // GetProductVersions takes a product name, version, and token.
 // It returns the product versions found, and any API errors it may encounters.
 func (ic *IonClient) GetProductVersions(name, version, token string) ([]products.Product, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("name", name)
 	if version != "" {
 		params.Set("version", version)
 	}
 
-	b, _, err := ic.Get(products.GetProductVersionsEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(products.GetProductVersionsEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get product versions: %v", err.Error())
 	}
@@ -83,10 +83,10 @@ func (ic *IonClient) ProductSearch(searchInput products.ProductSearchQuery, toke
 // GetRawProducts takes a product ID search string and token.  It returns a raw json
 // message of the product found, and any API errors it may encounters.
 func (ic *IonClient) GetRawProducts(idSearch, token string) (json.RawMessage, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("external_id", idSearch)
 
-	b, _, err := ic.Get(products.GetProductEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(products.GetProductEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get raw product: %v", err.Error())
 	}
@@ -96,8 +96,8 @@ func (ic *IonClient) GetRawProducts(idSearch, token string) (json.RawMessage, er
 
 // GetProductSearch takes a search query. It returns a new raw json message of
 // all the matching products in the Bunsen dependencies table
-func (ic *IonClient) GetProductSearch(query string, page *pagination.Pagination, token string) ([]products.Product, *responses.Meta, error) {
-	params := &url.Values{}
+func (ic *IonClient) GetProductSearch(query string, page pagination.Pagination, token string) ([]products.Product, *responses.Meta, error) {
+	params := url.Values{}
 	params.Set("q", query)
 
 	b, m, err := ic.Get(products.ProductSearchEndpoint, token, params, nil, page)

@@ -47,7 +47,7 @@ func (ic *IonClient) CreateTeamUser(opts CreateTeamUserOptions, token string) (*
 // UpdateTeamUser takes a teamUser object in the desired state and then makes the calls to update the teamUser.
 // It returns the update teamUser and any errors it encounters with the API.
 func (ic *IonClient) UpdateTeamUser(teamuser *teamusers.TeamUser, token string) (*teamusers.TeamUser, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("someid", teamuser.ID)
 
 	b, err := json.Marshal(teamuser)
@@ -73,7 +73,7 @@ func (ic *IonClient) UpdateTeamUser(teamuser *teamusers.TeamUser, token string) 
 // DeleteTeamUser takes a teamUser object and then makes the call to delete the teamUser.
 // It returns any errors it encounters with the API.
 func (ic *IonClient) DeleteTeamUser(teamuser *teamusers.TeamUser, token string) error {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("someid", teamuser.ID)
 
 	_, err := json.Marshal(teamuser)

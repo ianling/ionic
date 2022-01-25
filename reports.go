@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ion-channel/ionic/analyses"
+	"github.com/ion-channel/ionic/pagination"
 	"net/url"
 
 	"github.com/ion-channel/ionic/reports"
@@ -15,12 +16,12 @@ import (
 //GetAnalysisReport takes an analysisID, teamID, projectID, and token. It
 // returns the corresponding analysis report or an error encountered by the API
 func (ic *IonClient) GetAnalysisReport(analysisID, teamID, projectID, token string) (*reports.AnalysisReport, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("analysis_id", analysisID)
 	params.Set("team_id", teamID)
 	params.Set("project_id", projectID)
 
-	b, _, err := ic.Get(reports.ReportGetAnalysisReportEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(reports.ReportGetAnalysisReportEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get analysis report: %v", err.Error())
 	}
@@ -38,12 +39,12 @@ func (ic *IonClient) GetAnalysisReport(analysisID, teamID, projectID, token stri
 // returns the corresponding analysis report json or an error encountered by the
 // API
 func (ic *IonClient) GetRawAnalysisReport(analysisID, teamID, projectID, token string) (json.RawMessage, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("analysis_id", analysisID)
 	params.Set("team_id", teamID)
 	params.Set("project_id", projectID)
 
-	b, _, err := ic.Get(reports.ReportGetAnalysisReportEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(reports.ReportGetAnalysisReportEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get analysis report: %v", err.Error())
 	}
@@ -54,11 +55,11 @@ func (ic *IonClient) GetRawAnalysisReport(analysisID, teamID, projectID, token s
 //GetProjectReport takes a projectID, a teamID, and token. It returns the
 // corresponding project report or an error encountered by the API
 func (ic *IonClient) GetProjectReport(projectID, teamID, token string) (*reports.ProjectReport, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("team_id", teamID)
 	params.Set("project_id", projectID)
 
-	b, _, err := ic.Get(reports.ReportGetProjectReportEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(reports.ReportGetProjectReportEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get project report: %v", err.Error())
 	}
@@ -75,11 +76,11 @@ func (ic *IonClient) GetProjectReport(projectID, teamID, token string) (*reports
 //GetRawProjectReport takes a projectID, a teamID, and token. It returns the
 // corresponding project report json or an error encountered by the API
 func (ic *IonClient) GetRawProjectReport(projectID, teamID, token string) (json.RawMessage, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("team_id", teamID)
 	params.Set("project_id", projectID)
 
-	b, _, err := ic.Get(reports.ReportGetProjectReportEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(reports.ReportGetProjectReportEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get project report: %v", err.Error())
 	}
@@ -91,12 +92,12 @@ func (ic *IonClient) GetRawProjectReport(projectID, teamID, token string) (json.
 // returns the related/tangential analyses to the analysis provided or returns
 // any errors encountered with the API.
 func (ic *IonClient) GetAnalysisNavigation(analysisID, teamID, projectID, token string) (*scanner.Navigation, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("analysis_id", analysisID)
 	params.Set("team_id", teamID)
 	params.Set("project_id", projectID)
 
-	b, _, err := ic.Get(reports.ReportGetAnalysisNavigationEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(reports.ReportGetAnalysisNavigationEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get analysis navigation: %v", err.Error())
 	}

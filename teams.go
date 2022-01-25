@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/ion-channel/ionic/pagination"
 	"net/url"
 
 	"github.com/ion-channel/ionic/teams"
@@ -51,10 +52,10 @@ func (ic *IonClient) CreateTeam(opts CreateTeamOptions, token string) (*teams.Te
 // team.  An error is returned for client communications and unmarshalling
 // errors.
 func (ic *IonClient) GetTeam(id, token string) (*teams.Team, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("someid", id)
 
-	b, _, err := ic.Get(teams.TeamsGetTeamEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(teams.TeamsGetTeamEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get team: %v", err.Error())
 	}
@@ -72,7 +73,7 @@ func (ic *IonClient) GetTeam(id, token string) (*teams.Team, error) {
 // team.  An error is returned for client communications and unmarshalling
 // errors.
 func (ic *IonClient) GetTeams(token string) ([]teams.Team, error) {
-	b, _, err := ic.Get(teams.TeamsGetTeamsEndpoint, token, nil, nil, nil)
+	b, _, err := ic.Get(teams.TeamsGetTeamsEndpoint, token, nil, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get teams: %v", err.Error())
 	}

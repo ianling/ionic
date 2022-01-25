@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/ion-channel/ionic/pagination"
 	"net/url"
 	"time"
 
@@ -48,11 +49,11 @@ type SearchMatch struct {
 // a productidentifier search against the Ion API, assembling a slice of Ionic
 // products.ProductSearchResponse objects
 func (ic *IonClient) GetSearch(query, tbs, token string) ([]SearchMatch, *responses.Meta, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("q", query)
 	params.Set("tbs", tbs)
 
-	b, m, err := ic.Get(searchEndpoint, token, params, nil, nil)
+	b, m, err := ic.Get(searchEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get productidentifiers search: %v", err.Error())
 	}
@@ -69,7 +70,7 @@ func (ic *IonClient) GetSearch(query, tbs, token string) ([]SearchMatch, *respon
 // BulkSearch takes one or more query strings and a "to be searched" param, then performs a productidentifier search
 // against the Ion API, returning a map of the original query string(s) to SearchMatch objects
 func (ic *IonClient) BulkSearch(queries []string, tbs, token string) (map[string][]SearchMatch, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("tbs", tbs)
 
 	body, err := json.Marshal(queries)

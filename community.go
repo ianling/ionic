@@ -14,10 +14,10 @@ import (
 // GetRepo takes in a repository string and calls the Ion API to get
 // a pointer to the Ionic community.Repo
 func (ic *IonClient) GetRepo(repo, token string) (*community.Repo, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("repo", repo)
 
-	b, _, err := ic.Get(community.GetRepoEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(community.GetRepoEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get repo: %v", err.Error())
 	}
@@ -66,10 +66,10 @@ func (ic *IonClient) GetReposInCommon(options GetReposInCommonOptions, token str
 // GetReposForActor takes in an user, committer or actor string and calls the Ion API to get
 // a slice of Ionic community.Repo
 func (ic *IonClient) GetReposForActor(name, token string) ([]community.Repo, error) {
-	params := &url.Values{}
+	params := url.Values{}
 	params.Set("name", name)
 
-	b, _, err := ic.Get(community.GetReposForActorEndpoint, token, params, nil, nil)
+	b, _, err := ic.Get(community.GetReposForActorEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get repos for actor (%s) : %v", name, err.Error())
 	}
@@ -84,8 +84,8 @@ func (ic *IonClient) GetReposForActor(name, token string) ([]community.Repo, err
 // SearchRepo takes a query `org AND name` and
 // calls the Ion API to retrieve the information, then forms a slice of
 // Ionic community.Repo objects
-func (ic *IonClient) SearchRepo(q string, page *pagination.Pagination, token string) ([]community.Repo, *responses.Meta, error) {
-	params := &url.Values{}
+func (ic *IonClient) SearchRepo(q string, page pagination.Pagination, token string) ([]community.Repo, *responses.Meta, error) {
+	params := url.Values{}
 	params.Set("q", q)
 
 	b, m, err := ic.Get(community.SearchRepoEndpoint, token, params, nil, page)

@@ -32,13 +32,10 @@ func TestClient(t *testing.T) {
 	})
 }
 
-var client = &IonClient{
-	baseURL: nil,
-	client:  nil,
-}
+var client, _ = New("")
 
 func ExampleIonClient_customPaginationRange() {
-	pages := &pagination.Pagination{Offset: 20, Limit: 100}
+	pages := pagination.Pagination{Offset: 20, Limit: 100}
 
 	vulns, err := client.GetVulnerabilities("ruby", "1.9.3", "sometoken", pages)
 	if err != nil {
@@ -50,7 +47,7 @@ func ExampleIonClient_customPaginationRange() {
 
 func ExampleIonClient_defaultPaginationRange() {
 	// nil for pagination will use the default set by the API and may vary for each object
-	vulns, err := client.GetVulnerabilities("ruby", "1.9.3", "sometoken", nil)
+	vulns, err := client.GetVulnerabilities("ruby", "1.9.3", "sometoken", pagination.Pagination{})
 	if err != nil {
 		fmt.Println(err.Error())
 	}

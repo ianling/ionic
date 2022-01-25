@@ -28,7 +28,7 @@ type loginRequest struct {
 // Login performs basic auth requests with a username and returns a Login
 // response with bearer token and user for the session.  Returns an error for
 // HTTP and JSON errors.
-func (ic *IonClient) Login(username, password string) (*Session, error) {
+func (ic *IonClient) Login(username, password string) (Session, error) {
 	auth := fmt.Sprintf("%v:%v", username, password)
 	headers := http.Header{}
 	headers.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(auth))))
@@ -37,20 +37,20 @@ func (ic *IonClient) Login(username, password string) (*Session, error) {
 	login := loginRequest{username, password}
 	b, err := json.Marshal(login)
 	if err != nil {
-		return nil, fmt.Errorf("session: failed to marshal login body: %v", err.Error())
+		return Session{}, fmt.Errorf("session: failed to marshal login body: %v", err.Error())
 	}
 
 	buff := bytes.NewBuffer(b)
 	b, err = ic.Post(sessionsLoginEndpoint, "", nil, *buff, headers)
 	if err != nil {
-		return nil, fmt.Errorf("session: failed login request: %v", err.Error())
+		return Session{}, fmt.Errorf("session: failed login request: %v", err.Error())
 	}
 
 	var resp Session
 	err = json.Unmarshal(b, &resp)
 	if err != nil {
-		return nil, fmt.Errorf("session: failed to unmarshal response: %v", err.Error())
+		return Session{}, fmt.Errorf("session: failed to unmarshal response: %v", err.Error())
 	}
 
-	return &resp, nil
+	return resp, nil
 }
