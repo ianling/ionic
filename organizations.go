@@ -47,7 +47,7 @@ func (ic *IonClient) CreateOrganization(opts CreateOrganizationOptions, token st
 
 // GetOwnOrganizations takes a token and returns a list of organizations the user belongs to.
 func (ic *IonClient) GetOwnOrganizations(token string) (*[]organizations.UserOrganizationRole, error) {
-	resp, _, err := ic.Get(organizations.OrganizationsGetOwnEndpoint, token, nil, nil, nil)
+	resp, _, err := ic.Get(organizations.OrganizationsGetOwnEndpoint, token, nil, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get own organizations: %v", err.Error())
 	}
