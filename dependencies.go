@@ -25,6 +25,10 @@ const (
 	RubyEcosystem = "ruby"
 )
 
+var (
+	ecosystems = map[string]bool{"maven": true}
+)
+
 // ResolveDependenciesInFile takes a dependency file location and token to send
 // the specified file to the API. All dependencies that are able to be resolved will
 // be with their info returned, and a list of any errors encountered during the
@@ -64,7 +68,8 @@ func (ic *IonClient) ResolveDependenciesInFile(o dependencies.DependencyResoluti
 		strings.Contains(path.Base(o.File), "package-lock.json") ||
 		strings.Contains(path.Base(o.File), "Pipfile") ||
 		strings.Contains(path.Base(o.File), "requirements.txt") ||
-		strings.Contains(path.Base(o.File), "yarn.lock"):
+		strings.Contains(path.Base(o.File), "yarn.lock") ||
+		ecosystems[o.Ecosystem]:
 		endpoint = dependencies.ResolveFromFileEndpoint
 	default:
 		endpoint = dependencies.ResolveDependenciesInFileEndpoint
