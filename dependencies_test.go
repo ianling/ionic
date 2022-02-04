@@ -59,7 +59,7 @@ func TestDependencies(t *testing.T) {
 		})
 
 		g.It("should resolve dependencies from a definition file", func() {
-			server.AddPath("/v1/dependency/resolveDependenciesInFile").
+			server.AddPath(fmt.Sprintf("/%s", dependencies.ResolveFromFileEndpoint)).
 				SetMethods("POST").
 				SetPayload([]byte(sampleResolutionResponse)).
 				SetStatus(http.StatusOK)
