@@ -86,3 +86,36 @@ func (ic *IonClient) GetTeams(token string) ([]teams.Team, error) {
 
 	return ts, nil
 }
+
+// UpdateTeam takes a team ID and updates fields related to that team.
+func (ic *IonClient) UpdateTeam(id, name, contactName, contactEmail, defaultDeployKey, token string) (*teams.Team, error) {
+	params := url.Values{}
+	params.Set("id", id)
+
+	teamRequest := teams.Team{
+		Name:             name,
+		POCName:          contactName,
+		POCEmail:         contactEmail,
+		DefaultDeployKey: defaultDeployKey,
+	}
+
+	body, err := json.Marshal(teamRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	buffer := bytes.NewBuffer(body)
+
+	response, err := ic.Put(teams.TeamsUpdateTeamEndpoint, token, params, *buffer, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update team: %w", err)
+	}
+
+	var team teams.Team
+	err = json.Unmarshal(response, &team)
+	if err != nil {
+		return nil, fmt.Errorf("cannot parse team: %w", err)
+	}
+
+	return &team, nil
+}

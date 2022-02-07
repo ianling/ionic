@@ -9,6 +9,8 @@ import (
 const (
 	// TeamsCreateTeamEndpoint is a string representation of the current endpoint for creating team
 	TeamsCreateTeamEndpoint = "v1/teams/createTeam"
+	// TeamsUpdateTeamEndpoint is the current endpoint for updating a team
+	TeamsUpdateTeamEndpoint = "v1/teams/updateTeam"
 	// TeamsGetTeamEndpoint  is a string representation of the current endpoint for getting team
 	TeamsGetTeamEndpoint = "v1/teams/getTeam"
 	// TeamsGetTeamsEndpoint is a string representation of the current endpoint for getting teams
