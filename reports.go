@@ -13,7 +13,7 @@ import (
 	"github.com/ion-channel/ionic/scanner"
 )
 
-//GetAnalysisReport takes an analysisID, teamID, projectID, and token. It
+// GetAnalysisReport takes an analysisID, teamID, projectID, and token. It
 // returns the corresponding analysis report or an error encountered by the API
 func (ic *IonClient) GetAnalysisReport(analysisID, teamID, projectID, token string) (*reports.AnalysisReport, error) {
 	params := url.Values{}
@@ -35,7 +35,7 @@ func (ic *IonClient) GetAnalysisReport(analysisID, teamID, projectID, token stri
 	return &r, nil
 }
 
-//GetRawAnalysisReport takes an analysisID, teamID, projectID, and token. It
+// GetRawAnalysisReport takes an analysisID, teamID, projectID, and token. It
 // returns the corresponding analysis report json or an error encountered by the
 // API
 func (ic *IonClient) GetRawAnalysisReport(analysisID, teamID, projectID, token string) (json.RawMessage, error) {
@@ -52,7 +52,7 @@ func (ic *IonClient) GetRawAnalysisReport(analysisID, teamID, projectID, token s
 	return b, nil
 }
 
-//GetProjectReport takes a projectID, a teamID, and token. It returns the
+// GetProjectReport takes a projectID, a teamID, and token. It returns the
 // corresponding project report or an error encountered by the API
 func (ic *IonClient) GetProjectReport(projectID, teamID, token string) (*reports.ProjectReport, error) {
 	params := url.Values{}
@@ -73,7 +73,7 @@ func (ic *IonClient) GetProjectReport(projectID, teamID, token string) (*reports
 	return &r, nil
 }
 
-//GetRawProjectReport takes a projectID, a teamID, and token. It returns the
+// GetRawProjectReport takes a projectID, a teamID, and token. It returns the
 // corresponding project report json or an error encountered by the API
 func (ic *IonClient) GetRawProjectReport(projectID, teamID, token string) (json.RawMessage, error) {
 	params := url.Values{}
@@ -171,13 +171,8 @@ func (ic *IonClient) GetExportedVulnerabilityData(ids []string, teamID, token st
 
 // GetSBOM takes slice of project ids, team id, SBOM format, and token.
 // Returns one or more SBOMs for the requested project(s).
-func (ic *IonClient) GetSBOM(ids []string, teamID string, options reports.SBOMExportOptions, token string) (string, error) {
-	body := requests.ByIDsAndTeamID{
-		TeamID: teamID,
-		IDs:    ids,
-	}
-
-	b, err := json.Marshal(body)
+func (ic *IonClient) GetSBOM(options reports.SBOMExportOptions, token string) (string, error) {
+	b, err := json.Marshal(options)
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal request body: %v", err.Error())
 	}
