@@ -84,13 +84,19 @@ func projectFromComponent(component cyclonedx.Component) projects.Project {
 
 // ProjectsFromCycloneDX parses components from a CycloneDX SBOM into Projects.
 func ProjectsFromCycloneDX(sbom *cyclonedx.BOM, includeDependencies bool) ([]projects.Project, error) {
-	if sbom.Metadata == nil || sbom.Metadata.Component == nil {
-		return nil, fmt.Errorf("no top-level component defined in CycloneDX SBOM")
+	// pre-allocate a slice of projects
+	estimatedSbomLength := 1
+	if sbom.Components != nil {
+		estimatedSbomLength += len(*sbom.Components)
 	}
 
-	sbomProjects := []projects.Project{projectFromComponent(*sbom.Metadata.Component)}
+	sbomProjects := make([]projects.Project, 0, estimatedSbomLength)
 
-	if includeDependencies {
+	if sbom.Metadata != nil && sbom.Metadata.Component != nil {
+		sbomProjects = append(sbomProjects, projectFromComponent(*sbom.Metadata.Component))
+	}
+
+	if includeDependencies && estimatedSbomLength > 1 {
 		// get all the components in the SBOM
 		for _, component := range *sbom.Components {
 			project := projectFromComponent(component)
