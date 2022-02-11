@@ -125,7 +125,7 @@ func TestAnalysis(t *testing.T) {
 				SetPayload([]byte(SampleValidAnalysisSummaries)).
 				SetStatus(http.StatusOK)
 
-			analyses, err := client.GetLatestAnalysisSummaries("ateamid", []string{"aprojectid"}, "sometoken")
+			analyses, err := client.GetLatestAnalysisSummaries([]string{"aprojectid"}, "sometoken")
 			Expect(err).To(BeNil())
 			Expect(len(analyses)).To(Equal(1))
 			Expect(analyses[0].TeamID).To(Equal("cf47e4d1-bcf8-4990-8ef8-f325ae59d6fc"))
