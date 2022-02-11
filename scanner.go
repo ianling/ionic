@@ -85,7 +85,7 @@ func (ic *IonClient) AnalyzeProjects(teamID, token string, params url.Values) ([
 	return ids, nil
 }
 
-//GetAnalysisStatus takes an analysisID, teamID, and projectID and returns the analysis status or an error encountered by the API
+// GetAnalysisStatus takes an analysisID, teamID, and projectID and returns the analysis status or an error encountered by the API
 func (ic *IonClient) GetAnalysisStatus(analysisID, teamID, projectID, token string) (*scanner.AnalysisStatus, error) {
 	params := url.Values{}
 	params.Set("id", analysisID)
@@ -106,7 +106,7 @@ func (ic *IonClient) GetAnalysisStatus(analysisID, teamID, projectID, token stri
 	return &a, nil
 }
 
-//GetLatestAnalysisStatus takes a teamID, and projectID and returns the latest analysis status or an error encountered by the API
+// GetLatestAnalysisStatus takes a teamID, and projectID and returns the latest analysis status or an error encountered by the API
 func (ic *IonClient) GetLatestAnalysisStatus(teamID, projectID, token string) (*scanner.AnalysisStatus, error) {
 	params := url.Values{}
 	params.Set("team_id", teamID)
@@ -126,7 +126,7 @@ func (ic *IonClient) GetLatestAnalysisStatus(teamID, projectID, token string) (*
 	return &a, nil
 }
 
-//GetLatestAnalysisStatuses takes a teamID and returns the latest analysis statuses or an error encountered by the API
+// GetLatestAnalysisStatuses takes a teamID and returns the latest analysis statuses or an error encountered by the API
 func (ic *IonClient) GetLatestAnalysisStatuses(teamID, token string) ([]scanner.AnalysisStatus, error) {
 	params := url.Values{}
 	params.Set("team_id", teamID)
@@ -145,9 +145,9 @@ func (ic *IonClient) GetLatestAnalysisStatuses(teamID, token string) ([]scanner.
 	return a, nil
 }
 
-//AddScanResult takes a scanResultID, teamID, projectID, status, scanType, and
-//client provided scan results, and adds them to the returned project analysis
-//or an error encountered by the API
+// AddScanResult takes a scanResultID, teamID, projectID, status, scanType, and
+// client provided scan results, and adds them to the returned project analysis
+// or an error encountered by the API
 func (ic *IonClient) AddScanResult(scanResultID, teamID, projectID, status, scanType, token string, scanResults scanner.ExternalScan) (*scanner.AnalysisStatus, error) {
 	request := &addScanRequest{}
 	request.ID = scanResultID
@@ -208,17 +208,14 @@ func (ic *IonClient) GetProjectsStates(ids []string, filter string, token string
 	return ps, nil
 }
 
-// FindScans takes a set of search parameters and a team ID, and returns a slice of scan results
-func (ic *IonClient) FindScans(parameters scans.SearchParameters, teamID, token string) ([]scans.Scan, error) {
+// FindScans takes a set of search parameters and returns a slice of scan results
+func (ic *IonClient) FindScans(parameters scans.SearchParameters, token string) ([]scans.Scan, error) {
 	b, err := json.Marshal(parameters)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request body: %v", err.Error())
 	}
 
-	params := url.Values{}
-	params.Set("team_id", teamID)
-
-	r, err := ic.Post(scans.ScanFindScansEndpoint, token, params, *bytes.NewBuffer(b), nil)
+	r, err := ic.Post(scans.ScanFindScansEndpoint, token, nil, *bytes.NewBuffer(b), nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find scans: %v", err.Error())
 	}
