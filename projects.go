@@ -143,15 +143,10 @@ func (ic *IonClient) GetRawProject(id, teamID, token string) (json.RawMessage, e
 	return b, nil
 }
 
-// GetProjects takes a team ID and returns the projects for that team.  It
-// returns an error for any API errors it may encounter.
-func (ic *IonClient) GetProjects(teamID, token string, page pagination.Pagination, filter *projects.Filter) ([]projects.Project, error) {
+// GetProjects takes a project filter and returns a slice of the projects matching that filter, or an error.
+func (ic *IonClient) GetProjects(filter projects.Filter, token string, page pagination.Pagination) ([]projects.Project, error) {
 	params := url.Values{}
-	params.Set("team_id", teamID)
-
-	if filter != nil {
-		params.Set("filter_by", filter.Param())
-	}
+	params.Set("filter_by", filter.Param())
 
 	b, _, err := ic.Get(projects.GetProjectsEndpoint, token, params, nil, page)
 	if err != nil {
