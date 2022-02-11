@@ -32,14 +32,14 @@ const (
 // TeamIsTopLevel applies only to SBOMs generated using the TeamID field. If true, the top-level item in the SBOM's
 // hierarchy will be the team. If false, all the team's projects will be on the top level of the hierarchy.
 type SBOMExportOptions struct {
-	ProjectIDs   []string
-	TeamID       string
-	SBOMID       string
-	SBOMEntryIDs []string
+	ProjectIDs   []string `json:"ids"`
+	TeamID       string   `json:"team_id"`
+	SBOMID       string   `json:"sbom_id"`
+	SBOMEntryIDs []string `json:"sbom_entry_ids"`
 
-	Format              SBOMFormat
-	IncludeDependencies bool
-	TeamIsTopLevel      bool
+	Format              SBOMFormat `json:"sbom_type"`
+	IncludeDependencies bool       `json:"include_dependencies"`
+	TeamIsTopLevel      bool       `json:"team_top_level"`
 }
 
 // Params converts an SBOMExportOptions object into a URL param object for use in making an API request
