@@ -29,6 +29,7 @@ type SBOM struct {
 	SbomStatus       string       `json:"sbom_status"`
 	CreatedAt        time.Time    `json:"created_at"`
 	UpdatedAt        time.Time    `json:"updated_at"`
+	DeletedAt        *time.Time   `json:"deleted_at"`
 	EntryCount       int          `json:"entry_count"`
 	Metadata         SBOMMetadata `json:"metadata"`
 	Entries          []SBOMEntry  `json:"entries"`
