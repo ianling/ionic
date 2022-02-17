@@ -18,6 +18,8 @@ const (
 	SBOMFormatSPDX SBOMFormat = "SPDX"
 	// SBOMFormatCycloneDX is the enum value for the CycloneDX SBOM format
 	SBOMFormatCycloneDX SBOMFormat = "CycloneDX"
+	// SBOMFormatGitlab is the enum value for the Gitlab SBOM format
+	SBOMFormatGitlab SBOMFormat = "Gitlab"
 )
 
 // SBOMExportOptions represents all the different settings a user can specify for how the SBOM is exported.
