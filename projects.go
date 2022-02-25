@@ -4,17 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/ion-channel/ionic/pagination"
+	"github.com/ion-channel/ionic/projects"
+	"github.com/ion-channel/ionic/requests"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"net/url"
 	"os"
-	"strconv"
-	"strings"
-
-	"github.com/ion-channel/ionic/pagination"
-	"github.com/ion-channel/ionic/projects"
-	"github.com/ion-channel/ionic/requests"
 )
 
 // CreateProjectsResponse represents the response from the API when sending a
@@ -47,15 +44,6 @@ func (ic *IonClient) CreateProject(project *projects.Project, teamID, token stri
 	err = json.Unmarshal(b, &p)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response from create: %v", err.Error())
-	}
-
-	fields, err := p.Validate(ic.client)
-	if err != nil {
-		var errs []string
-		for _, msg := range fields {
-			errs = append(errs, msg)
-		}
-		return nil, fmt.Errorf("%v: %v", projects.ErrInvalidProject, strings.Join(errs, ", "))
 	}
 
 	return &p, nil
@@ -192,28 +180,6 @@ func (ic *IonClient) UpdateProject(project *projects.Project, token string) (*pr
 	if project.ID == nil {
 		return nil, fmt.Errorf("%v: %v", projects.ErrInvalidProject, "missing id")
 	}
-
-	fields, err := project.Validate(ic.client)
-	if err != nil {
-		var errs []string
-		for _, msg := range fields {
-			errs = append(errs, msg)
-		}
-		return nil, fmt.Errorf("%v: %v", projects.ErrInvalidProject, strings.Join(errs, ", "))
-	}
-
-	params.Set("id", *project.ID)
-	params.Set("team_id", *project.TeamID)
-
-	params.Set("name", *project.Name)
-	params.Set("type", *project.Type)
-	params.Set("active", strconv.FormatBool(project.Active))
-	params.Set("source", *project.Source)
-	params.Set("branch", *project.Branch)
-	params.Set("description", *project.Description)
-	params.Set("ruleset_id", *project.RulesetID)
-	params.Set("chat_channel", project.ChatChannel)
-	params.Set("should_monitor", strconv.FormatBool(project.Monitor))
 
 	b, err := json.Marshal(project)
 	if err != nil {
