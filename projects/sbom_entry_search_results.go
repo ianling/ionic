@@ -17,12 +17,13 @@ const (
 
 // SBOMSearchResultGeneric contains the fields common to all SBOM search result types
 type SBOMSearchResultGeneric struct {
-	ID         string  `json:"id"`
-	Confidence float32 `json:"confidence"`
-	Selected   bool    `json:"selected"`
-	Name       string  `json:"name"`
-	Org        string  `json:"org"`
-	Version    string  `json:"version"`
+	ID          string  `json:"id"`
+	Confidence  float32 `json:"confidence"`
+	IsUserInput bool    `json:"is_user_input"`
+	Selected    bool    `json:"selected"`
+	Name        string  `json:"name"`
+	Org         string  `json:"org"`
+	Version     string  `json:"version"`
 }
 
 // SBOMPackageSearchResult contains the fields specific to Package search results
