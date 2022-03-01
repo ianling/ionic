@@ -1,8 +1,6 @@
 package organizations
 
 import (
-	"encoding/json"
-	"fmt"
 	"time"
 )
 
@@ -23,21 +21,29 @@ const (
 	OrganizationsAddMemberEndpoint = "v1/organizations/addMember"
 )
 
-// Organization is a logical collection of teams.
-type Organization struct {
-	ID        string     `json:"id"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at"`
-	DeletedAt *time.Time `json:"deleted_at"`
-	Name      string     `json:"name"`
-}
-
 type (
-	// UserOrganizationRole represents a particular user's role in an organization.
+	// Organization is a logical collection of teams.
+	// Users can be members of an Organization, which grants them access to all the Organization's teams.
+	Organization struct {
+		ID        string               `json:"id"`
+		CreatedAt time.Time            `json:"created_at"`
+		UpdatedAt time.Time            `json:"updated_at"`
+		DeletedAt *time.Time           `json:"deleted_at"`
+		Name      string               `json:"name"`
+		Members   []OrganizationMember `json:"members"`
+	}
+
+	// OrganizationMember represents a particular user's role in an organization.
+	OrganizationMember struct {
+		UserID string           `json:"user_id"`
+		Role   OrganizationRole `json:"role"`
+	}
+
+	// UserOrganizationRole represents a particular user's role in an organization in a standalone form,
+	// containing information about both the user and the organization they belong to.
 	UserOrganizationRole struct {
+		OrganizationMember
 		Organization Organization `json:"organization"`
-		UserID       string       `json:"user_id"`
-		Role         string       `json:"role"`
 	}
 )
 
@@ -50,13 +56,3 @@ const (
 	// OrganizationRoleMember is the regular member role in an organization
 	OrganizationRoleMember = "member"
 )
-
-// String returns a JSON formatted string of the team object
-func (o Organization) String() string {
-	b, err := json.Marshal(o)
-	if err != nil {
-		return fmt.Sprintf("failed to format organization: %v", err.Error())
-	}
-
-	return string(b)
-}
