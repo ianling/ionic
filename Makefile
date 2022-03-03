@@ -2,16 +2,7 @@
 SHELL = bash
 
 # Go Stuff
-GOCMD=go
-GOLINTCMD=golint
-GOBUILD=$(GOCMD) build
-GOCLEAN=$(GOCMD) clean
-GOLIST=$(GOCMD) list
-GOVET=$(GOCMD) vet
-GOTEST=$(GOCMD) test -v ./...
-GOFMT=$(GOCMD) fmt
 CGO_ENABLED ?= 0
-GOOS ?= $(shell uname -s | tr '[:upper:]' '[:lower:]')
 
 # General Vars
 COVERAGE_DIR=coverage
@@ -38,7 +29,7 @@ analyze:  ## Perform an analysis of the project
 
 .PHONY: clean
 clean: ## Cleans out all generated items
-	-@$(GOCLEAN)
+	-@go clean
 	-@rm -rf coverage
 
 .PHONY: coverage
@@ -52,7 +43,7 @@ coverage_compfriendly:  ## Generates the code coverage in a computer friendly ma
 	@for j in $$(go list ./... | grep -v '/vendor/' | grep -v '/ext/'); do go test -covermode=count -coverprofile=$(COVERAGE_DIR)/$$(basename $$j).out $$j > /dev/null 2>&1; done
 	@echo 'mode: count' > $(COVERAGE_DIR)/tmp/full.out
 	@tail -q -n +2 $(COVERAGE_DIR)/*.out >> $(COVERAGE_DIR)/tmp/full.out
-	@$(GOCMD) tool cover -func=$(COVERAGE_DIR)/tmp/full.out | tail -n 1 | sed -e 's/^.*statements)[[:space:]]*//' -e 's/%//'
+	@go tool cover -func=$(COVERAGE_DIR)/tmp/full.out | tail -n 1 | sed -e 's/^.*statements)[[:space:]]*//' -e 's/%//'
 
 .PHONY: help
 help:  ## Show This Help
@@ -60,25 +51,20 @@ help:  ## Show This Help
 
 .PHONY: test
 test:  ## Run all available tests
-	$(GOTEST)
+	@go test -v ./...
 
 .PHONY: linters
-linters:  fmt vet lint  ## Run all of the linters
+linters:  fmt vet  ## Run all of the linters
 
 .PHONY: fmt
-fmt: ## Run gofmt
+fmt: ## Run go fmt
 	@echo "checking formatting..."
-	@$(GOFMT) $(shell $(GOLIST) ./... | grep -v '/vendor/')
+	@go fmt ./...
 
 .PHONY: vet
 vet: ## Run go vet
 	@echo "vetting..."
-	@$(GOVET) $(shell $(GOLIST) ./... | grep -v '/vendor/')
-
-.PHONY: lint
-lint: ## Run golint
-	@echo "linting..."
-	@$(GOLINTCMD) -set_exit_status $(shell $(GOLIST) ./... | grep -v '/vendor/')
+	@go vet ./...
 
 .PHONY: docs
 docs: ## exports documents from the source code
