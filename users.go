@@ -23,9 +23,9 @@ type createUserOptions struct {
 // are not required, and can be left blank if so chosen.  It will return the
 // instantiated user object from the API or an error if it encounters one with
 // the API.
-func (ic *IonClient) CreateUser(email, username, password, token string) (*users.User, error) {
+func (ic *IonClient) CreateUser(email, username, password, token string) (users.User, error) {
 	if email == "" {
-		return nil, fmt.Errorf("create user: email is required")
+		return users.User{}, fmt.Errorf("create user: email is required")
 	}
 
 	opts := createUserOptions{
@@ -37,62 +37,62 @@ func (ic *IonClient) CreateUser(email, username, password, token string) (*users
 
 	b, err := json.Marshal(opts)
 	if err != nil {
-		return nil, errors.Prepend("create user: failed to marshal request", err)
+		return users.User{}, errors.Prepend("create user: failed to marshal request", err)
 	}
 
 	buff := bytes.NewBuffer(b)
 
 	b, err = ic.Post(users.UsersCreateUserEndpoint, token, nil, *buff, nil)
 	if err != nil {
-		return nil, errors.Prepend("create user", err)
+		return users.User{}, errors.Prepend("create user", err)
 	}
 
 	var u users.User
 	err = json.Unmarshal(b, &u)
 	if err != nil {
-		return nil, errors.Prepend("create user: failed to unmarshal user", err)
+		return users.User{}, errors.Prepend("create user: failed to unmarshal user", err)
 	}
 
-	return &u, nil
+	return u, nil
 }
 
 // GetSelf returns the user object associated with the bearer token provided.
 // An error is returned if the client cannot talk to the API or the returned
 // user object is nil or blank
-func (ic *IonClient) GetSelf(token string) (*users.User, error) {
+func (ic *IonClient) GetSelf(token string) (users.User, error) {
 	b, _, err := ic.Get(users.UsersGetSelfEndpoint, token, nil, nil, pagination.Pagination{})
 	if err != nil {
-		return nil, errors.Prepend("get self", err)
+		return users.User{}, errors.Prepend("get self", err)
 	}
 
 	var user users.User
 	err = json.Unmarshal(b, &user)
 	if err != nil {
-		return nil, errors.Prepend("get self: failed unmarshaling user", err)
+		return user, errors.Prepend("get self: failed unmarshaling user", err)
 	}
 
-	return &user, nil
+	return user, nil
 }
 
 // GetUser returns the user object associated with the bearer token provided.
 // An error is returned if the client cannot talk to the API or the returned
 // user object is nil or blank
-func (ic *IonClient) GetUser(id, token string) (*users.User, error) {
+func (ic *IonClient) GetUser(id, token string) (users.User, error) {
 	params := url.Values{}
 	params.Set("id", id)
 
 	b, _, err := ic.Get(users.UsersGetUserEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
-		return nil, errors.Prepend("get user", err)
+		return users.User{}, errors.Prepend("get user", err)
 	}
 
 	var user users.User
 	err = json.Unmarshal(b, &user)
 	if err != nil {
-		return nil, errors.Prepend("get user: failed unmarshaling user", err)
+		return users.User{}, errors.Prepend("get user: failed unmarshaling user", err)
 	}
 
-	return &user, nil
+	return user, nil
 }
 
 // GetUsers requests and returns all users for a given installation
@@ -111,7 +111,7 @@ func (ic *IonClient) GetUsers(token string) ([]users.User, error) {
 	return us, nil
 }
 
-//GetUserNames takes slice of ids and teamID and returns user names with their ids
+// GetUserNames takes slice of ids and teamID and returns user names with their ids
 func (ic *IonClient) GetUserNames(ids []string, teamID, token string) ([]users.NameAndID, error) {
 	params := url.Values{}
 	params.Set("team_id", teamID)
