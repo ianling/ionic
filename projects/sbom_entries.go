@@ -27,6 +27,7 @@ type SBOMEntry struct {
 	Version       string            `json:"version"`
 	Status        SBOMEntryStatus   `json:"status"`
 	SearchResults SBOMSearchResults `json:"search_results"`
+	Suggestions   map[string]string `json:"suggestions"`
 	ErrorMessage  string            `json:"error_message"`
 	CreatedAt     time.Time         `json:"created_at"`
 	UpdatedAt     time.Time         `json:"updated_at"`
