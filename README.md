@@ -10,7 +10,7 @@
 A Golang SDK for the Ion Channel API
 
 # Requirements
-Golang Version 1.10 or higher
+Go Version 1.17 or higher
 
 # Installation
 
