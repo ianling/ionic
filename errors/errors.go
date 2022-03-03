@@ -24,7 +24,7 @@ func (e IonError) Error() string {
 
 // Prepend takes a prefix and puts it on the front of the IonError.
 func (e *IonError) Prepend(prefix string) {
-	e.Err = fmt.Errorf("%v: %v", prefix, e.Err.Error())
+	e.Err = fmt.Errorf("%v: %w", prefix, e.Err)
 }
 
 // Prepend takes a prefix and an error, creates an IonError if the error is not
@@ -32,7 +32,7 @@ func (e *IonError) Prepend(prefix string) {
 func Prepend(prefix string, err error) *IonError {
 	ierr, ok := err.(*IonError)
 	if !ok {
-		return Errors("", 0, "%v: %v", prefix, err.Error())
+		return Errors("", 0, "%v: %w", prefix, err)
 	}
 
 	ierr.Prepend(prefix)
