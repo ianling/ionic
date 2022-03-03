@@ -1,5 +1,5 @@
 # github.com/CycloneDX/cyclonedx-go v0.4.0
-## explicit
+## explicit; go 1.14
 github.com/CycloneDX/cyclonedx-go
 # github.com/franela/goblin v0.0.0-20131017120451-74c9fe110d4b
 ## explicit
@@ -23,7 +23,7 @@ github.com/kelseyhightower/envconfig
 # github.com/kr/pretty v0.1.0
 ## explicit
 # github.com/onsi/ginkgo v1.16.2
-## explicit
+## explicit; go 1.15
 # github.com/onsi/gomega v1.10.1
 ## explicit
 github.com/onsi/gomega
@@ -39,14 +39,16 @@ github.com/onsi/gomega/matchers/support/goraph/node
 github.com/onsi/gomega/matchers/support/goraph/util
 github.com/onsi/gomega/types
 # github.com/spdx/tools-golang v0.0.0-20201122192914-a16d50ee1552 => github.com/ion-channel/tools-golang v0.0.0-20210616182839-9b060e5ac8c4
-## explicit
+## explicit; go 1.13
 github.com/spdx/tools-golang/spdx
 github.com/spdx/tools-golang/spdxlib
 # golang.org/x/net v0.0.0-20201021035429-f5854403a974
+## explicit; go 1.11
 golang.org/x/net/html
 golang.org/x/net/html/atom
 golang.org/x/net/html/charset
 # golang.org/x/text v0.3.3
+## explicit; go 1.11
 golang.org/x/text/encoding
 golang.org/x/text/encoding/charmap
 golang.org/x/text/encoding/htmlindex
@@ -65,10 +67,12 @@ golang.org/x/text/language
 golang.org/x/text/runes
 golang.org/x/text/transform
 # golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
+## explicit; go 1.11
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
 # gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127
 ## explicit
 # gopkg.in/yaml.v2 v2.3.0
+## explicit
 gopkg.in/yaml.v2
 # github.com/spdx/tools-golang => github.com/ion-channel/tools-golang v0.0.0-20210616182839-9b060e5ac8c4

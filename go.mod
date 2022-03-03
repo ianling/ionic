@@ -1,6 +1,6 @@
 module github.com/ion-channel/ionic
 
-go 1.14
+go 1.17
 
 require (
 	github.com/CycloneDX/cyclonedx-go v0.4.0
@@ -10,11 +10,18 @@ require (
 	github.com/google/uuid v1.2.0
 	github.com/hashicorp/go-version v1.3.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/kr/pretty v0.1.0 // indirect
-	github.com/onsi/ginkgo v1.16.2 // indirect
 	github.com/onsi/gomega v1.10.1
 	github.com/spdx/tools-golang v0.0.0-20201122192914-a16d50ee1552
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
+)
+
+require (
+	github.com/kr/pretty v0.1.0 // indirect
+	github.com/onsi/ginkgo v1.16.2 // indirect
+	golang.org/x/net v0.0.0-20201021035429-f5854403a974 // indirect
+	golang.org/x/text v0.3.3 // indirect
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
+	gopkg.in/yaml.v2 v2.3.0 // indirect
 )
 
 replace github.com/spdx/tools-golang => github.com/ion-channel/tools-golang v0.0.0-20210616182839-9b060e5ac8c4
