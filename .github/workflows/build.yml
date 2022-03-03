@@ -40,6 +40,9 @@ jobs:
     needs: [linting, test]
     if: endsWith(github.ref, '/master') == true
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
     - name: Setup
