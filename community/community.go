@@ -58,7 +58,7 @@ type Repo struct {
 	ContributingActionsMonthlyCount *[]MonthlyCount      `json:"contributing_actions_monthly_count" xml:"contributing_actions_monthly_count"`
 	NewActorsMonthlyCount           *[]MonthlyCount      `json:"new_actors_monthly_count" xml:"new_actors_monthly_count"`
 	MedianWorkingHour               *int                 `json:"median_working_hour" xml:"median_working_hour"`
-	EOLRearFailingDaysCount         *int                 `json:"eol_rear_failing_days_count" xml:"eol_rear_failing_days_count"`
+	EOLRearFailingDaysCount         *int                 `json:"eol_rear_failing_months_count" xml:"eol_rear_failing_months_count"`
 	MetricPoints                    *[]risk.MetricPoints `json:"metric_points" xml:"metric_points"`
 	CreatedAt                       *time.Time           `json:"created_at" xml:"created_at"`
 }
