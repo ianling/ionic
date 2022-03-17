@@ -33,3 +33,14 @@ type SBOMEntry struct {
 	UpdatedAt     time.Time         `json:"updated_at"`
 	DeletedAt     *time.Time        `json:"deleted_at"`
 }
+
+type SoftwareList struct {
+	Name             string `json:"name"`
+	OrgId            string `json:"org_id"`
+	Version          string `json:"version"`
+	SupplierName     string `json:"supplier_name"`
+	ContactName      string `json:"contact_name"`
+	ContactEmail     string `json:"contact_email"`
+	RulesetID        string `json:"ruleset_id"`
+	MonitorFrequency string `json:"monitor_fequency"`
+}
