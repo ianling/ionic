@@ -42,5 +42,5 @@ type SoftwareList struct {
 	ContactName      string `json:"contact_name"`
 	ContactEmail     string `json:"contact_email"`
 	RulesetID        string `json:"ruleset_id"`
-	MonitorFrequency string `json:"monitor_fequency"`
+	MonitorFrequency string `json:"monitor_frequency"`
 }
