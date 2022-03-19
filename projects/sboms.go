@@ -32,7 +32,7 @@ type SBOM struct {
 	DeletedAt        *time.Time   `json:"deleted_at"`
 	EntryCount       int          `json:"entry_count"`
 	Metadata         SBOMMetadata `json:"metadata"`
-	Stats            Stats        `json:"stats"`
+	Metrics          Metrics      `json:"metrics"`
 	Entries          []SBOMEntry  `json:"entries"`
 	TeamID           string       `json:"team_id"`
 	OrgID            string       `json:"org_id"`
@@ -43,7 +43,7 @@ type Risk struct {
 	Score  int `json:"score"`
 	Scopes struct {
 		Ecosystem   int `json:"ecosystem"`
-		SupplyChain int `json:"supply_chain"`
+		SupplyChain int `json:"supplyChain"`
 		Software    int `json:"software"`
 	} `json:"scopes"`
 }
@@ -55,18 +55,18 @@ type Compliance struct {
 
 type Resolution struct {
 	Resolved          int `json:"resolved"`
-	PartiallyResolved int `json:"partially_resolved"`
+	PartiallyResolved int `json:"partiallyResolved"`
 	Unresolved        int `json:"unresolved"`
 }
 
-type Stats struct {
+type Metrics struct {
 	Risk       Risk       `json:"risk"`
 	Compliance Compliance `json:"compliance"`
 	Resolution Resolution `json:"resolution"`
 }
 
 type SoftwareInventorySummary struct {
-	ID            string `json:"id"`
-	Organization  Stats  `json:"organization"`
-	SoftwareLists []SBOM `json:"software_lists"`
+	ID            string  `json:"id"`
+	Organization  Metrics `json:"organization"`
+	SoftwareLists []SBOM  `json:"softwareLists"`
 }
