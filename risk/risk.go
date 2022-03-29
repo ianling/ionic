@@ -2,6 +2,11 @@ package risk
 
 import "time"
 
+const (
+	// GetScoresEnpoint location of the getscores endpoint
+	GetScoresEnpoint = "v1/score/getScores"
+)
+
 // MetricPoint defines the data needed for points on a single risk point
 type MetricPoint struct {
 	Name   string `json:"name" xml:"name"`
@@ -12,4 +17,31 @@ type MetricPoint struct {
 type MetricPoints struct {
 	Metrics     []MetricPoint `json:"metrics" xml:"metrics"`
 	ProcessedAt time.Time     `json:"processed_at" xml:"processed_at"`
+}
+
+// Scores top level struct for modeling the score tree
+type Scores struct {
+	Name   string  `json:"name"`
+	Value  float64 `json:"value"`
+	Scopes []Scope `json:"scopes"`
+}
+
+// Scope second tier struct for modeling the score tree
+type Scope struct {
+	Name       string     `json:"name"`
+	Value      float64    `json:"value"`
+	Categories []Category `json:"categories"`
+}
+
+// Category third tier struct for modeling the score tree
+type Category struct {
+	Name       string      `json:"name"`
+	Value      float64     `json:"value"`
+	Attributes []Attribute `json:"attributes"`
+}
+
+// Attribute leaf tier struct for modeling the score tree
+type Attribute struct {
+	Name  string  `json:"name"`
+	Value float64 `json:"value"`
 }
