@@ -75,6 +75,10 @@ func (u *UntranslatedResults) Translate() *TranslatedResults {
 		tr.Type = "license"
 		tr.Data = *u.License
 	}
+	if u.Risk != nil {
+		tr.Type = "risk"
+		tr.Data = *u.Risk
+	}
 	if u.Secret != nil {
 		tr.Type = "secrets"
 		tr.Data = *u.Secret
@@ -441,14 +445,14 @@ type RiskResults struct {
 	Risk []risk.Scores `json:"risk" xml:"risk"`
 }
 
-// MarshalJSON meets the marshaller interface to custom wrangle an ecosystem
+// MarshalJSON meets the marshaller interface to custom wrangle a risk
 // result into the json shape
 func (e RiskResults) MarshalJSON() ([]byte, error) {
 	return json.Marshal(e.Risk)
 }
 
 // UnmarshalJSON meets the unmarshaller interface to custom wrangle the
-// ecosystem scan into an ecosystem result
+// risk scan into an risk result
 func (e *RiskResults) UnmarshalJSON(b []byte) error {
 	var s []risk.Scores
 	err := json.Unmarshal(b, &s)
