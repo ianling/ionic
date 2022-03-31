@@ -46,13 +46,3 @@ type (
 		Organization Organization `json:"organization"`
 	}
 )
-
-// OrganizationRole is the type for constants that enumerate the different roles a user can have in an organization.
-type OrganizationRole string
-
-const (
-	// OrganizationRoleAdmin is the administrator role in an organization
-	OrganizationRoleAdmin = "admin"
-	// OrganizationRoleMember is the regular member role in an organization
-	OrganizationRoleMember = "member"
-)
