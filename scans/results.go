@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ion-channel/ionic/dependencies"
+	"github.com/ion-channel/ionic/risk"
 	"github.com/ion-channel/ionic/secrets"
 	"github.com/ion-channel/ionic/vulnerabilities"
 )
@@ -27,6 +28,7 @@ type UntranslatedResults struct {
 	VirusDetails            *ClamavDetails                  `json:"clam_av_details,omitempty"`
 	Vulnerability           *VulnerabilityResults           `json:"vulnerabilities,omitempty"`
 	Secret                  *SecretResults                  `json:"secrets,omitempty"`
+	Risk                    *RiskResults                    `json:"risk,omitempty"`
 }
 
 // Translate moves information from the particular sub-struct, IE
@@ -72,6 +74,10 @@ func (u *UntranslatedResults) Translate() *TranslatedResults {
 	if u.License != nil {
 		tr.Type = "license"
 		tr.Data = *u.License
+	}
+	if u.Risk != nil {
+		tr.Type = "risk"
+		tr.Data = *u.Risk
 	}
 	if u.Secret != nil {
 		tr.Type = "secrets"
@@ -179,6 +185,14 @@ func (r *TranslatedResults) UnmarshalJSON(b []byte) error {
 		}
 
 		r.Data = l
+	case "risk":
+		var b RiskResults
+		err := json.Unmarshal(tr.RawData, &b)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshall risk results: %v", err)
+		}
+
+		r.Data = b
 	case "secrets":
 		var b SecretResults
 		err := json.Unmarshal(tr.RawData, &b)
@@ -424,6 +438,30 @@ type FileNotes map[string][]string
 type ClamavDetails struct {
 	ClamavVersion   string `json:"clamav_version" xml:"clamav_version"`
 	ClamavDbVersion string `json:"clamav_db_version" xml:"clamav_db_version"`
+}
+
+// RiskResults is a slice of
+type RiskResults struct {
+	Risk []risk.Scores `json:"risk" xml:"risk"`
+}
+
+// MarshalJSON meets the marshaller interface to custom wrangle a risk
+// result into the json shape
+func (e RiskResults) MarshalJSON() ([]byte, error) {
+	return json.Marshal(e.Risk)
+}
+
+// UnmarshalJSON meets the unmarshaller interface to custom wrangle the
+// risk scan into an risk result
+func (e *RiskResults) UnmarshalJSON(b []byte) error {
+	var s []risk.Scores
+	err := json.Unmarshal(b, &s)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal secrets result: %v", err.Error())
+	}
+
+	e.Risk = s
+	return nil
 }
 
 // Secret derived struct for results specific data
