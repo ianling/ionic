@@ -18,18 +18,28 @@ const (
 // Repo is a representation of a github repo and corresponding metrics about
 // that repo pulled from github
 type Repo struct {
+	ID            string     `json:"id" xml:"id"`
+	Name          string     `json:"name" xml:"name"`
+	URL           string     `json:"url" xml:"url"`
+	Committers    int        `json:"committers" xml:"committers"`
+	TotalActors   int        `json:"total_actors,omitempty" xml:"total_actors,omitempty"`
+	Confidence    float64    `json:"confidence" xml:"confidence"`
+	OldNames      []string   `json:"old_names" xml:"old_names"`
+	DefaultBranch string     `json:"default_branch,omitempty" xml:"default_branch,omitempty"`
+	MasterBranch  string     `json:"master_branch,omitempty" xml:"master_branch,omitempty"`
+	Stars         int        `json:"stars" xml:"stars"`
+	CommittedAt   time.Time  `json:"committed_at" xml:"committed_at"`
+	UpdatedAt     time.Time  `json:"updated_at" xml:"updated_at"`
+	CreatedAt     *time.Time `json:"created_at" xml:"created_at"`
+}
+
+// Metrics is a set of data points that represents the measure of a softwares
+// community health
+type Metrics struct {
 	ID                              string          `json:"id" xml:"id"`
 	Name                            string          `json:"name" xml:"name"`
-	URL                             string          `json:"url" xml:"url"`
 	Committers                      int             `json:"committers" xml:"committers"`
 	TotalActors                     int             `json:"total_actors,omitempty" xml:"total_actors,omitempty"`
-	Confidence                      float64         `json:"confidence" xml:"confidence"`
-	OldNames                        []string        `json:"old_names" xml:"old_names"`
-	DefaultBranch                   string          `json:"default_branch,omitempty" xml:"default_branch,omitempty"`
-	MasterBranch                    string          `json:"master_branch,omitempty" xml:"master_branch,omitempty"`
-	Stars                           int             `json:"stars" xml:"stars"`
-	CommittedAt                     time.Time       `json:"committed_at" xml:"committed_at"`
-	UpdatedAt                       time.Time       `json:"updated_at" xml:"updated_at"`
 	CommittersMonthlyCount          *[]MonthlyCount `json:"committers_monthly_count" xml:"committers_monthly_count"`
 	ReleasesTotalCount              *int            `json:"releases_total_count" xml:"releases_total_count"`
 	ReleasesMonthlyCount            *[]MonthlyCount `json:"releases_monthly_count" xml:"releases_monthly_count"`
@@ -57,7 +67,6 @@ type Repo struct {
 	NewActorsMonthlyCount           *[]MonthlyCount `json:"new_actors_monthly_count" xml:"new_actors_monthly_count"`
 	MedianWorkingHour               *int            `json:"median_working_hour" xml:"median_working_hour"`
 	EOLRearFailingDaysCount         *int            `json:"eol_rear_failing_months_count" xml:"eol_rear_failing_months_count"`
-	CreatedAt                       *time.Time      `json:"created_at" xml:"created_at"`
 }
 
 // MonthlyCount defines the data needed for month and count
