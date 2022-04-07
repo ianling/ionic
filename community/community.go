@@ -71,8 +71,8 @@ type Metrics struct {
 
 // MonthlyCount defines the data needed for month and count
 type MonthlyCount struct {
-	Month string `json:"month" xml:"month"`
-	Count int    `json:"count" xml:"count"`
+	Month string  `json:"month" xml:"month"`
+	Count float32 `json:"count" xml:"count"`
 }
 
 // MonthlyMttr defines the data needed for month and mttr
