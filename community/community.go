@@ -51,7 +51,7 @@ type Metrics struct {
 	IssuesOpenMonthlyCount          *[]MonthlyCount `json:"issues_open_monthly_count" xml:"issues_open_monthly_count"`
 	IssuesClosedMonthlyCount        *[]MonthlyCount `json:"issues_closed_monthly_count" xml:"issues_closed_monthly_count"`
 	IssuesClosedMttrMonthly         *[]MonthlyMttr  `json:"issues_closed_mttr_monthly" xml:"issues_closed_mttr_monthly"`
-	IssuesClosedMttr                *int            `json:"issues_closed_mttr" xml:"issues_closed_mttr"`
+	IssuesClosedMttr                *float64        `json:"issues_closed_mttr" xml:"issues_closed_mttr"`
 	CommitsTotalCount               *int            `json:"commits_total_count" xml:"commits_total_count"`
 	CommitsMonthlyCount             *[]MonthlyCount `json:"commits_monthly_count" xml:"commits_monthly_count"`
 	ActorsMonthlyCount              *[]MonthlyCount `json:"actors_monthly_count" xml:"actors_monthly_count"`
