@@ -169,9 +169,9 @@ func (ic *IonClient) GetExportedVulnerabilityData(ids []string, teamID, token st
 	return &ed, nil
 }
 
-// GetSBOM takes slice of project ids, team id, SBOM format, and token.
-// Returns one or more SBOMs for the requested project(s).
-func (ic *IonClient) GetSBOM(options reports.SBOMExportOptions, token string) (string, error) {
+// ExportSBOM takes a reports.SBOMExportOptions struct and a token.
+// Returns an SBOM as a string.
+func (ic *IonClient) ExportSBOM(options reports.SBOMExportOptions, token string) (string, error) {
 	b, err := json.Marshal(options)
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal request body: %v", err.Error())
@@ -179,7 +179,7 @@ func (ic *IonClient) GetSBOM(options reports.SBOMExportOptions, token string) (s
 
 	params := options.Params()
 
-	r, err := ic.Post(reports.ReportGetSBOMEndpoint, token, params, *bytes.NewBuffer(b), nil)
+	r, err := ic.Post(reports.ReportExportSBOMEndpoint, token, params, *bytes.NewBuffer(b), nil)
 
 	if err != nil {
 		return "", fmt.Errorf("failed to request SBOM: %v", err.Error())

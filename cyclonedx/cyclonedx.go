@@ -10,21 +10,21 @@ import (
 	"strings"
 )
 
-// FromJSONString takes a CycloneDX SBOM in JSON format, as a string, and returns a BOM object
+// FromJSONString takes a CycloneDX SoftwareList in JSON format, as a string, and returns a BOM object
 func FromJSONString(sbomContents string) (*cyclonedx.BOM, error) {
 	bom, err := fromString(sbomContents, cyclonedx.BOMFileFormatJSON)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse CycloneDX SBOM in JSON format: %s", err.Error())
+		return nil, fmt.Errorf("failed to parse CycloneDX SoftwareList in JSON format: %s", err.Error())
 	}
 
 	return bom, nil
 }
 
-// FromXMLString takes a CycloneDX SBOM in XML format, as a string, and returns a BOM object
+// FromXMLString takes a CycloneDX SoftwareList in XML format, as a string, and returns a BOM object
 func FromXMLString(sbomContents string) (*cyclonedx.BOM, error) {
 	bom, err := fromString(sbomContents, cyclonedx.BOMFileFormatXML)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse CycloneDX SBOM in XML format: %s", err.Error())
+		return nil, fmt.Errorf("failed to parse CycloneDX SoftwareList in XML format: %s", err.Error())
 	}
 
 	return bom, nil
@@ -82,7 +82,7 @@ func projectFromComponent(component cyclonedx.Component) projects.Project {
 	return project
 }
 
-// ProjectsFromCycloneDX parses components from a CycloneDX SBOM into Projects.
+// ProjectsFromCycloneDX parses components from a CycloneDX SoftwareList into Projects.
 func ProjectsFromCycloneDX(sbom *cyclonedx.BOM, includeDependencies bool) ([]projects.Project, error) {
 	// pre-allocate a slice of projects
 	estimatedSbomLength := 1
@@ -97,7 +97,7 @@ func ProjectsFromCycloneDX(sbom *cyclonedx.BOM, includeDependencies bool) ([]pro
 	}
 
 	if includeDependencies && estimatedSbomLength > 1 {
-		// get all the components in the SBOM
+		// get all the components in the SoftwareList
 		for _, component := range *sbom.Components {
 			project := projectFromComponent(component)
 
