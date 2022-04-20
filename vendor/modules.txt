@@ -38,17 +38,17 @@ github.com/onsi/gomega/matchers/support/goraph/edge
 github.com/onsi/gomega/matchers/support/goraph/node
 github.com/onsi/gomega/matchers/support/goraph/util
 github.com/onsi/gomega/types
-# github.com/spdx/tools-golang v0.2.0
-## explicit; go 1.13
+# github.com/spdx/tools-golang v0.2.0 => github.com/ion-channel/tools-golang v0.0.0-20220420185427-456db6f3c062
+## explicit; go 1.15
 github.com/spdx/tools-golang/spdx
 github.com/spdx/tools-golang/spdxlib
-# golang.org/x/net v0.0.0-20201021035429-f5854403a974
-## explicit; go 1.11
+# golang.org/x/net v0.0.0-20220407224826-aac1ed45d8e3
+## explicit; go 1.17
 golang.org/x/net/html
 golang.org/x/net/html/atom
 golang.org/x/net/html/charset
-# golang.org/x/text v0.3.3
-## explicit; go 1.11
+# golang.org/x/text v0.3.7
+## explicit; go 1.17
 golang.org/x/text/encoding
 golang.org/x/text/encoding/charmap
 golang.org/x/text/encoding/htmlindex
@@ -72,6 +72,7 @@ golang.org/x/xerrors
 golang.org/x/xerrors/internal
 # gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127
 ## explicit
-# gopkg.in/yaml.v2 v2.3.0
-## explicit
+# gopkg.in/yaml.v2 v2.4.0
+## explicit; go 1.15
 gopkg.in/yaml.v2
+# github.com/spdx/tools-golang => github.com/ion-channel/tools-golang v0.0.0-20220420185427-456db6f3c062

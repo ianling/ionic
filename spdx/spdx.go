@@ -35,7 +35,10 @@ func packageInfoFromPackage(spdxPackage interface{}) packageInfo {
 		version = packageTyped.PackageVersion
 		downloadLocation = packageTyped.PackageDownloadLocation
 		description = packageTyped.PackageDescription
-		organization = packageTyped.PackageSupplierOrganization
+
+		if packageTyped.PackageSupplier != nil && packageTyped.PackageSupplier.SupplierType == "Organization" {
+			organization = packageTyped.PackageSupplier.Supplier
+		}
 
 		for _, externalRef := range packageTyped.PackageExternalReferences {
 			if externalRef.Category == "SECURITY" && (externalRef.RefType == "cpe22Type" || externalRef.RefType == "cpe23Type") {
@@ -50,7 +53,10 @@ func packageInfoFromPackage(spdxPackage interface{}) packageInfo {
 		version = packageTyped.PackageVersion
 		downloadLocation = packageTyped.PackageDownloadLocation
 		description = packageTyped.PackageDescription
-		organization = packageTyped.PackageSupplierOrganization
+
+		if packageTyped.PackageSupplier != nil && packageTyped.PackageSupplier.SupplierType == "Organization" {
+			organization = packageTyped.PackageSupplier.Supplier
+		}
 
 		for _, externalRef := range packageTyped.PackageExternalReferences {
 			if externalRef.Category == "SECURITY" && (externalRef.RefType == "cpe22Type" || externalRef.RefType == "cpe23Type") {
@@ -82,52 +88,64 @@ func ProjectsFromSPDX(doc interface{}, includeDependencies bool) ([]projects.Pro
 	switch doc.(type) {
 	case *spdx.Document2_1:
 		docTyped := doc.(*spdx.Document2_1)
-		pkgIDs := []spdx.ElementID{}
 
 		if includeDependencies {
 			// just get all of the packages
 			for _, spdxPackage := range docTyped.Packages {
-				pkgIDs = append(pkgIDs, spdxPackage.PackageSPDXIdentifier)
+				packageInfos = append(packageInfos, packageInfoFromPackage(*spdxPackage))
 			}
-			pkgIDs = spdxlib.SortElementIDs(pkgIDs)
 		} else {
-			// get only the top-level packages (already sorted for us)
+			// get only the top-level packages
 			topLevelPkgIDs, err := spdxlib.GetDescribedPackageIDs2_1(docTyped)
 			if err != nil {
 				return nil, fmt.Errorf("failed to retrieve described packages from SPDX 2.1 document: %s", err.Error())
 			}
 
-			pkgIDs = topLevelPkgIDs
-		}
+			for _, spdxPackage := range docTyped.Packages {
+				var isTopLevelPackage bool
+				for _, pkgID := range topLevelPkgIDs {
+					if pkgID == spdxPackage.PackageSPDXIdentifier {
+						isTopLevelPackage = true
+						break
+					}
+				}
 
-		for _, pkgID := range pkgIDs {
-			if pkg := docTyped.Packages[pkgID]; pkg != nil {
-				packageInfos = append(packageInfos, packageInfoFromPackage(*pkg))
+				if !isTopLevelPackage {
+					continue
+				}
+
+				packageInfos = append(packageInfos, packageInfoFromPackage(*spdxPackage))
 			}
 		}
 	case *spdx.Document2_2:
 		docTyped := doc.(*spdx.Document2_2)
-		pkgIDs := []spdx.ElementID{}
 
 		if includeDependencies {
 			// just get all of the packages
 			for _, spdxPackage := range docTyped.Packages {
-				pkgIDs = append(pkgIDs, spdxPackage.PackageSPDXIdentifier)
+				packageInfos = append(packageInfos, packageInfoFromPackage(*spdxPackage))
 			}
-			pkgIDs = spdxlib.SortElementIDs(pkgIDs)
 		} else {
-			// get only the top-level packages (already sorted for us)
+			// get only the top-level packages
 			topLevelPkgIDs, err := spdxlib.GetDescribedPackageIDs2_2(docTyped)
 			if err != nil {
 				return nil, fmt.Errorf("failed to retrieve described packages from SPDX 2.2 document: %s", err.Error())
 			}
 
-			pkgIDs = topLevelPkgIDs
-		}
+			for _, spdxPackage := range docTyped.Packages {
+				var isTopLevelPackage bool
+				for _, pkgID := range topLevelPkgIDs {
+					if pkgID == spdxPackage.PackageSPDXIdentifier {
+						isTopLevelPackage = true
+						break
+					}
+				}
 
-		for _, pkgID := range pkgIDs {
-			if pkg := docTyped.Packages[pkgID]; pkg != nil {
-				packageInfos = append(packageInfos, packageInfoFromPackage(*pkg))
+				if !isTopLevelPackage {
+					continue
+				}
+
+				packageInfos = append(packageInfos, packageInfoFromPackage(*spdxPackage))
 			}
 		}
 	default:
@@ -137,7 +155,7 @@ func ProjectsFromSPDX(doc interface{}, includeDependencies bool) ([]projects.Pro
 	projs := []projects.Project{}
 	for ii := range packageInfos {
 		pkg := packageInfos[ii]
-		// info we need to parse out of the SBOM
+		// info we need to parse out of the SoftwareList
 		var ptype, source, branch string
 
 		tmpID := uuid.New().String()
@@ -211,114 +229,4 @@ func parseCreatorEmail(creatorPersons []string) string {
 		}
 	}
 	return ""
-}
-
-// Pretty print functions for SPDX file license/package information.
-
-func spdxV2_2(doc *spdx.Document2_2) {
-	// print the struct containing the SPDX file's Creation Info section data
-	fmt.Printf("==============\n")
-	fmt.Printf("Creation info:\n")
-	fmt.Printf("==============\n")
-	fmt.Printf("%#v\n\n", doc.CreationInfo)
-	pkgIDs, err := spdxlib.GetDescribedPackageIDs2_2(doc)
-	if err != nil {
-		fmt.Printf("Unable to get describe packages from SPDX document: %v\n", err)
-		return
-	}
-
-	// SPDX Document does contain packages, so we'll go through each one
-	for _, pkgID := range pkgIDs {
-		pkg, ok := doc.Packages[pkgID]
-		if !ok {
-			fmt.Printf("Package %s has described relationship but ID not found\n", string(pkgID))
-			continue
-		}
-
-		// check whether the package had its files analyzed
-		if !pkg.FilesAnalyzed {
-			fmt.Printf("Package %s (%s) had FilesAnalyzed: false\n", string(pkgID), pkg.PackageName)
-			continue
-		}
-
-		// also check whether the package has any files present
-		if pkg.Files == nil || len(pkg.Files) < 1 {
-			fmt.Printf("Package %s (%s) has no Files\n", string(pkgID), pkg.PackageName)
-			continue
-		}
-
-		// if we got here, there's at least one file
-		// print the filename and license info for the first 50
-		fmt.Printf("============================\n")
-		fmt.Printf("Package %s (%s)\n", string(pkgID), pkg.PackageName)
-		fmt.Printf("File info (up to first 50):\n")
-		i := 1
-		for _, f := range pkg.Files {
-			// note that these will be in random order, since we're pulling
-			// from a map. if we care about order, we should first pull the
-			// IDs into a slice, sort it, and then print the ordered files.
-			fmt.Printf("- File %d: %s\n", i, f.FileName)
-			fmt.Printf("    License from file: %v\n", f.LicenseInfoInFile)
-			fmt.Printf("    License concluded: %v\n", f.LicenseConcluded)
-			i++
-			if i > 50 {
-				break
-			}
-		}
-	}
-}
-
-func spdxV2_1(doc *spdx.Document2_1) {
-	// we can now take a look at its contents via the various data
-	// structures representing the SPDX document's sections.
-
-	// print the struct containing the SPDX file's Creation Info section data
-	fmt.Printf("==============\n")
-	fmt.Printf("Creation info:\n")
-	fmt.Printf("==============\n")
-	fmt.Printf("%#v\n\n", doc.CreationInfo)
-	pkgIDs, err := spdxlib.GetDescribedPackageIDs2_1(doc)
-	if err != nil {
-		fmt.Printf("Unable to get describe packages from SPDX document: %v\n", err)
-		return
-	}
-	// SPDX Document does contain packages, so we'll go through each one
-	for _, pkgID := range pkgIDs {
-		pkg, ok := doc.Packages[pkgID]
-		if !ok {
-			fmt.Printf("Package %s has described relationship but ID not found\n", string(pkgID))
-			continue
-		}
-
-		// check whether the package had its files analyzed
-		if !pkg.FilesAnalyzed {
-			fmt.Printf("Package %s (%s) had FilesAnalyzed: false\n", string(pkgID), pkg.PackageName)
-			continue
-		}
-
-		// also check whether the package has any files present
-		if pkg.Files == nil || len(pkg.Files) < 1 {
-			fmt.Printf("Package %s (%s) has no Files\n", string(pkgID), pkg.PackageName)
-			continue
-		}
-
-		// if we got here, there's at least one file
-		// print the filename and license info for the first 50
-		fmt.Printf("============================\n")
-		fmt.Printf("Package %s (%s)\n", string(pkgID), pkg.PackageName)
-		fmt.Printf("File info (up to first 50):\n")
-		i := 1
-		for _, f := range pkg.Files {
-			// note that these will be in random order, since we're pulling
-			// from a map. if we care about order, we should first pull the
-			// IDs into a slice, sort it, and then print the ordered files.
-			fmt.Printf("- File %d: %s\n", i, f.FileName)
-			fmt.Printf("    License from file: %v\n", f.LicenseInfoInFile)
-			fmt.Printf("    License concluded: %v\n", f.LicenseConcluded)
-			i++
-			if i > 50 {
-				break
-			}
-		}
-	}
 }

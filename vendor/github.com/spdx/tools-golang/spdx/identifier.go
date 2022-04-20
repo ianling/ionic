@@ -2,11 +2,21 @@
 
 package spdx
 
+import (
+	"encoding/json"
+	"fmt"
+	"strings"
+)
+
 // ElementID represents the identifier string portion of an SPDX element
 // identifier. DocElementID should be used for any attributes which can
 // contain identifiers defined in a different SPDX document.
 // ElementIDs should NOT contain the mandatory 'SPDXRef-' portion.
 type ElementID string
+
+func (e ElementID) String() string {
+	return fmt.Sprintf("SPDXRef-%s", string(e))
+}
 
 // DocElementID represents an SPDX element identifier that could be defined
 // in a different SPDX document, and therefore could have a "DocumentRef-"
@@ -28,13 +38,98 @@ type DocElementID struct {
 	SpecialID     string
 }
 
-// TODO: add equivalents for LicenseRef- identifiers
+// Validate verifies that all the required fields are present.
+// Returns an error if the object is invalid.
+func (d DocElementID) Validate() error {
+	if d.DocumentRefID == "" && d.ElementRefID == "" && d.SpecialID == "" {
+		return fmt.Errorf("invalid DocElementID, missing fields. %+v", d)
+	}
 
-// MakeDocElementID takes strings (without prefixes) for the DocumentRef-
-// and SPDXRef- identifiers, and returns a DocElementID. An empty string
-// should be used for the DocumentRef- portion if it is referring to the
-// present document.
+	return nil
+}
+
+// FromString parses an SPDX Identifier string into a DocElementID struct.
+// These strings take one of the following forms:
+//  - "DocumentRef-other-document:SPDXRef-some-identifier"
+//  - "SPDXRef-some-identifier"
+//  - "NOASSERTION" or "NONE"
+func (d *DocElementID) FromString(idStr string) error {
+	// handle special cases
+	if idStr == "NONE" || idStr == "NOASSERTION" {
+		d.SpecialID = idStr
+		return nil
+	}
+
+	var idFields []string
+	// handle DocumentRef- if present
+	if strings.HasPrefix(idStr, "DocumentRef-") {
+		// strip out the "DocumentRef-" so we can get the value
+		idFields = strings.SplitN(idStr, "DocumentRef-", 2)
+		idStr = idFields[1]
+
+		// an SPDXRef can appear after a DocumentRef, separated by a colon
+		idFields = strings.SplitN(idStr, ":", 2)
+		d.DocumentRefID = idFields[0]
+
+		if len(idFields) == 2 {
+			idStr = idFields[1]
+		} else {
+			return nil
+		}
+	}
+
+	// handle SPDXRef-
+	idFields = strings.SplitN(idStr, "SPDXRef-", 2)
+	if len(idFields) != 2 {
+		return fmt.Errorf("failed to parse SPDX Identifier '%s'", idStr)
+	}
+
+	d.ElementRefID = ElementID(idFields[1])
+
+	return nil
+}
+
+// MarshalString converts the receiver into a string representing a DocElementID.
+// This is used when writing a spreadsheet SPDX file, for example.
+func (d DocElementID) String() string {
+	if d.DocumentRefID != "" && d.ElementRefID != "" {
+		return fmt.Sprintf("DocumentRef-%s:%s", d.DocumentRefID, d.ElementRefID)
+	} else if d.ElementRefID != "" {
+		return d.ElementRefID.String()
+	} else if d.SpecialID != "" {
+		return d.SpecialID
+	}
+
+	return ""
+}
+
+// UnmarshalJSON takes a SPDX Identifier string parses it into a DocElementID struct.
+// This function is also used when unmarshalling YAML
+func (d *DocElementID) UnmarshalJSON(data []byte) error {
+	// SPDX identifier will simply be a string
+	idStr := string(data)
+	idStr = strings.Trim(idStr, "\"")
+
+	return d.FromString(idStr)
+}
+
+// MarshalJSON converts the receiver into a slice of bytes representing a DocElementID in string form.
+// This function is also used when marshalling to YAML
+func (d DocElementID) MarshalJSON() ([]byte, error) {
+	if err := d.Validate(); err != nil {
+		return nil, err
+	}
+
+	return json.Marshal(d.String())
+}
+
+// MakeDocElementID takes strings for the DocumentRef- and SPDXRef- identifiers (these prefixes will be stripped if present),
+// and returns a DocElementID.
+// An empty string should be used for the DocumentRef- portion if it is referring to the present document.
 func MakeDocElementID(docRef string, eltRef string) DocElementID {
+	docRef = strings.Replace(docRef, "DocumentRef-", "", 1)
+	eltRef = strings.Replace(eltRef, "SPDXRef-", "", 1)
+
 	return DocElementID{
 		DocumentRefID: docRef,
 		ElementRefID:  ElementID(eltRef),

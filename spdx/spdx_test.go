@@ -22,24 +22,22 @@ func TestSPDX(t *testing.T) {
 			spdxRef := spdx.MakeDocElementID("", "some-cool-pkg")
 			spdxDependencyRef := spdx.MakeDocElementID("", "some-dep")
 			spdxPackage := spdx.Package2_1{
-				PackageName:                 "some-cool-pkg",
-				PackageSPDXIdentifier:       spdxRef.ElementRefID,
-				PackageVersion:              "1.2.3",
-				PackageSupplierOrganization: "The Org",
-				PackageDownloadLocation:     "https://github.com/some-org/some-cool-pkg.git@main",
-				PackageDescription:          "Some description",
+				PackageName:             "some-cool-pkg",
+				PackageSPDXIdentifier:   spdxRef.ElementRefID,
+				PackageVersion:          "1.2.3",
+				PackageSupplier:         &spdx.Supplier{Supplier: "The Org", SupplierType: "Organization"},
+				PackageDownloadLocation: "https://github.com/some-org/some-cool-pkg.git@main",
+				PackageDescription:      "Some description",
 			}
 			spdxDependencyPackage := spdx.Package2_1{
-				PackageName:                 "some-dep",
-				PackageSPDXIdentifier:       spdxDependencyRef.ElementRefID,
-				PackageVersion:              "3.2.1",
-				PackageSupplierOrganization: "The Org",
-				PackageDownloadLocation:     "https://github.com/some-org/some-dep.git",
-				PackageDescription:          "Some dep description",
+				PackageName:             "some-dep",
+				PackageSPDXIdentifier:   spdxDependencyRef.ElementRefID,
+				PackageVersion:          "3.2.1",
+				PackageSupplier:         &spdx.Supplier{Supplier: "The Org", SupplierType: "Organization"},
+				PackageDownloadLocation: "https://github.com/some-org/some-dep.git",
+				PackageDescription:      "Some dep description",
 			}
-			packages := make(map[spdx.ElementID]*spdx.Package2_1)
-			packages[spdxRef.ElementRefID] = &spdxPackage
-			packages[spdxDependencyRef.ElementRefID] = &spdxDependencyPackage
+			packages := []*spdx.Package2_1{&spdxPackage, &spdxDependencyPackage}
 
 			relationships := []*spdx.Relationship2_1{{
 				RefA:         spdxDocumentRef,
@@ -52,11 +50,11 @@ func TestSPDX(t *testing.T) {
 			}}
 
 			doc := spdx.Document2_1{
+				DocumentName:      "SPDX SBOM",
+				DocumentNamespace: "http://ionchannel.io",
 				CreationInfo: &spdx.CreationInfo2_1{
-					DocumentName:      "SPDX SBOM",
-					DocumentNamespace: "http://ionchannel.io",
-					CreatorPersons:    []string{"Monsieur Package Creator (mpc@mail.com)"},
-					CreatorComment:    "some cool package SBOM",
+					Creators:       []spdx.Creator{{Creator: "Monsieur Package Creator (mpc@mail.com)", CreatorType: "Person"}},
+					CreatorComment: "some cool package SBOM",
 				},
 				Packages:      packages,
 				Relationships: relationships,
@@ -81,23 +79,21 @@ func TestSPDX(t *testing.T) {
 			spdxRef := spdx.MakeDocElementID("", "some-cool-pkg")
 			spdxDependencyRef := spdx.MakeDocElementID("", "some-dep")
 			spdxPackage := spdx.Package2_1{
-				PackageName:                 "some-cool-pkg",
-				PackageSPDXIdentifier:       spdxRef.ElementRefID,
-				PackageVersion:              "1.2.3",
-				PackageSupplierOrganization: "The Org",
-				PackageDownloadLocation:     "https://github.com/some-org/some-cool-pkg.git@my-cool-branch",
-				PackageDescription:          "Some description",
+				PackageName:             "some-cool-pkg",
+				PackageSPDXIdentifier:   spdxRef.ElementRefID,
+				PackageVersion:          "1.2.3",
+				PackageSupplier:         &spdx.Supplier{Supplier: "The Org", SupplierType: "Organization"},
+				PackageDownloadLocation: "https://github.com/some-org/some-cool-pkg.git@my-cool-branch",
+				PackageDescription:      "Some description",
 			}
 			spdxDependencyPackage := spdx.Package2_1{
-				PackageName:                 "some-dep",
-				PackageSPDXIdentifier:       spdxDependencyRef.ElementRefID,
-				PackageVersion:              "3.2.1",
-				PackageSupplierOrganization: "The Org",
-				PackageDescription:          "Some dep description",
+				PackageName:           "some-dep",
+				PackageSPDXIdentifier: spdxDependencyRef.ElementRefID,
+				PackageVersion:        "3.2.1",
+				PackageSupplier:       &spdx.Supplier{Supplier: "The Org", SupplierType: "Organization"},
+				PackageDescription:    "Some dep description",
 			}
-			packages := make(map[spdx.ElementID]*spdx.Package2_1)
-			packages[spdxRef.ElementRefID] = &spdxPackage
-			packages[spdxDependencyRef.ElementRefID] = &spdxDependencyPackage
+			packages := []*spdx.Package2_1{&spdxPackage, &spdxDependencyPackage}
 
 			relationships := []*spdx.Relationship2_1{{
 				RefA:         spdxDocumentRef,
@@ -110,11 +106,11 @@ func TestSPDX(t *testing.T) {
 			}}
 
 			doc := spdx.Document2_1{
+				DocumentName:      "SPDX SBOM",
+				DocumentNamespace: "http://ionchannel.io",
 				CreationInfo: &spdx.CreationInfo2_1{
-					DocumentName:      "SPDX SBOM",
-					DocumentNamespace: "http://ionchannel.io",
-					CreatorPersons:    []string{"Monsieur Package Creator (mpc@mail.com)"},
-					CreatorComment:    "some cool package SBOM",
+					Creators:       []spdx.Creator{{Creator: "Monsieur Package Creator (mpc@mail.com)", CreatorType: "Person"}},
+					CreatorComment: "some cool package SBOM",
 				},
 				Packages:      packages,
 				Relationships: relationships,
@@ -130,14 +126,14 @@ func TestSPDX(t *testing.T) {
 			Expect(*p[0].Description).To(Equal(spdxPackage.PackageDescription))
 			Expect(len(p[0].Aliases)).To(Equal(1))
 			Expect(p[0].Aliases[0].Version).To(Equal(spdxPackage.PackageVersion))
-			Expect(p[0].Aliases[0].Org).To(Equal(spdxPackage.PackageSupplierOrganization))
+			Expect(p[0].Aliases[0].Org).To(Equal(spdxPackage.PackageSupplier.Supplier))
 			Expect(*p[0].Branch).To(Equal("my-cool-branch"))
 			Expect(*p[1].Name).To(Equal(spdxDependencyPackage.PackageName))
 			Expect(*p[1].Type).To(Equal("source_unavailable"))
 			Expect(*p[1].Description).To(Equal(spdxDependencyPackage.PackageDescription))
 			Expect(len(p[1].Aliases)).To(Equal(1))
 			Expect(p[1].Aliases[0].Version).To(Equal(spdxDependencyPackage.PackageVersion))
-			Expect(p[1].Aliases[0].Org).To(Equal(spdxPackage.PackageSupplierOrganization))
+			Expect(p[1].Aliases[0].Org).To(Equal(spdxPackage.PackageSupplier.Supplier))
 		})
 
 		g.It("should convert NOASSERTION version to blank string", func() {
@@ -145,23 +141,21 @@ func TestSPDX(t *testing.T) {
 			spdxRef := spdx.MakeDocElementID("", "some-cool-pkg")
 			spdxDependencyRef := spdx.MakeDocElementID("", "some-dep")
 			spdxPackage := spdx.Package2_1{
-				PackageName:                 "some-cool-pkg",
-				PackageSPDXIdentifier:       spdxRef.ElementRefID,
-				PackageVersion:              "NOASSERTION",
-				PackageSupplierOrganization: "The Org",
-				PackageDownloadLocation:     "https://github.com/some-org/some-cool-pkg.git@my-cool-branch",
-				PackageDescription:          "Some description",
+				PackageName:             "some-cool-pkg",
+				PackageSPDXIdentifier:   spdxRef.ElementRefID,
+				PackageVersion:          "NOASSERTION",
+				PackageSupplier:         &spdx.Supplier{Supplier: "The Org", SupplierType: "Organization"},
+				PackageDownloadLocation: "https://github.com/some-org/some-cool-pkg.git@my-cool-branch",
+				PackageDescription:      "Some description",
 			}
 			spdxDependencyPackage := spdx.Package2_1{
-				PackageName:                 "some-dep",
-				PackageSPDXIdentifier:       spdxDependencyRef.ElementRefID,
-				PackageVersion:              "NOASSERTION",
-				PackageSupplierOrganization: "The Org",
-				PackageDescription:          "Some dep description",
+				PackageName:           "some-dep",
+				PackageSPDXIdentifier: spdxDependencyRef.ElementRefID,
+				PackageVersion:        "NOASSERTION",
+				PackageSupplier:       &spdx.Supplier{Supplier: "The Org", SupplierType: "Organization"},
+				PackageDescription:    "Some dep description",
 			}
-			packages := make(map[spdx.ElementID]*spdx.Package2_1)
-			packages[spdxRef.ElementRefID] = &spdxPackage
-			packages[spdxDependencyRef.ElementRefID] = &spdxDependencyPackage
+			packages := []*spdx.Package2_1{&spdxPackage, &spdxDependencyPackage}
 
 			relationships := []*spdx.Relationship2_1{{
 				RefA:         spdxDocumentRef,
@@ -174,11 +168,11 @@ func TestSPDX(t *testing.T) {
 			}}
 
 			doc := spdx.Document2_1{
+				DocumentName:      "SPDX SBOM",
+				DocumentNamespace: "http://ionchannel.io",
 				CreationInfo: &spdx.CreationInfo2_1{
-					DocumentName:      "SPDX SBOM",
-					DocumentNamespace: "http://ionchannel.io",
-					CreatorPersons:    []string{"Monsieur Package Creator (mpc@mail.com)"},
-					CreatorComment:    "some cool package SBOM",
+					Creators:       []spdx.Creator{{Creator: "Monsieur Package Creator (mpc@mail.com)", CreatorType: "Person"}},
+					CreatorComment: "some cool package SBOM",
 				},
 				Packages:      packages,
 				Relationships: relationships,
@@ -199,24 +193,22 @@ func TestSPDX(t *testing.T) {
 			spdxRef := spdx.MakeDocElementID("", "some-cool-pkg")
 			spdxDependencyRef := spdx.MakeDocElementID("", "some-dep")
 			spdxPackage := spdx.Package2_2{
-				PackageName:                 "some-cool-pkg",
-				PackageSPDXIdentifier:       spdxRef.ElementRefID,
-				PackageVersion:              "1.2.3",
-				PackageSupplierOrganization: "The Org",
-				PackageDownloadLocation:     "https://github.com/some-org/some-cool-pkg.git@ian/some-branch",
-				PackageDescription:          "Some description",
+				PackageName:             "some-cool-pkg",
+				PackageSPDXIdentifier:   spdxRef.ElementRefID,
+				PackageVersion:          "1.2.3",
+				PackageSupplier:         &spdx.Supplier{Supplier: "The Org", SupplierType: "Organization"},
+				PackageDownloadLocation: "https://github.com/some-org/some-cool-pkg.git@ian/some-branch",
+				PackageDescription:      "Some description",
 			}
 			spdxDependencyPackage := spdx.Package2_2{
-				PackageName:                 "some-dep",
-				PackageSPDXIdentifier:       spdxDependencyRef.ElementRefID,
-				PackageVersion:              "3.2.1",
-				PackageSupplierOrganization: "The Org",
-				PackageDownloadLocation:     "https://github.com/some-org/some-dep.git",
-				PackageDescription:          "Some dep description",
+				PackageName:             "some-dep",
+				PackageSPDXIdentifier:   spdxDependencyRef.ElementRefID,
+				PackageVersion:          "3.2.1",
+				PackageSupplier:         &spdx.Supplier{Supplier: "The Org", SupplierType: "Organization"},
+				PackageDownloadLocation: "https://github.com/some-org/some-dep.git",
+				PackageDescription:      "Some dep description",
 			}
-			packages := make(map[spdx.ElementID]*spdx.Package2_2)
-			packages[spdxRef.ElementRefID] = &spdxPackage
-			packages[spdxDependencyRef.ElementRefID] = &spdxDependencyPackage
+			packages := []*spdx.Package2_2{&spdxPackage, &spdxDependencyPackage}
 
 			relationships := []*spdx.Relationship2_2{{
 				RefA:         spdxDocumentRef,
@@ -229,11 +221,11 @@ func TestSPDX(t *testing.T) {
 			}}
 
 			doc := spdx.Document2_2{
+				DocumentName:      "SPDX SBOM",
+				DocumentNamespace: "http://ionchannel.io",
 				CreationInfo: &spdx.CreationInfo2_2{
-					DocumentName:      "SPDX SBOM",
-					DocumentNamespace: "http://ionchannel.io",
-					CreatorPersons:    []string{"Monsieur Package Creator (mpc@mail.com)"},
-					CreatorComment:    "some cool package SBOM",
+					Creators:       []spdx.Creator{{Creator: "Monsieur Package Creator (mpc@mail.com)", CreatorType: "Person"}},
+					CreatorComment: "some cool package SBOM",
 				},
 				Packages:      packages,
 				Relationships: relationships,
@@ -257,23 +249,21 @@ func TestSPDX(t *testing.T) {
 			spdxRef := spdx.MakeDocElementID("", "some-cool-pkg")
 			spdxDependencyRef := spdx.MakeDocElementID("", "some-dep")
 			spdxPackage := spdx.Package2_2{
-				PackageName:                 "some-cool-pkg",
-				PackageSPDXIdentifier:       spdxRef.ElementRefID,
-				PackageVersion:              "1.2.3",
-				PackageSupplierOrganization: "The Org",
-				PackageDownloadLocation:     "https://github.com/some-org/some-cool-pkg.git",
-				PackageDescription:          "Some description",
+				PackageName:             "some-cool-pkg",
+				PackageSPDXIdentifier:   spdxRef.ElementRefID,
+				PackageVersion:          "1.2.3",
+				PackageSupplier:         &spdx.Supplier{Supplier: "The Org", SupplierType: "Organization"},
+				PackageDownloadLocation: "https://github.com/some-org/some-cool-pkg.git",
+				PackageDescription:      "Some description",
 			}
 			spdxDependencyPackage := spdx.Package2_2{
-				PackageName:                 "some-dep",
-				PackageSPDXIdentifier:       spdxDependencyRef.ElementRefID,
-				PackageVersion:              "3.2.1",
-				PackageSupplierOrganization: "The Org",
-				PackageDescription:          "Some dep description",
+				PackageName:           "some-dep",
+				PackageSPDXIdentifier: spdxDependencyRef.ElementRefID,
+				PackageVersion:        "3.2.1",
+				PackageSupplier:       &spdx.Supplier{Supplier: "The Org", SupplierType: "Organization"},
+				PackageDescription:    "Some dep description",
 			}
-			packages := make(map[spdx.ElementID]*spdx.Package2_2)
-			packages[spdxRef.ElementRefID] = &spdxPackage
-			packages[spdxDependencyRef.ElementRefID] = &spdxDependencyPackage
+			packages := []*spdx.Package2_2{&spdxPackage, &spdxDependencyPackage}
 
 			relationships := []*spdx.Relationship2_2{{
 				RefA:         spdxDocumentRef,
@@ -286,11 +276,11 @@ func TestSPDX(t *testing.T) {
 			}}
 
 			doc := spdx.Document2_2{
+				DocumentName:      "SPDX SBOM",
+				DocumentNamespace: "http://ionchannel.io",
 				CreationInfo: &spdx.CreationInfo2_2{
-					DocumentName:      "SPDX SBOM",
-					DocumentNamespace: "http://ionchannel.io",
-					CreatorPersons:    []string{"Monsieur Package Creator (mpc@mail.com)"},
-					CreatorComment:    "some cool package SBOM",
+					Creators:       []spdx.Creator{{Creator: "Monsieur Package Creator (mpc@mail.com)", CreatorType: "Person"}},
+					CreatorComment: "some cool package SBOM",
 				},
 				Packages:      packages,
 				Relationships: relationships,
@@ -306,14 +296,14 @@ func TestSPDX(t *testing.T) {
 			Expect(*p[0].Description).To(Equal(spdxPackage.PackageDescription))
 			Expect(len(p[0].Aliases)).To(Equal(1))
 			Expect(p[0].Aliases[0].Version).To(Equal(spdxPackage.PackageVersion))
-			Expect(p[0].Aliases[0].Org).To(Equal(spdxPackage.PackageSupplierOrganization))
+			Expect(p[0].Aliases[0].Org).To(Equal(spdxPackage.PackageSupplier.Supplier))
 			Expect(*p[0].Branch).To(Equal("HEAD"))
 			Expect(*p[1].Name).To(Equal(spdxDependencyPackage.PackageName))
 			Expect(*p[1].Type).To(Equal("source_unavailable"))
 			Expect(*p[1].Description).To(Equal(spdxDependencyPackage.PackageDescription))
 			Expect(len(p[1].Aliases)).To(Equal(1))
 			Expect(p[1].Aliases[0].Version).To(Equal(spdxDependencyPackage.PackageVersion))
-			Expect(p[1].Aliases[0].Org).To(Equal(spdxPackage.PackageSupplierOrganization))
+			Expect(p[1].Aliases[0].Org).To(Equal(spdxPackage.PackageSupplier.Supplier))
 			Expect(*p[1].Branch).To(Equal(""))
 		})
 
@@ -322,23 +312,21 @@ func TestSPDX(t *testing.T) {
 			spdxRef := spdx.MakeDocElementID("", "some-cool-pkg")
 			spdxDependencyRef := spdx.MakeDocElementID("", "some-dep")
 			spdxPackage := spdx.Package2_2{
-				PackageName:                 "some-cool-pkg",
-				PackageSPDXIdentifier:       spdxRef.ElementRefID,
-				PackageVersion:              "NOASSERTION",
-				PackageSupplierOrganization: "The Org",
-				PackageDownloadLocation:     "https://github.com/some-org/some-cool-pkg.git",
-				PackageDescription:          "Some description",
+				PackageName:             "some-cool-pkg",
+				PackageSPDXIdentifier:   spdxRef.ElementRefID,
+				PackageVersion:          "NOASSERTION",
+				PackageSupplier:         &spdx.Supplier{Supplier: "The Org", SupplierType: "Organization"},
+				PackageDownloadLocation: "https://github.com/some-org/some-cool-pkg.git",
+				PackageDescription:      "Some description",
 			}
 			spdxDependencyPackage := spdx.Package2_2{
-				PackageName:                 "some-dep",
-				PackageSPDXIdentifier:       spdxDependencyRef.ElementRefID,
-				PackageVersion:              "NOASSERTION",
-				PackageSupplierOrganization: "The Org",
-				PackageDescription:          "Some dep description",
+				PackageName:           "some-dep",
+				PackageSPDXIdentifier: spdxDependencyRef.ElementRefID,
+				PackageVersion:        "NOASSERTION",
+				PackageSupplier:       &spdx.Supplier{Supplier: "The Org", SupplierType: "Organization"},
+				PackageDescription:    "Some dep description",
 			}
-			packages := make(map[spdx.ElementID]*spdx.Package2_2)
-			packages[spdxRef.ElementRefID] = &spdxPackage
-			packages[spdxDependencyRef.ElementRefID] = &spdxDependencyPackage
+			packages := []*spdx.Package2_2{&spdxPackage, &spdxDependencyPackage}
 
 			relationships := []*spdx.Relationship2_2{{
 				RefA:         spdxDocumentRef,
@@ -351,11 +339,11 @@ func TestSPDX(t *testing.T) {
 			}}
 
 			doc := spdx.Document2_2{
+				DocumentName:      "SPDX SBOM",
+				DocumentNamespace: "http://ionchannel.io",
 				CreationInfo: &spdx.CreationInfo2_2{
-					DocumentName:      "SPDX SBOM",
-					DocumentNamespace: "http://ionchannel.io",
-					CreatorPersons:    []string{"Monsieur Package Creator (mpc@mail.com)"},
-					CreatorComment:    "some cool package SBOM",
+					Creators:       []spdx.Creator{{Creator: "Monsieur Package Creator (mpc@mail.com)", CreatorType: "Person"}},
+					CreatorComment: "some cool package SBOM",
 				},
 				Packages:      packages,
 				Relationships: relationships,
