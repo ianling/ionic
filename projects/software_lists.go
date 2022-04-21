@@ -23,7 +23,7 @@ type SoftwareList struct {
 	UpdatedAt        time.Time   `json:"updated_at"`
 	DeletedAt        *time.Time  `json:"deleted_at"`
 	EntryCount       int         `json:"entry_count"`
-	Stats            Stats       `json:"stats"`
+	Metrics          Metrics     `json:"metrics"`
 	Entries          []Component `json:"entries"`
 	TeamID           string      `json:"team_id"`
 	OrgID            string      `json:"org_id"`
@@ -50,7 +50,7 @@ type Resolution struct {
 	Unresolved        int `json:"unresolved"`
 }
 
-type Stats struct {
+type Metrics struct {
 	Risk       Risk       `json:"risk"`
 	Compliance Compliance `json:"compliance"`
 	Resolution Resolution `json:"resolution"`
@@ -58,6 +58,6 @@ type Stats struct {
 
 type SoftwareInventorySummary struct {
 	ID            string         `json:"id"`
-	Organization  Stats          `json:"organization"`
+	Organization  Metrics        `json:"organization"`
 	SoftwareLists []SoftwareList `json:"softwareLists"`
 }
