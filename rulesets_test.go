@@ -49,7 +49,7 @@ func TestRuleSets(t *testing.T) {
 				SetPayload([]byte(SampleValidRuleSet)).
 				SetStatus(http.StatusOK)
 
-			ruleset, err := client.GetRuleSet("c0210380-3d44-495d-9d10-c7d436a63870", "a2d2a3e5-e274-bb88-aef2-1d47f029c289", "sometoken")
+			ruleset, err := client.GetRuleSet("c0210380-3d44-495d-9d10-c7d436a63870", "sometoken")
 			Expect(err).To(BeNil())
 			Expect(ruleset.ID).To(Equal("c0210380-3d44-495d-9d10-c7d436a63870"))
 			Expect(ruleset.Name).To(Equal("all things"))
