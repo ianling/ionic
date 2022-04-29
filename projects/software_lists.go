@@ -35,7 +35,7 @@ type Risk struct {
 	Scopes struct {
 		Ecosystem   int `json:"ecosystem"`
 		SupplyChain int `json:"supplyChain"`
-		Software    int `json:"software"`
+		Technology  int `json:"technology"`
 	} `json:"scopes"`
 }
 
