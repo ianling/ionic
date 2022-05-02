@@ -30,14 +30,14 @@ type Scores struct {
 type Scope struct {
 	Name       string     `json:"name"`
 	Value      float64    `json:"value"`
-	Categories []Category `json:"categories"`
+	Categories []Category `json:"-"`
 }
 
 // Category third tier struct for modeling the score tree
 type Category struct {
 	Name       string      `json:"name"`
 	Value      float64     `json:"value"`
-	Attributes []Attribute `json:"attributes"`
+	Attributes []Attribute `json:"-"`
 }
 
 // Attribute leaf tier struct for modeling the score tree
