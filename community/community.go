@@ -66,7 +66,6 @@ type Metrics struct {
 	ContributingActionsMonthlyCount *[]MonthlyCount `json:"contributing_actions_monthly_count" xml:"contributing_actions_monthly_count"`
 	NewActorsMonthlyCount           *[]MonthlyCount `json:"new_actors_monthly_count" xml:"new_actors_monthly_count"`
 	MedianWorkingHour               *int            `json:"median_working_hour" xml:"median_working_hour"`
-	EOLRearFailingDaysCount         *int            `json:"eol_rear_failing_months_count" xml:"eol_rear_failing_months_count"`
 }
 
 // MonthlyCount defines the data needed for month and count
