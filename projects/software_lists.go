@@ -31,12 +31,8 @@ type SoftwareList struct {
 }
 
 type Risk struct {
-	Score  int `json:"score"`
-	Scopes struct {
-		Ecosystem   int `json:"ecosystem"`
-		SupplyChain int `json:"supplyChain"`
-		Technology  int `json:"technology"`
-	} `json:"scopes"`
+	Score  *int            `json:"score"`
+	Scopes map[string]*int `json:"scopes"`
 }
 
 type Compliance struct {
@@ -60,4 +56,14 @@ type SoftwareInventorySummary struct {
 	ID            string         `json:"id"`
 	Organization  Metrics        `json:"organization"`
 	SoftwareLists []SoftwareList `json:"softwareLists"`
+}
+
+// NewMetrics returns a Metrics struct.
+// Used to ensure Metrics.Risk.Scopes is not nil.
+func NewMetrics() Metrics {
+	return Metrics{
+		Risk: Risk{
+			Scopes: make(map[string]*int),
+		},
+	}
 }
