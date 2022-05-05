@@ -28,6 +28,7 @@ type Repo struct {
 	DefaultBranch string     `json:"default_branch,omitempty" xml:"default_branch,omitempty"`
 	MasterBranch  string     `json:"master_branch,omitempty" xml:"master_branch,omitempty"`
 	Stars         int        `json:"stars" xml:"stars"`
+	Matches       []string   `json:"matches,omitempty" xml:"matches,omitempty"`
 	CommittedAt   time.Time  `json:"committed_at" xml:"committed_at"`
 	UpdatedAt     time.Time  `json:"updated_at" xml:"updated_at"`
 	CreatedAt     *time.Time `json:"created_at" xml:"created_at"`
