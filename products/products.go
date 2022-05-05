@@ -37,6 +37,7 @@ type Product struct {
 	VulnerabilityCount int           `json:"vulnerability_count" xml:"vulnerability_count"`
 	Mttr               *int64        `json:"mttr_seconds" xml:"mttr_seconds"`
 	Vulnerabilities    []interface{} `json:"vulnerabilities" xml:"vulnerabilities"`
+	Matches            []string      `json:"matches,omitempty" xml:"matches,omitempty"`
 }
 
 // Source represents information about where the product data came from
