@@ -36,6 +36,7 @@ type Dependency struct {
 	CreatedAt       time.Time    `json:"created_at,omitempty"`
 	UpdatedAt       time.Time    `json:"updated_at,omitempty"`
 	OutdatedVersion OutdatedMeta `json:"outdated_version"`
+	Matches         []string     `json:"matches,omitempty" xml:"matches,omitempty"`
 }
 
 // OutdatedMeta is used to represent the number of versions behind a dependency is
