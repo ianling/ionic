@@ -13,6 +13,8 @@ const (
 	GetReposForActorEndpoint = `v1/repo/getReposForActor`
 	// SearchRepoEndpoint is a string representation of the current endpoint for searching repo
 	SearchRepoEndpoint = `v1/repo/search`
+	// GetMetricsEndpoint is a string representation of the current endpoint for getting metrics
+	GetMetricsEndpoint = `v1/repo/getMetrics`
 )
 
 // Repo is a representation of a github repo and corresponding metrics about
