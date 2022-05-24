@@ -4,4 +4,3 @@ coverage.txt
 docs/*.html
 docs/endpoints.md
 .idea
-schema.graphqls

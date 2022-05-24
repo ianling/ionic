@@ -9,10 +9,6 @@ import (
 	"time"
 )
 
-type SearchResult interface {
-	IsSearchResult()
-}
-
 type Compliance struct {
 	Passing int `json:"passing"`
 	Failing int `json:"failing"`
@@ -25,7 +21,7 @@ type Component struct {
 	Version       string                `json:"version"`
 	Org           string                `json:"org"`
 	Status        ComponentStatus       `json:"status"`
-	SearchResults *SearchResults        `json:"search_results"`
+	SearchResults SearchResults         `json:"search_results"`
 	Suggestions   []ComponentSuggestion `json:"suggestions"`
 	CreatedAt     time.Time             `json:"created_at"`
 	UpdatedAt     time.Time             `json:"updated_at"`
@@ -54,9 +50,9 @@ type CreateSoftwareListRequest struct {
 }
 
 type Metrics struct {
-	Risk       *Risk       `json:"risk"`
-	Compliance *Compliance `json:"compliance"`
-	Resolution *Resolution `json:"resolution"`
+	Risk       Risk       `json:"risk"`
+	Compliance Compliance `json:"compliance"`
+	Resolution Resolution `json:"resolution"`
 }
 
 type Organization struct {
@@ -74,18 +70,9 @@ type OrganizationMember struct {
 }
 
 type PackageSearchResult struct {
-	ID                    string  `json:"id"`
-	Confidence            float64 `json:"confidence"`
-	IsUserInput           bool    `json:"is_user_input"`
-	Selected              bool    `json:"selected"`
-	AutomaticallySelected bool    `json:"automatically_selected"`
-	Name                  string  `json:"name"`
-	Org                   string  `json:"org"`
-	Version               string  `json:"version"`
-	Purl                  string  `json:"purl"`
+	SearchResult
+	Purl string `json:"purl"`
 }
-
-func (PackageSearchResult) IsSearchResult() {}
 
 type Preferences struct {
 	Flip                bool                        `json:"flip"`
@@ -94,32 +81,14 @@ type Preferences struct {
 }
 
 type ProductSearchResult struct {
-	ID                    string  `json:"id"`
-	Confidence            float64 `json:"confidence"`
-	IsUserInput           bool    `json:"is_user_input"`
-	Selected              bool    `json:"selected"`
-	AutomaticallySelected bool    `json:"automatically_selected"`
-	Name                  string  `json:"name"`
-	Org                   string  `json:"org"`
-	Version               string  `json:"version"`
-	Cpe                   string  `json:"cpe"`
+	SearchResult
+	Cpe string `json:"cpe"`
 }
-
-func (ProductSearchResult) IsSearchResult() {}
 
 type RepoSearchResult struct {
-	ID                    string  `json:"id"`
-	Confidence            float64 `json:"confidence"`
-	IsUserInput           bool    `json:"is_user_input"`
-	Selected              bool    `json:"selected"`
-	AutomaticallySelected bool    `json:"automatically_selected"`
-	Name                  string  `json:"name"`
-	Org                   string  `json:"org"`
-	Version               string  `json:"version"`
-	RepoURL               string  `json:"repo_url"`
+	SearchResult
+	RepoURL string `json:"repo_url"`
 }
-
-func (RepoSearchResult) IsSearchResult() {}
 
 type Resolution struct {
 	Resolved          int `json:"resolved"`
@@ -137,6 +106,17 @@ type RiskScope struct {
 	Value *int   `json:"value"`
 }
 
+type SearchResult struct {
+	ID                    string  `json:"id"`
+	Confidence            float64 `json:"confidence"`
+	IsUserInput           bool    `json:"is_user_input"`
+	Selected              bool    `json:"selected"`
+	AutomaticallySelected bool    `json:"automatically_selected"`
+	Name                  string  `json:"name"`
+	Org                   string  `json:"org"`
+	Version               string  `json:"version"`
+}
+
 type SearchResults struct {
 	Package []PackageSearchResult `json:"package"`
 	Repo    []RepoSearchResult    `json:"repo"`
@@ -145,7 +125,7 @@ type SearchResults struct {
 
 type SoftwareInventory struct {
 	ID            string         `json:"id"`
-	Organization  *Metrics       `json:"organization"`
+	Organization  Metrics        `json:"organization"`
 	SoftwareLists []SoftwareList `json:"softwareLists"`
 }
 
@@ -162,7 +142,7 @@ type SoftwareList struct {
 	UpdatedAt        time.Time          `json:"updated_at"`
 	DeletedAt        *time.Time         `json:"deleted_at"`
 	EntryCount       *int               `json:"entry_count"`
-	Metrics          *Metrics           `json:"metrics"`
+	Metrics          Metrics            `json:"metrics"`
 	Entries          []Component        `json:"entries"`
 	TeamID           string             `json:"team_id"`
 	OrgID            string             `json:"org_id"`
@@ -187,7 +167,7 @@ type User struct {
 
 type UserOrganizationRole struct {
 	Role         OrganizationRole `json:"role"`
-	Organization *Organization    `json:"organization"`
+	Organization Organization     `json:"organization"`
 }
 
 type UserTeamRole struct {
@@ -360,6 +340,49 @@ func (e *OrganizationRole) UnmarshalGQL(v interface{}) error {
 }
 
 func (e OrganizationRole) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type SearchResultType string
+
+const (
+	SearchResultTypePackage SearchResultType = "package"
+	SearchResultTypeProduct SearchResultType = "product"
+	SearchResultTypeRepo    SearchResultType = "repo"
+)
+
+var AllSearchResultType = []SearchResultType{
+	SearchResultTypePackage,
+	SearchResultTypeProduct,
+	SearchResultTypeRepo,
+}
+
+func (e SearchResultType) IsValid() bool {
+	switch e {
+	case SearchResultTypePackage, SearchResultTypeProduct, SearchResultTypeRepo:
+		return true
+	}
+	return false
+}
+
+func (e SearchResultType) String() string {
+	return string(e)
+}
+
+func (e *SearchResultType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = SearchResultType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid SearchResultType", str)
+	}
+	return nil
+}
+
+func (e SearchResultType) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

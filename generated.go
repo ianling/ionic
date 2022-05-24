@@ -5,6 +5,7 @@ package ionic
 import (
 	"bytes"
 	"context"
+	"embed"
 	"errors"
 	"fmt"
 	"strconv"
@@ -160,6 +161,17 @@ type ComplexityRoot struct {
 		Value func(childComplexity int) int
 	}
 
+	SearchResult struct {
+		AutomaticallySelected func(childComplexity int) int
+		Confidence            func(childComplexity int) int
+		ID                    func(childComplexity int) int
+		IsUserInput           func(childComplexity int) int
+		Name                  func(childComplexity int) int
+		Org                   func(childComplexity int) int
+		Selected              func(childComplexity int) int
+		Version               func(childComplexity int) int
+	}
+
 	SearchResults struct {
 		Package func(childComplexity int) int
 		Product func(childComplexity int) int
@@ -221,14 +233,14 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	Placeholder(ctx context.Context) (*int, error)
-	CreateOrganization(ctx context.Context, input CreateOrganizationRequest) (*Organization, error)
-	CreateSoftwareList(ctx context.Context, input CreateSoftwareListRequest) (*SoftwareList, error)
+	CreateOrganization(ctx context.Context, input CreateOrganizationRequest) (Organization, error)
+	CreateSoftwareList(ctx context.Context, input CreateSoftwareListRequest) (SoftwareList, error)
 }
 type QueryResolver interface {
 	Placeholder(ctx context.Context) (*int, error)
 	Organizations(ctx context.Context, ids []string) ([]Organization, error)
 	SoftwareLists(ctx context.Context, ids []string, orgID *string) ([]SoftwareList, error)
-	Self(ctx context.Context) (*User, error)
+	Self(ctx context.Context) (User, error)
 }
 
 type executableSchema struct {
@@ -763,6 +775,62 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.RiskScope.Value(childComplexity), true
 
+	case "SearchResult.automatically_selected":
+		if e.complexity.SearchResult.AutomaticallySelected == nil {
+			break
+		}
+
+		return e.complexity.SearchResult.AutomaticallySelected(childComplexity), true
+
+	case "SearchResult.confidence":
+		if e.complexity.SearchResult.Confidence == nil {
+			break
+		}
+
+		return e.complexity.SearchResult.Confidence(childComplexity), true
+
+	case "SearchResult.id":
+		if e.complexity.SearchResult.ID == nil {
+			break
+		}
+
+		return e.complexity.SearchResult.ID(childComplexity), true
+
+	case "SearchResult.is_user_input":
+		if e.complexity.SearchResult.IsUserInput == nil {
+			break
+		}
+
+		return e.complexity.SearchResult.IsUserInput(childComplexity), true
+
+	case "SearchResult.name":
+		if e.complexity.SearchResult.Name == nil {
+			break
+		}
+
+		return e.complexity.SearchResult.Name(childComplexity), true
+
+	case "SearchResult.org":
+		if e.complexity.SearchResult.Org == nil {
+			break
+		}
+
+		return e.complexity.SearchResult.Org(childComplexity), true
+
+	case "SearchResult.selected":
+		if e.complexity.SearchResult.Selected == nil {
+			break
+		}
+
+		return e.complexity.SearchResult.Selected(childComplexity), true
+
+	case "SearchResult.version":
+		if e.complexity.SearchResult.Version == nil {
+			break
+		}
+
+		return e.complexity.SearchResult.Version(childComplexity), true
+
 	case "SearchResults.package":
 		if e.complexity.SearchResults.Package == nil {
 			break
@@ -1112,253 +1180,19 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(parsedSchema, parsedSchema.Types[name]), nil
 }
 
+//go:embed "schema.graphqls"
+var sourcesFS embed.FS
+
+func sourceData(filename string) string {
+	data, err := sourcesFS.ReadFile(filename)
+	if err != nil {
+		panic(fmt.Sprintf("codegen problem: %s not availalbe", filename))
+	}
+	return string(data)
+}
+
 var sources = []*ast.Source{
-	{Name: "schema.graphqls", Input: `schema { 
-  query: Query 
-  mutation: Mutation   
-}
-
-type Compliance {
-  passing: Int!
-  failing: Int!
-}
-
-type Component {
-  id: String!
-  sbom_id: String!
-  name: String!
-  version: String!
-  org: String!
-  status: ComponentStatus!
-  search_results: SearchResults!
-  suggestions: [ComponentSuggestion!]!
-  created_at: Time!
-  updated_at: Time!
-  deleted_at: Time
-  error_message: String
-}
-
-enum ComponentStatus {
-  no_resolution
-  partial_resolution
-  resolved
-  errored
-  deleted
-}
-
-type ComponentSuggestion {
-  key: String!
-  value: String!
-}
-
-input CreateOrganizationRequest {
-  name: String!
-}
-
-input CreateSoftwareListRequest {
-  name: String!
-  org_id: String!
-  version: String
-  supplier_name: String
-  contact_name: String
-  contact_email: String
-  ruleset_id: String
-  monitor_frequency: String
-}
-
-type Metrics {
-  risk: Risk!
-  compliance: Compliance!
-  resolution: Resolution!
-}
-
-type Mutation {
-  """this is extended by other parts of the schema"""
-  _placeholder: Int
-  CreateOrganization(input: CreateOrganizationRequest!): Organization!
-  CreateSoftwareList(input: CreateSoftwareListRequest!): SoftwareList!
-}
-
-enum NotificationChannelOption {
-  email
-}
-
-enum NotificationFrequencyOption {
-  daily
-}
-
-type Organization {
-  id: String!
-  created_at: Time!
-  updated_at: Time!
-  deleted_at: Time
-  name: String!
-  members: [OrganizationMember!]!
-}
-
-type OrganizationMember {
-  user_id: String!
-  role: OrganizationRole!
-}
-
-enum OrganizationRole {
-  Owner
-  Manager
-  Member
-}
-
-type PackageSearchResult implements SearchResult {
-  id: String!
-  confidence: Float!
-  is_user_input: Boolean!
-  selected: Boolean!
-  automatically_selected: Boolean!
-  name: String!
-  org: String!
-  version: String!
-  purl: String!
-}
-
-type Preferences {
-  flip: Boolean!
-  notification_channel: NotificationChannelOption!
-  frequency: NotificationFrequencyOption!
-}
-
-type ProductSearchResult implements SearchResult {
-  id: String!
-  confidence: Float!
-  is_user_input: Boolean!
-  selected: Boolean!
-  automatically_selected: Boolean!
-  name: String!
-  org: String!
-  version: String!
-  cpe: String!
-}
-
-type Query {
-  """this is extended by other parts of the schema"""
-  _placeholder: Int
-  organizations(ids: [String!]): [Organization!]!
-  software_lists(ids: [String!], org_id: String): [SoftwareList!]!
-  self: User!
-}
-
-type RepoSearchResult implements SearchResult {
-  id: String!
-  confidence: Float!
-  is_user_input: Boolean!
-  selected: Boolean!
-  automatically_selected: Boolean!
-  name: String!
-  org: String!
-  version: String!
-  repo_url: String!
-}
-
-type Resolution {
-  resolved: Int!
-  partiallyResolved: Int!
-  unresolved: Int!
-}
-
-type Risk {
-  score: Int
-  scopes: [RiskScope!]!
-}
-
-type RiskScope {
-  key: String!
-  value: Int
-}
-
-interface SearchResult {
-  id: String!
-  confidence: Float!
-  is_user_input: Boolean!
-  selected: Boolean!
-  automatically_selected: Boolean!
-  name: String!
-  org: String!
-  version: String!
-}
-
-type SearchResults {
-  package: [PackageSearchResult!]!
-  repo: [RepoSearchResult!]!
-  product: [ProductSearchResult!]!
-}
-
-type SoftwareInventory {
-  id: String!
-  organization: Metrics!
-  softwareLists: [SoftwareList!]!
-}
-
-type SoftwareList {
-  id: String!
-  name: String!
-  version: String!
-  supplier: String!
-  contact_name: String!
-  contact_email: String!
-  monitor_frequency: String!
-  status: SoftwareListStatus!
-  created_at: Time!
-  updated_at: Time!
-  deleted_at: Time
-  entry_count: Int
-  metrics: Metrics!
-  entries: [Component!]!
-  team_id: String!
-  org_id: String!
-  ruleset_id: String!
-}
-
-enum SoftwareListStatus {
-  created
-  autocompletedone
-  allconfirmed
-}
-
-"""
-allows timestamps to be converted to/from the time.Time type in Go.
-we don't need to define this one anywhere else because Time is built in to gqlgen
-"""
-scalar Time
-
-type User {
-  id: String!
-  email: String!
-  username: String!
-  created_at: Time!
-  updated_at: Time!
-  last_active_at: Time!
-  status: UserStatus!
-  externally_managed: Boolean!
-  metadata: String
-  sys_admin: Boolean!
-  system: Boolean!
-  organizations: [UserOrganizationRole!]!
-  teams: [UserTeamRole!]!
-}
-
-type UserOrganizationRole {
-  role: OrganizationRole!
-  organization: Organization!
-}
-
-enum UserStatus {
-  active
-  disabled
-}
-
-type UserTeamRole {
-  role: String!
-  team_id: String!
-}
-`, BuiltIn: false},
+	{Name: "schema.graphqls", Input: sourceData("schema.graphqls"), BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -1866,9 +1700,9 @@ func (ec *executionContext) _Component_search_results(ctx context.Context, field
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*SearchResults)
+	res := resTmp.(SearchResults)
 	fc.Result = res
-	return ec.marshalNSearchResults2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSearchResults(ctx, field.Selections, res)
+	return ec.marshalNSearchResults2githubᚗcomᚋionᚑchannelᚋionicᚐSearchResults(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Component_search_results(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2226,9 +2060,9 @@ func (ec *executionContext) _Metrics_risk(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*Risk)
+	res := resTmp.(Risk)
 	fc.Result = res
-	return ec.marshalNRisk2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐRisk(ctx, field.Selections, res)
+	return ec.marshalNRisk2githubᚗcomᚋionᚑchannelᚋionicᚐRisk(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Metrics_risk(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2276,9 +2110,9 @@ func (ec *executionContext) _Metrics_compliance(ctx context.Context, field graph
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*Compliance)
+	res := resTmp.(Compliance)
 	fc.Result = res
-	return ec.marshalNCompliance2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐCompliance(ctx, field.Selections, res)
+	return ec.marshalNCompliance2githubᚗcomᚋionᚑchannelᚋionicᚐCompliance(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Metrics_compliance(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2326,9 +2160,9 @@ func (ec *executionContext) _Metrics_resolution(ctx context.Context, field graph
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*Resolution)
+	res := resTmp.(Resolution)
 	fc.Result = res
-	return ec.marshalNResolution2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐResolution(ctx, field.Selections, res)
+	return ec.marshalNResolution2githubᚗcomᚋionᚑchannelᚋionicᚐResolution(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Metrics_resolution(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2419,9 +2253,9 @@ func (ec *executionContext) _Mutation_CreateOrganization(ctx context.Context, fi
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*Organization)
+	res := resTmp.(Organization)
 	fc.Result = res
-	return ec.marshalNOrganization2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐOrganization(ctx, field.Selections, res)
+	return ec.marshalNOrganization2githubᚗcomᚋionᚑchannelᚋionicᚐOrganization(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_CreateOrganization(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2488,9 +2322,9 @@ func (ec *executionContext) _Mutation_CreateSoftwareList(ctx context.Context, fi
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*SoftwareList)
+	res := resTmp.(SoftwareList)
 	fc.Result = res
-	return ec.marshalNSoftwareList2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSoftwareList(ctx, field.Selections, res)
+	return ec.marshalNSoftwareList2githubᚗcomᚋionᚑchannelᚋionicᚐSoftwareList(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_CreateSoftwareList(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4059,9 +3893,9 @@ func (ec *executionContext) _Query_self(ctx context.Context, field graphql.Colle
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*User)
+	res := resTmp.(User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2githubᚗcomᚋionᚑchannelᚋionicᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_self(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4938,6 +4772,358 @@ func (ec *executionContext) fieldContext_RiskScope_value(ctx context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _SearchResult_id(ctx context.Context, field graphql.CollectedField, obj *SearchResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SearchResult_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SearchResult_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SearchResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SearchResult_confidence(ctx context.Context, field graphql.CollectedField, obj *SearchResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SearchResult_confidence(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Confidence, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SearchResult_confidence(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SearchResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SearchResult_is_user_input(ctx context.Context, field graphql.CollectedField, obj *SearchResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SearchResult_is_user_input(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsUserInput, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SearchResult_is_user_input(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SearchResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SearchResult_selected(ctx context.Context, field graphql.CollectedField, obj *SearchResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SearchResult_selected(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Selected, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SearchResult_selected(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SearchResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SearchResult_automatically_selected(ctx context.Context, field graphql.CollectedField, obj *SearchResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SearchResult_automatically_selected(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AutomaticallySelected, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SearchResult_automatically_selected(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SearchResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SearchResult_name(ctx context.Context, field graphql.CollectedField, obj *SearchResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SearchResult_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SearchResult_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SearchResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SearchResult_org(ctx context.Context, field graphql.CollectedField, obj *SearchResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SearchResult_org(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Org, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SearchResult_org(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SearchResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _SearchResult_version(ctx context.Context, field graphql.CollectedField, obj *SearchResult) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SearchResult_version(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Version, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_SearchResult_version(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "SearchResult",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _SearchResults_package(ctx context.Context, field graphql.CollectedField, obj *SearchResults) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_SearchResults_package(ctx, field)
 	if err != nil {
@@ -5200,9 +5386,9 @@ func (ec *executionContext) _SoftwareInventory_organization(ctx context.Context,
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*Metrics)
+	res := resTmp.(Metrics)
 	fc.Result = res
-	return ec.marshalNMetrics2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMetrics(ctx, field.Selections, res)
+	return ec.marshalNMetrics2githubᚗcomᚋionᚑchannelᚋionicᚐMetrics(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SoftwareInventory_organization(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5854,9 +6040,9 @@ func (ec *executionContext) _SoftwareList_metrics(ctx context.Context, field gra
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*Metrics)
+	res := resTmp.(Metrics)
 	fc.Result = res
-	return ec.marshalNMetrics2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMetrics(ctx, field.Selections, res)
+	return ec.marshalNMetrics2githubᚗcomᚋionᚑchannelᚋionicᚐMetrics(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_SoftwareList_metrics(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6733,9 +6919,9 @@ func (ec *executionContext) _UserOrganizationRole_organization(ctx context.Conte
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*Organization)
+	res := resTmp.(Organization)
 	fc.Result = res
-	return ec.marshalNOrganization2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐOrganization(ctx, field.Selections, res)
+	return ec.marshalNOrganization2githubᚗcomᚋionᚑchannelᚋionicᚐOrganization(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_UserOrganizationRole_organization(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8732,36 +8918,6 @@ func (ec *executionContext) unmarshalInputCreateSoftwareListRequest(ctx context.
 
 // region    ************************** interface.gotpl ***************************
 
-func (ec *executionContext) _SearchResult(ctx context.Context, sel ast.SelectionSet, obj SearchResult) graphql.Marshaler {
-	switch obj := (obj).(type) {
-	case nil:
-		return graphql.Null
-	case PackageSearchResult:
-		return ec._PackageSearchResult(ctx, sel, &obj)
-	case *PackageSearchResult:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._PackageSearchResult(ctx, sel, obj)
-	case ProductSearchResult:
-		return ec._ProductSearchResult(ctx, sel, &obj)
-	case *ProductSearchResult:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._ProductSearchResult(ctx, sel, obj)
-	case RepoSearchResult:
-		return ec._RepoSearchResult(ctx, sel, &obj)
-	case *RepoSearchResult:
-		if obj == nil {
-			return graphql.Null
-		}
-		return ec._RepoSearchResult(ctx, sel, obj)
-	default:
-		panic(fmt.Errorf("unexpected type %T", obj))
-	}
-}
-
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
@@ -9657,6 +9813,83 @@ func (ec *executionContext) _RiskScope(ctx context.Context, sel ast.SelectionSet
 	return out
 }
 
+var searchResultImplementors = []string{"SearchResult"}
+
+func (ec *executionContext) _SearchResult(ctx context.Context, sel ast.SelectionSet, obj *SearchResult) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, searchResultImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("SearchResult")
+		case "id":
+
+			out.Values[i] = ec._SearchResult_id(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "confidence":
+
+			out.Values[i] = ec._SearchResult_confidence(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "is_user_input":
+
+			out.Values[i] = ec._SearchResult_is_user_input(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "selected":
+
+			out.Values[i] = ec._SearchResult_selected(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "automatically_selected":
+
+			out.Values[i] = ec._SearchResult_automatically_selected(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "name":
+
+			out.Values[i] = ec._SearchResult_name(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "org":
+
+			out.Values[i] = ec._SearchResult_org(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "version":
+
+			out.Values[i] = ec._SearchResult_version(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var searchResultsImplementors = []string{"SearchResults"}
 
 func (ec *executionContext) _SearchResults(ctx context.Context, sel ast.SelectionSet, obj *SearchResults) graphql.Marshaler {
@@ -10387,14 +10620,8 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNCompliance2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐCompliance(ctx context.Context, sel ast.SelectionSet, v *Compliance) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Compliance(ctx, sel, v)
+func (ec *executionContext) marshalNCompliance2githubᚗcomᚋionᚑchannelᚋionicᚐCompliance(ctx context.Context, sel ast.SelectionSet, v Compliance) graphql.Marshaler {
+	return ec._Compliance(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNComponent2githubᚗcomᚋionᚑchannelᚋionicᚐComponent(ctx context.Context, sel ast.SelectionSet, v Component) graphql.Marshaler {
@@ -10543,14 +10770,8 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) marshalNMetrics2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMetrics(ctx context.Context, sel ast.SelectionSet, v *Metrics) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Metrics(ctx, sel, v)
+func (ec *executionContext) marshalNMetrics2githubᚗcomᚋionᚑchannelᚋionicᚐMetrics(ctx context.Context, sel ast.SelectionSet, v Metrics) graphql.Marshaler {
+	return ec._Metrics(ctx, sel, &v)
 }
 
 func (ec *executionContext) unmarshalNNotificationChannelOption2githubᚗcomᚋionᚑchannelᚋionicᚐNotificationChannelOption(ctx context.Context, v interface{}) (NotificationChannelOption, error) {
@@ -10619,16 +10840,6 @@ func (ec *executionContext) marshalNOrganization2ᚕgithubᚗcomᚋionᚑchannel
 	}
 
 	return ret
-}
-
-func (ec *executionContext) marshalNOrganization2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐOrganization(ctx context.Context, sel ast.SelectionSet, v *Organization) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Organization(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNOrganizationMember2githubᚗcomᚋionᚑchannelᚋionicᚐOrganizationMember(ctx context.Context, sel ast.SelectionSet, v OrganizationMember) graphql.Marshaler {
@@ -10833,24 +11044,12 @@ func (ec *executionContext) marshalNRepoSearchResult2ᚕgithubᚗcomᚋionᚑcha
 	return ret
 }
 
-func (ec *executionContext) marshalNResolution2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐResolution(ctx context.Context, sel ast.SelectionSet, v *Resolution) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Resolution(ctx, sel, v)
+func (ec *executionContext) marshalNResolution2githubᚗcomᚋionᚑchannelᚋionicᚐResolution(ctx context.Context, sel ast.SelectionSet, v Resolution) graphql.Marshaler {
+	return ec._Resolution(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNRisk2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐRisk(ctx context.Context, sel ast.SelectionSet, v *Risk) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Risk(ctx, sel, v)
+func (ec *executionContext) marshalNRisk2githubᚗcomᚋionᚑchannelᚋionicᚐRisk(ctx context.Context, sel ast.SelectionSet, v Risk) graphql.Marshaler {
+	return ec._Risk(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNRiskScope2githubᚗcomᚋionᚑchannelᚋionicᚐRiskScope(ctx context.Context, sel ast.SelectionSet, v RiskScope) graphql.Marshaler {
@@ -10901,14 +11100,8 @@ func (ec *executionContext) marshalNRiskScope2ᚕgithubᚗcomᚋionᚑchannelᚋ
 	return ret
 }
 
-func (ec *executionContext) marshalNSearchResults2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSearchResults(ctx context.Context, sel ast.SelectionSet, v *SearchResults) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._SearchResults(ctx, sel, v)
+func (ec *executionContext) marshalNSearchResults2githubᚗcomᚋionᚑchannelᚋionicᚐSearchResults(ctx context.Context, sel ast.SelectionSet, v SearchResults) graphql.Marshaler {
+	return ec._SearchResults(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNSoftwareList2githubᚗcomᚋionᚑchannelᚋionicᚐSoftwareList(ctx context.Context, sel ast.SelectionSet, v SoftwareList) graphql.Marshaler {
@@ -10959,16 +11152,6 @@ func (ec *executionContext) marshalNSoftwareList2ᚕgithubᚗcomᚋionᚑchannel
 	return ret
 }
 
-func (ec *executionContext) marshalNSoftwareList2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSoftwareList(ctx context.Context, sel ast.SelectionSet, v *SoftwareList) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._SoftwareList(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalNSoftwareListStatus2githubᚗcomᚋionᚑchannelᚋionicᚐSoftwareListStatus(ctx context.Context, v interface{}) (SoftwareListStatus, error) {
 	var res SoftwareListStatus
 	err := res.UnmarshalGQL(v)
@@ -11011,16 +11194,6 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 
 func (ec *executionContext) marshalNUser2githubᚗcomᚋionᚑchannelᚋionicᚐUser(ctx context.Context, sel ast.SelectionSet, v User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐUser(ctx context.Context, sel ast.SelectionSet, v *User) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._User(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNUserOrganizationRole2githubᚗcomᚋionᚑchannelᚋionicᚐUserOrganizationRole(ctx context.Context, sel ast.SelectionSet, v UserOrganizationRole) graphql.Marshaler {

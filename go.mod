@@ -16,7 +16,7 @@ require (
 
 require (
 	github.com/99designs/gqlgen v0.17.5
-	github.com/vektah/gqlparser/v2 v2.4.2
+	github.com/vektah/gqlparser/v2 v2.4.3-0.20220508162109-d3d9eb001575
 )
 
 require (
@@ -36,3 +36,5 @@ require (
 )
 
 replace github.com/spdx/tools-golang => github.com/ion-channel/tools-golang v0.0.0-20220420185427-456db6f3c062
+
+replace github.com/99designs/gqlgen => github.com/ianling/gqlgen v0.17.6-0.20220527164444-d2294fbaa68d
