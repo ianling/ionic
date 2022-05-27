@@ -1,0 +1,252 @@
+## Schema version 0.0.4
+schema { 
+  query: Query 
+  mutation: Mutation   
+}
+
+type Compliance {
+  passing: Int!
+  failing: Int!
+}
+
+type Component {
+  id: String!
+  sbom_id: String!
+  name: String!
+  version: String!
+  org: String!
+  status: ComponentStatus!
+  search_results: SearchResults!
+  suggestions: [ComponentSuggestion!]!
+  created_at: Time!
+  updated_at: Time!
+  deleted_at: Time
+  error_message: String
+}
+
+enum ComponentStatus {
+  no_resolution
+  partial_resolution
+  resolved
+  errored
+  deleted
+}
+
+type ComponentSuggestion {
+  key: String!
+  value: String!
+}
+
+input CreateOrganizationRequest {
+  name: String!
+}
+
+input CreateSoftwareListRequest {
+  name: String!
+  org_id: String!
+  version: String
+  supplier_name: String
+  contact_name: String
+  contact_email: String
+  ruleset_id: String
+  monitor_frequency: String
+}
+
+type Metrics {
+  risk: Risk!
+  compliance: Compliance!
+  resolution: Resolution!
+}
+
+type Mutation {
+  """this is extended by other parts of the schema"""
+  _placeholder: Int
+  CreateOrganization(input: CreateOrganizationRequest!): Organization!
+  CreateSoftwareList(input: CreateSoftwareListRequest!): SoftwareList!
+}
+
+enum NotificationChannelOption {
+  email
+}
+
+enum NotificationFrequencyOption {
+  daily
+}
+
+type Organization {
+  id: String!
+  created_at: Time!
+  updated_at: Time!
+  deleted_at: Time
+  name: String!
+  members: [OrganizationMember!]!
+}
+
+type OrganizationMember {
+  user_id: String!
+  role: OrganizationRole!
+}
+
+enum OrganizationRole {
+  Owner
+  Manager
+  Member
+}
+
+type PackageSearchResult implements SearchResult {
+  id: String!
+  confidence: Float!
+  is_user_input: Boolean!
+  selected: Boolean!
+  automatically_selected: Boolean!
+  name: String!
+  org: String!
+  version: String!
+  purl: String!
+}
+
+type Preferences {
+  flip: Boolean!
+  notification_channel: NotificationChannelOption!
+  frequency: NotificationFrequencyOption!
+}
+
+type ProductSearchResult implements SearchResult {
+  id: String!
+  confidence: Float!
+  is_user_input: Boolean!
+  selected: Boolean!
+  automatically_selected: Boolean!
+  name: String!
+  org: String!
+  version: String!
+  cpe: String!
+}
+
+type Query {
+  """this is extended by other parts of the schema"""
+  _placeholder: Int
+  organizations(ids: [String!]): [Organization!]!
+  software_lists(ids: [String!], org_id: String): [SoftwareList!]!
+  self: User!
+}
+
+type RepoSearchResult implements SearchResult {
+  id: String!
+  confidence: Float!
+  is_user_input: Boolean!
+  selected: Boolean!
+  automatically_selected: Boolean!
+  name: String!
+  org: String!
+  version: String!
+  repo_url: String!
+}
+
+type Resolution {
+  resolved: Int!
+  partiallyResolved: Int!
+  unresolved: Int!
+}
+
+type Risk {
+  score: Int
+  scopes: [RiskScope!]!
+}
+
+type RiskScope {
+  key: String!
+  value: Int
+}
+
+interface SearchResult {
+  id: String!
+  confidence: Float!
+  is_user_input: Boolean!
+  selected: Boolean!
+  automatically_selected: Boolean!
+  name: String!
+  org: String!
+  version: String!
+}
+
+type SearchResults {
+  package: [PackageSearchResult!]!
+  repo: [RepoSearchResult!]!
+  product: [ProductSearchResult!]!
+}
+
+enum SearchResultType {
+  package
+  product
+  repo
+}
+
+type SoftwareInventory {
+  id: String!
+  organization: Metrics!
+  softwareLists: [SoftwareList!]!
+}
+
+type SoftwareList {
+  id: String!
+  name: String!
+  version: String!
+  supplier: String!
+  contact_name: String!
+  contact_email: String!
+  monitor_frequency: String!
+  status: SoftwareListStatus!
+  created_at: Time!
+  updated_at: Time!
+  deleted_at: Time
+  entry_count: Int
+  metrics: Metrics!
+  entries: [Component!]!
+  team_id: String!
+  org_id: String!
+  ruleset_id: String!
+}
+
+enum SoftwareListStatus {
+  created
+  autocompletedone
+  allconfirmed
+}
+
+"""
+allows timestamps to be converted to/from the time.Time type in Go.
+we don't need to define this one anywhere else because Time is built in to gqlgen
+"""
+scalar Time
+
+type User {
+  id: String!
+  email: String!
+  username: String!
+  created_at: Time!
+  updated_at: Time!
+  last_active_at: Time!
+  status: UserStatus!
+  externally_managed: Boolean!
+  metadata: String
+  sys_admin: Boolean!
+  system: Boolean!
+  organizations: [UserOrganizationRole!]!
+  teams: [UserTeamRole!]!
+}
+
+type UserOrganizationRole {
+  role: OrganizationRole!
+  organization: Organization!
+}
+
+enum UserStatus {
+  active
+  disabled
+}
+
+type UserTeamRole {
+  role: String!
+  team_id: String!
+}

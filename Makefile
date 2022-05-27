@@ -1,6 +1,8 @@
 # System Setup
 SHELL = bash
 
+GRAPHQL_SCHEMA_VERSION ?= 0.0.4
+
 # Go Stuff
 CGO_ENABLED ?= 0
 
@@ -78,3 +80,16 @@ docs: ## exports documents from the source code
 .PHONY: deploy_docs
 deploy_docs: ## deploys the docs to S3
 	aws s3 sync ./docs/ s3://docs.ionchannel.io
+
+.PHONY: get_schema
+get_schema:
+	rm schema.graphqls
+	curl -L -s https://github.com/ion-channel/graphql-schema/releases/download/$(GRAPHQL_SCHEMA_VERSION)/consolidated_schema.graphqls \
+		-o consolidated_schema.graphqls
+	echo "## Schema version $(GRAPHQL_SCHEMA_VERSION)" > schema.graphqls
+	cat consolidated_schema.graphqls >> schema.graphqls
+	rm -f consolidated_schema.graphqls
+
+.PHONY: generate
+generate:
+	go run github.com/99designs/gqlgen generate
