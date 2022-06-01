@@ -14,7 +14,7 @@ type ExternalDocumentRef2_1 struct {
 	// DocumentRefID is the ID string defined in the start of the
 	// reference. It should _not_ contain the "DocumentRef-" part
 	// of the mandatory ID string.
-	DocumentRefID string `json:"externalDocumentId"`
+	DocumentRefID DocElementID `json:"externalDocumentId"`
 
 	// URI is the URI defined for the external document
 	URI string `json:"spdxDocument"`
@@ -29,7 +29,7 @@ type ExternalDocumentRef2_2 struct {
 	// DocumentRefID is the ID string defined in the start of the
 	// reference. It should _not_ contain the "DocumentRef-" part
 	// of the mandatory ID string.
-	DocumentRefID string `json:"externalDocumentId"`
+	DocumentRefID DocElementID `json:"externalDocumentId"`
 
 	// URI is the URI defined for the external document
 	URI string `json:"spdxDocument"`
@@ -45,8 +45,8 @@ func (e ExternalDocumentRef2_1) Validate() error {
 		return fmt.Errorf("invalid Checksum in External Document Reference: %w", err)
 	}
 
-	if e.DocumentRefID == "" || e.URI == "" {
-		return fmt.Errorf("invalid External Document Reference, missing fields. %+v", e)
+	if e.DocumentRefID.Validate() != nil || e.URI == "" {
+		return fmt.Errorf("invalid DocElementID, missing fields. %+v", e)
 	}
 
 	return nil
@@ -59,8 +59,8 @@ func (e ExternalDocumentRef2_2) Validate() error {
 		return fmt.Errorf("invalid Checksum in External Document Reference: %w", err)
 	}
 
-	if e.DocumentRefID == "" || e.URI == "" {
-		return fmt.Errorf("invalid External Document Reference, missing fields. %+v", e)
+	if e.DocumentRefID.Validate() != nil || e.URI == "" {
+		return fmt.Errorf("invalid DocElementID, missing fields. %+v", e)
 	}
 
 	return nil
@@ -86,7 +86,7 @@ func (e *ExternalDocumentRef2_1) FromString(value string) error {
 		return fmt.Errorf("invalid external document reference: %s", value)
 	}
 
-	e.DocumentRefID = fields[0]
+	e.DocumentRefID = MakeDocElementID(fields[0], "")
 	e.URI = fields[1]
 
 	// the checksum is special and needs further processing
@@ -109,7 +109,7 @@ func (e *ExternalDocumentRef2_2) FromString(value string) error {
 		return fmt.Errorf("invalid external document reference: %s", value)
 	}
 
-	e.DocumentRefID = fields[0]
+	e.DocumentRefID = MakeDocElementID(fields[0], "")
 	e.URI = fields[1]
 
 	// the checksum is special and needs further processing
