@@ -65,8 +65,9 @@ type Organization struct {
 }
 
 type OrganizationMember struct {
-	UserID string           `json:"user_id"`
-	Role   OrganizationRole `json:"role"`
+	UserID   string           `json:"user_id"`
+	Username string           `json:"username"`
+	Role     OrganizationRole `json:"role"`
 }
 
 type PackageSearchResult struct {

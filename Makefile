@@ -1,7 +1,7 @@
 # System Setup
 SHELL = bash
 
-GRAPHQL_SCHEMA_VERSION ?= 0.0.4
+GRAPHQL_SCHEMA_VERSION ?= 0.0.5
 
 # Go Stuff
 CGO_ENABLED ?= 0
