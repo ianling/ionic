@@ -158,7 +158,7 @@ type ComplexityRoot struct {
 	}
 
 	RiskScope struct {
-		Key   func(childComplexity int) int
+		Name  func(childComplexity int) int
 		Value func(childComplexity int) int
 	}
 
@@ -769,12 +769,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Risk.Score(childComplexity), true
 
-	case "RiskScope.key":
-		if e.complexity.RiskScope.Key == nil {
+	case "RiskScope.name":
+		if e.complexity.RiskScope.Name == nil {
 			break
 		}
 
-		return e.complexity.RiskScope.Key(childComplexity), true
+		return e.complexity.RiskScope.Name(childComplexity), true
 
 	case "RiskScope.value":
 		if e.complexity.RiskScope.Value == nil {
@@ -4730,8 +4730,8 @@ func (ec *executionContext) fieldContext_Risk_scopes(ctx context.Context, field 
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "key":
-				return ec.fieldContext_RiskScope_key(ctx, field)
+			case "name":
+				return ec.fieldContext_RiskScope_name(ctx, field)
 			case "value":
 				return ec.fieldContext_RiskScope_value(ctx, field)
 			}
@@ -4741,8 +4741,8 @@ func (ec *executionContext) fieldContext_Risk_scopes(ctx context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _RiskScope_key(ctx context.Context, field graphql.CollectedField, obj *RiskScope) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_RiskScope_key(ctx, field)
+func (ec *executionContext) _RiskScope_name(ctx context.Context, field graphql.CollectedField, obj *RiskScope) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_RiskScope_name(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4755,7 +4755,7 @@ func (ec *executionContext) _RiskScope_key(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Key, nil
+		return obj.Name, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4772,7 +4772,7 @@ func (ec *executionContext) _RiskScope_key(ctx context.Context, field graphql.Co
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_RiskScope_key(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_RiskScope_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "RiskScope",
 		Field:      field,
@@ -9852,9 +9852,9 @@ func (ec *executionContext) _RiskScope(ctx context.Context, sel ast.SelectionSet
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("RiskScope")
-		case "key":
+		case "name":
 
-			out.Values[i] = ec._RiskScope_key(ctx, field, obj)
+			out.Values[i] = ec._RiskScope_name(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
