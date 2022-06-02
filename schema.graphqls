@@ -1,4 +1,4 @@
-## Schema version 0.0.5
+## Schema version 0.0.6
 schema { 
   query: Query 
   mutation: Mutation   
@@ -156,7 +156,7 @@ type Risk {
 }
 
 type RiskScope {
-  key: String!
+  name: String!
   value: Int
 }
 

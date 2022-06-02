@@ -103,7 +103,7 @@ type Risk struct {
 }
 
 type RiskScope struct {
-	Key   string `json:"key"`
+	Name  string `json:"name"`
 	Value *int   `json:"value"`
 }
 
