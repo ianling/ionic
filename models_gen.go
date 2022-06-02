@@ -93,7 +93,7 @@ type RepoSearchResult struct {
 
 type Resolution struct {
 	Resolved          int `json:"resolved"`
-	PartiallyResolved int `json:"partiallyResolved"`
+	PartiallyResolved int `json:"partially_resolved"`
 	Unresolved        int `json:"unresolved"`
 }
 

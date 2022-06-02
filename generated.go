@@ -734,7 +734,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.RepoSearchResult.Version(childComplexity), true
 
-	case "Resolution.partiallyResolved":
+	case "Resolution.partially_resolved":
 		if e.complexity.Resolution.PartiallyResolved == nil {
 			break
 		}
@@ -2183,8 +2183,8 @@ func (ec *executionContext) fieldContext_Metrics_resolution(ctx context.Context,
 			switch field.Name {
 			case "resolved":
 				return ec.fieldContext_Resolution_resolved(ctx, field)
-			case "partiallyResolved":
-				return ec.fieldContext_Resolution_partiallyResolved(ctx, field)
+			case "partially_resolved":
+				return ec.fieldContext_Resolution_partially_resolved(ctx, field)
 			case "unresolved":
 				return ec.fieldContext_Resolution_unresolved(ctx, field)
 			}
@@ -4562,8 +4562,8 @@ func (ec *executionContext) fieldContext_Resolution_resolved(ctx context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _Resolution_partiallyResolved(ctx context.Context, field graphql.CollectedField, obj *Resolution) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Resolution_partiallyResolved(ctx, field)
+func (ec *executionContext) _Resolution_partially_resolved(ctx context.Context, field graphql.CollectedField, obj *Resolution) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Resolution_partially_resolved(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4593,7 +4593,7 @@ func (ec *executionContext) _Resolution_partiallyResolved(ctx context.Context, f
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Resolution_partiallyResolved(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Resolution_partially_resolved(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Resolution",
 		Field:      field,
@@ -9785,9 +9785,9 @@ func (ec *executionContext) _Resolution(ctx context.Context, sel ast.SelectionSe
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "partiallyResolved":
+		case "partially_resolved":
 
-			out.Values[i] = ec._Resolution_partiallyResolved(ctx, field, obj)
+			out.Values[i] = ec._Resolution_partially_resolved(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
