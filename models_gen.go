@@ -152,6 +152,12 @@ type SoftwareList struct {
 	RulesetID        string             `json:"ruleset_id"`
 }
 
+type UpdateOrganizationMemberInput struct {
+	UserID    string            `json:"user_id"`
+	Role      *OrganizationRole `json:"role"`
+	DeletedAt *time.Time        `json:"deleted_at"`
+}
+
 type User struct {
 	ID                string                 `json:"id"`
 	Email             string                 `json:"email"`
