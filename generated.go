@@ -92,9 +92,11 @@ type ComplexityRoot struct {
 	}
 
 	OrganizationMember struct {
-		Role     func(childComplexity int) int
-		UserID   func(childComplexity int) int
-		Username func(childComplexity int) int
+		CreatedAt func(childComplexity int) int
+		DeletedAt func(childComplexity int) int
+		Role      func(childComplexity int) int
+		UserID    func(childComplexity int) int
+		Username  func(childComplexity int) int
 	}
 
 	PackageSearchResult struct {
@@ -464,6 +466,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Organization.UpdatedAt(childComplexity), true
+
+	case "OrganizationMember.created_at":
+		if e.complexity.OrganizationMember.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.OrganizationMember.CreatedAt(childComplexity), true
+
+	case "OrganizationMember.deleted_at":
+		if e.complexity.OrganizationMember.DeletedAt == nil {
+			break
+		}
+
+		return e.complexity.OrganizationMember.DeletedAt(childComplexity), true
 
 	case "OrganizationMember.role":
 		if e.complexity.OrganizationMember.Role == nil {
@@ -2657,6 +2673,10 @@ func (ec *executionContext) fieldContext_Organization_members(ctx context.Contex
 				return ec.fieldContext_OrganizationMember_username(ctx, field)
 			case "role":
 				return ec.fieldContext_OrganizationMember_role(ctx, field)
+			case "created_at":
+				return ec.fieldContext_OrganizationMember_created_at(ctx, field)
+			case "deleted_at":
+				return ec.fieldContext_OrganizationMember_deleted_at(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type OrganizationMember", field.Name)
 		},
@@ -2791,6 +2811,91 @@ func (ec *executionContext) fieldContext_OrganizationMember_role(ctx context.Con
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type OrganizationRole does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationMember_created_at(ctx context.Context, field graphql.CollectedField, obj *OrganizationMember) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationMember_created_at(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationMember_created_at(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationMember",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationMember_deleted_at(ctx context.Context, field graphql.CollectedField, obj *OrganizationMember) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationMember_deleted_at(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DeletedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationMember_deleted_at(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationMember",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
 		},
 	}
 	return fc, nil
@@ -9332,6 +9437,17 @@ func (ec *executionContext) _OrganizationMember(ctx context.Context, sel ast.Sel
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "created_at":
+
+			out.Values[i] = ec._OrganizationMember_created_at(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleted_at":
+
+			out.Values[i] = ec._OrganizationMember_deleted_at(ctx, field, obj)
+
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
