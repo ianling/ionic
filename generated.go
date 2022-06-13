@@ -77,9 +77,10 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateOrganization func(childComplexity int, input CreateOrganizationRequest) int
-		CreateSoftwareList func(childComplexity int, input CreateSoftwareListRequest) int
-		Placeholder        func(childComplexity int) int
+		CreateOrganization        func(childComplexity int, input CreateOrganizationRequest) int
+		CreateSoftwareList        func(childComplexity int, input CreateSoftwareListRequest) int
+		Placeholder               func(childComplexity int) int
+		UpdateOrganizationMembers func(childComplexity int, input []UpdateOrganizationMemberInput) int
 	}
 
 	Organization struct {
@@ -237,6 +238,7 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	Placeholder(ctx context.Context) (*int, error)
 	CreateOrganization(ctx context.Context, input CreateOrganizationRequest) (Organization, error)
+	UpdateOrganizationMembers(ctx context.Context, input []UpdateOrganizationMemberInput) (*bool, error)
 	CreateSoftwareList(ctx context.Context, input CreateSoftwareListRequest) (SoftwareList, error)
 }
 type QueryResolver interface {
@@ -424,6 +426,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.Placeholder(childComplexity), true
+
+	case "Mutation.UpdateOrganizationMembers":
+		if e.complexity.Mutation.UpdateOrganizationMembers == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_UpdateOrganizationMembers_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateOrganizationMembers(childComplexity, args["input"].([]UpdateOrganizationMemberInput)), true
 
 	case "Organization.created_at":
 		if e.complexity.Organization.CreatedAt == nil {
@@ -1145,6 +1159,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputCreateOrganizationRequest,
 		ec.unmarshalInputCreateSoftwareListRequest,
+		ec.unmarshalInputUpdateOrganizationMemberInput,
 	)
 	first := true
 
@@ -1246,6 +1261,21 @@ func (ec *executionContext) field_Mutation_CreateSoftwareList_args(ctx context.C
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNCreateSoftwareListRequest2githubᚗcomᚋionᚑchannelᚋionicᚐCreateSoftwareListRequest(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_UpdateOrganizationMembers_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []UpdateOrganizationMemberInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNUpdateOrganizationMemberInput2ᚕgithubᚗcomᚋionᚑchannelᚋionicᚐUpdateOrganizationMemberInputᚄ(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2314,6 +2344,58 @@ func (ec *executionContext) fieldContext_Mutation_CreateOrganization(ctx context
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_CreateOrganization_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_UpdateOrganizationMembers(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_UpdateOrganizationMembers(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateOrganizationMembers(rctx, fc.Args["input"].([]UpdateOrganizationMemberInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_UpdateOrganizationMembers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_UpdateOrganizationMembers_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -9073,6 +9155,45 @@ func (ec *executionContext) unmarshalInputCreateSoftwareListRequest(ctx context.
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputUpdateOrganizationMemberInput(ctx context.Context, obj interface{}) (UpdateOrganizationMemberInput, error) {
+	var it UpdateOrganizationMemberInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "user_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("user_id"))
+			it.UserID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "role":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
+			it.Role, err = ec.unmarshalOOrganizationRole2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐOrganizationRole(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "deleted_at":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deleted_at"))
+			it.DeletedAt, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -9326,6 +9447,12 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "UpdateOrganizationMembers":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_UpdateOrganizationMembers(ctx, field)
+			})
+
 		case "CreateSoftwareList":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -11369,6 +11496,28 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 	return res
 }
 
+func (ec *executionContext) unmarshalNUpdateOrganizationMemberInput2githubᚗcomᚋionᚑchannelᚋionicᚐUpdateOrganizationMemberInput(ctx context.Context, v interface{}) (UpdateOrganizationMemberInput, error) {
+	res, err := ec.unmarshalInputUpdateOrganizationMemberInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateOrganizationMemberInput2ᚕgithubᚗcomᚋionᚑchannelᚋionicᚐUpdateOrganizationMemberInputᚄ(ctx context.Context, v interface{}) ([]UpdateOrganizationMemberInput, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]UpdateOrganizationMemberInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNUpdateOrganizationMemberInput2githubᚗcomᚋionᚑchannelᚋionicᚐUpdateOrganizationMemberInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
 func (ec *executionContext) marshalNUser2githubᚗcomᚋionᚑchannelᚋionicᚐUser(ctx context.Context, sel ast.SelectionSet, v User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
 }
@@ -11772,6 +11921,22 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	}
 	res := graphql.MarshalInt(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOOrganizationRole2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐOrganizationRole(ctx context.Context, v interface{}) (*OrganizationRole, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(OrganizationRole)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOOrganizationRole2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐOrganizationRole(ctx context.Context, sel ast.SelectionSet, v *OrganizationRole) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {

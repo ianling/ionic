@@ -1,4 +1,4 @@
-## Schema version 0.0.8
+## Schema version 0.0.9
 schema { 
   query: Query 
   mutation: Mutation   
@@ -62,6 +62,7 @@ type Mutation {
   """this is extended by other parts of the schema"""
   _placeholder: Int
   CreateOrganization(input: CreateOrganizationRequest!): Organization!
+  UpdateOrganizationMembers(input: [UpdateOrganizationMemberInput!]!): Boolean
   CreateSoftwareList(input: CreateSoftwareListRequest!): SoftwareList!
 }
 
@@ -222,6 +223,12 @@ allows timestamps to be converted to/from the time.Time type in Go.
 we don't need to define this one anywhere else because Time is built in to gqlgen
 """
 scalar Time
+
+input UpdateOrganizationMemberInput {
+  user_id: String!
+  role: OrganizationRole
+  deleted_at: Time
+}
 
 type User {
   id: String!
