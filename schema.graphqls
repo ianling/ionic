@@ -1,4 +1,4 @@
-## Schema version 0.0.9
+## Schema version 0.0.10
 schema { 
   query: Query 
   mutation: Mutation   
@@ -62,7 +62,7 @@ type Mutation {
   """this is extended by other parts of the schema"""
   _placeholder: Int
   CreateOrganization(input: CreateOrganizationRequest!): Organization!
-  UpdateOrganizationMembers(input: [UpdateOrganizationMemberInput!]!): Boolean
+  UpdateOrganizationMembers(input: [UpdateOrganizationMembersInput!]!): Boolean
   CreateSoftwareList(input: CreateSoftwareListRequest!): SoftwareList!
 }
 
@@ -88,6 +88,12 @@ type OrganizationMember {
   username: String!
   role: OrganizationRole!
   created_at: Time!
+  deleted_at: Time
+}
+
+input OrganizationMemberUpdate {
+  user_id: String!
+  role: OrganizationRole
   deleted_at: Time
 }
 
@@ -224,10 +230,9 @@ we don't need to define this one anywhere else because Time is built in to gqlge
 """
 scalar Time
 
-input UpdateOrganizationMemberInput {
-  user_id: String!
-  role: OrganizationRole
-  deleted_at: Time
+input UpdateOrganizationMembersInput {
+  org_id: String!
+  members: [OrganizationMemberUpdate!]!
 }
 
 type User {

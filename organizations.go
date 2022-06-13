@@ -181,7 +181,7 @@ func (ic *IonClient) AddMemberToOrganization(organizationID string, userID strin
 }
 
 // UpdateOrganizationMembers takes an organization ID and a slice of UpdateOrganizationMemberInput, and returns any errors that occurred.
-func (ic *IonClient) UpdateOrganizationMembers(organizationID string, usersToUpdate []UpdateOrganizationMemberInput, token string) error {
+func (ic *IonClient) UpdateOrganizationMembers(organizationID string, usersToUpdate []OrganizationMemberUpdate, token string) error {
 	b, err := json.Marshal(usersToUpdate)
 	if err != nil {
 		return fmt.Errorf("failed to marshal request body: %v", err.Error())

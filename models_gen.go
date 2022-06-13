@@ -72,6 +72,12 @@ type OrganizationMember struct {
 	DeletedAt *time.Time       `json:"deleted_at"`
 }
 
+type OrganizationMemberUpdate struct {
+	UserID    string            `json:"user_id"`
+	Role      *OrganizationRole `json:"role"`
+	DeletedAt *time.Time        `json:"deleted_at"`
+}
+
 type PackageSearchResult struct {
 	SearchResult
 	Purl string `json:"purl"`
@@ -152,10 +158,9 @@ type SoftwareList struct {
 	RulesetID        string             `json:"ruleset_id"`
 }
 
-type UpdateOrganizationMemberInput struct {
-	UserID    string            `json:"user_id"`
-	Role      *OrganizationRole `json:"role"`
-	DeletedAt *time.Time        `json:"deleted_at"`
+type UpdateOrganizationMembersInput struct {
+	OrgID   string                     `json:"org_id"`
+	Members []OrganizationMemberUpdate `json:"members"`
 }
 
 type User struct {
