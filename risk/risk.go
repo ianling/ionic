@@ -5,6 +5,15 @@ import "time"
 const (
 	// GetScoresEnpoint location of the getscores endpoint
 	GetScoresEnpoint = "v1/score/getScores"
+
+	// EcosystemScope constant with name of scope for ecosystem
+	EcosystemScope = "ecosystem"
+
+	// SupplyChainScope constant with name of scope for supply chain
+	SupplyChainScope = "supply chain"
+
+	// TechnologyScope constant with name of scope for technology
+	TechnologyScope = "technology"
 )
 
 // MetricPoint defines the data needed for points on a single risk point
