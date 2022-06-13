@@ -33,6 +33,22 @@ type Scope struct {
 	Categories []Category `json:"-"`
 }
 
+// GetScope returns a Scope value based on the name supplied
+func (s *Scores) GetScope(name string) *Scope {
+	var scope *Scope
+	for _, sco := range s.Scopes {
+		if sco.Name == name {
+			scope = &sco
+			break
+		}
+	}
+
+	if scope == nil {
+		scope = &Scope{Name: name}
+	}
+	return scope
+}
+
 // Category third tier struct for modeling the score tree
 type Category struct {
 	Name       string      `json:"name"`
