@@ -24,6 +24,8 @@ const (
 	OrganizationsDisableEndpoint = "v1/organizations/disableOrganization"
 	// OrganizationsAddMemberEndpoint is the endpoint for adding an existing user as a member of an organization
 	OrganizationsAddMemberEndpoint = "v1/organizations/addMember"
+	// OrganizationsUpdateMembersEndpoint is the endpoint for altering existing members of an organization
+	OrganizationsUpdateMembersEndpoint = "v1/organizations/updateMembers"
 )
 
 // CreateOrganizationOptions represents all the values that can be provided for an organization
@@ -173,6 +175,23 @@ func (ic *IonClient) AddMemberToOrganization(organizationID string, userID strin
 	_, err = ic.Post(fmt.Sprintf("%s/%s", OrganizationsAddMemberEndpoint, organizationID), token, nil, *buff, nil)
 	if err != nil {
 		return fmt.Errorf("failed to add member to organization: %v", err.Error())
+	}
+
+	return nil
+}
+
+// UpdateOrganizationMembers takes an organization ID and a slice of UpdateOrganizationMemberInput, and returns any errors that occurred.
+func (ic *IonClient) UpdateOrganizationMembers(organizationID string, usersToUpdate []UpdateOrganizationMemberInput, token string) error {
+	b, err := json.Marshal(usersToUpdate)
+	if err != nil {
+		return fmt.Errorf("failed to marshal request body: %v", err.Error())
+	}
+
+	buff := bytes.NewBuffer(b)
+
+	_, err = ic.Put(fmt.Sprintf("%s/%s", OrganizationsUpdateMembersEndpoint, organizationID), token, nil, *buff, nil)
+	if err != nil {
+		return fmt.Errorf("failed to update organization members: %v", err.Error())
 	}
 
 	return nil
