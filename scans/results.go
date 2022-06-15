@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ion-channel/ionic/community"
 	"github.com/ion-channel/ionic/dependencies"
 	"github.com/ion-channel/ionic/risk"
 	"github.com/ion-channel/ionic/secrets"
@@ -29,6 +30,7 @@ type UntranslatedResults struct {
 	Vulnerability           *VulnerabilityResults           `json:"vulnerabilities,omitempty"`
 	Secret                  *SecretResults                  `json:"secrets,omitempty"`
 	Risk                    *RiskResults                    `json:"risk,omitempty"`
+	Metrics                 *MetricsResults                 `json:"metrics,omitempty"`
 }
 
 // Translate moves information from the particular sub-struct, IE
@@ -74,6 +76,10 @@ func (u *UntranslatedResults) Translate() *TranslatedResults {
 	if u.License != nil {
 		tr.Type = "license"
 		tr.Data = *u.License
+	}
+	if u.Metrics != nil {
+		tr.Type = "metrics"
+		tr.Data = *u.Metrics
 	}
 	if u.Risk != nil {
 		tr.Type = "risk"
@@ -185,6 +191,14 @@ func (r *TranslatedResults) UnmarshalJSON(b []byte) error {
 		}
 
 		r.Data = l
+	case "metrics":
+		var b MetricsResults
+		err := json.Unmarshal(tr.RawData, &b)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshall metrics results: %v", err)
+		}
+
+		r.Data = b
 	case "risk":
 		var b RiskResults
 		err := json.Unmarshal(tr.RawData, &b)
@@ -438,6 +452,30 @@ type FileNotes map[string][]string
 type ClamavDetails struct {
 	ClamavVersion   string `json:"clamav_version" xml:"clamav_version"`
 	ClamavDbVersion string `json:"clamav_db_version" xml:"clamav_db_version"`
+}
+
+// MetricsResults is a slice of
+type MetricsResults struct {
+	Metrics []community.Metrics `json:"metrics" xml:"metrics"`
+}
+
+// MarshalJSON meets the marshaller interface to custom wrangle a risk
+// result into the json shape
+func (e MetricsResults) MarshalJSON() ([]byte, error) {
+	return json.Marshal(e.Metrics)
+}
+
+// UnmarshalJSON meets the unmarshaller interface to custom wrangle the
+// risk scan into an risk result
+func (e *MetricsResults) UnmarshalJSON(b []byte) error {
+	var s []community.Metrics
+	err := json.Unmarshal(b, &s)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal secrets result: %v", err.Error())
+	}
+
+	e.Metrics = s
+	return nil
 }
 
 // RiskResults is a slice of
