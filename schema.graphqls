@@ -1,4 +1,4 @@
-## Schema version 0.0.10
+## Schema version 0.0.13
 schema { 
   query: Query 
   mutation: Mutation   
@@ -62,7 +62,7 @@ type Mutation {
   """this is extended by other parts of the schema"""
   _placeholder: Int
   CreateOrganization(input: CreateOrganizationRequest!): Organization!
-  UpdateOrganizationMembers(input: [UpdateOrganizationMembersInput!]!): Boolean
+  UpdateOrganizationMembers(input: UpdateOrganizationMembersInput!): Boolean
   CreateSoftwareList(input: CreateSoftwareListRequest!): SoftwareList!
 }
 
@@ -72,6 +72,11 @@ enum NotificationChannelOption {
 
 enum NotificationFrequencyOption {
   daily
+}
+
+enum ObjectType {
+  organization
+  software_list
 }
 
 type Organization {
@@ -113,6 +118,17 @@ type PackageSearchResult implements SearchResult {
   org: String!
   version: String!
   purl: String!
+}
+
+enum Permission {
+  ALL_PERMISSIONS
+  ORGANIZATION_MODIFY
+  ORGANIZATION_VIEW
+  ORGANIZATION_USER_CREATE
+  ORGANIZATION_USER_MODIFY
+  ORGANIZATION_USER_REMOVE
+  SOFTWARE_LIST_MODIFY
+  SOFTWARE_LIST_VIEW
 }
 
 type Preferences {

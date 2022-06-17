@@ -80,7 +80,7 @@ type ComplexityRoot struct {
 		CreateOrganization        func(childComplexity int, input CreateOrganizationRequest) int
 		CreateSoftwareList        func(childComplexity int, input CreateSoftwareListRequest) int
 		Placeholder               func(childComplexity int) int
-		UpdateOrganizationMembers func(childComplexity int, input []UpdateOrganizationMembersInput) int
+		UpdateOrganizationMembers func(childComplexity int, input UpdateOrganizationMembersInput) int
 	}
 
 	Organization struct {
@@ -238,7 +238,7 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	Placeholder(ctx context.Context) (*int, error)
 	CreateOrganization(ctx context.Context, input CreateOrganizationRequest) (Organization, error)
-	UpdateOrganizationMembers(ctx context.Context, input []UpdateOrganizationMembersInput) (*bool, error)
+	UpdateOrganizationMembers(ctx context.Context, input UpdateOrganizationMembersInput) (*bool, error)
 	CreateSoftwareList(ctx context.Context, input CreateSoftwareListRequest) (SoftwareList, error)
 }
 type QueryResolver interface {
@@ -437,7 +437,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateOrganizationMembers(childComplexity, args["input"].([]UpdateOrganizationMembersInput)), true
+		return e.complexity.Mutation.UpdateOrganizationMembers(childComplexity, args["input"].(UpdateOrganizationMembersInput)), true
 
 	case "Organization.created_at":
 		if e.complexity.Organization.CreatedAt == nil {
@@ -1273,10 +1273,10 @@ func (ec *executionContext) field_Mutation_CreateSoftwareList_args(ctx context.C
 func (ec *executionContext) field_Mutation_UpdateOrganizationMembers_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 []UpdateOrganizationMembersInput
+	var arg0 UpdateOrganizationMembersInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNUpdateOrganizationMembersInput2ᚕgithubᚗcomᚋionᚑchannelᚋionicᚐUpdateOrganizationMembersInputᚄ(ctx, tmp)
+		arg0, err = ec.unmarshalNUpdateOrganizationMembersInput2githubᚗcomᚋionᚑchannelᚋionicᚐUpdateOrganizationMembersInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2365,7 +2365,7 @@ func (ec *executionContext) _Mutation_UpdateOrganizationMembers(ctx context.Cont
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateOrganizationMembers(rctx, fc.Args["input"].([]UpdateOrganizationMembersInput))
+		return ec.resolvers.Mutation().UpdateOrganizationMembers(rctx, fc.Args["input"].(UpdateOrganizationMembersInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11553,23 +11553,6 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 func (ec *executionContext) unmarshalNUpdateOrganizationMembersInput2githubᚗcomᚋionᚑchannelᚋionicᚐUpdateOrganizationMembersInput(ctx context.Context, v interface{}) (UpdateOrganizationMembersInput, error) {
 	res, err := ec.unmarshalInputUpdateOrganizationMembersInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalNUpdateOrganizationMembersInput2ᚕgithubᚗcomᚋionᚑchannelᚋionicᚐUpdateOrganizationMembersInputᚄ(ctx context.Context, v interface{}) ([]UpdateOrganizationMembersInput, error) {
-	var vSlice []interface{}
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
-	var err error
-	res := make([]UpdateOrganizationMembersInput, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNUpdateOrganizationMembersInput2githubᚗcomᚋionᚑchannelᚋionicᚐUpdateOrganizationMembersInput(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
 }
 
 func (ec *executionContext) marshalNUser2githubᚗcomᚋionᚑchannelᚋionicᚐUser(ctx context.Context, sel ast.SelectionSet, v User) graphql.Marshaler {

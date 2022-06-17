@@ -314,6 +314,47 @@ func (e NotificationFrequencyOption) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type ObjectType string
+
+const (
+	ObjectTypeOrganization ObjectType = "organization"
+	ObjectTypeSoftwareList ObjectType = "software_list"
+)
+
+var AllObjectType = []ObjectType{
+	ObjectTypeOrganization,
+	ObjectTypeSoftwareList,
+}
+
+func (e ObjectType) IsValid() bool {
+	switch e {
+	case ObjectTypeOrganization, ObjectTypeSoftwareList:
+		return true
+	}
+	return false
+}
+
+func (e ObjectType) String() string {
+	return string(e)
+}
+
+func (e *ObjectType) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ObjectType(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ObjectType", str)
+	}
+	return nil
+}
+
+func (e ObjectType) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type OrganizationRole string
 
 const (
@@ -354,6 +395,59 @@ func (e *OrganizationRole) UnmarshalGQL(v interface{}) error {
 }
 
 func (e OrganizationRole) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type Permission string
+
+const (
+	PermissionAllPermissions         Permission = "ALL_PERMISSIONS"
+	PermissionOrganizationModify     Permission = "ORGANIZATION_MODIFY"
+	PermissionOrganizationView       Permission = "ORGANIZATION_VIEW"
+	PermissionOrganizationUserCreate Permission = "ORGANIZATION_USER_CREATE"
+	PermissionOrganizationUserModify Permission = "ORGANIZATION_USER_MODIFY"
+	PermissionOrganizationUserRemove Permission = "ORGANIZATION_USER_REMOVE"
+	PermissionSoftwareListModify     Permission = "SOFTWARE_LIST_MODIFY"
+	PermissionSoftwareListView       Permission = "SOFTWARE_LIST_VIEW"
+)
+
+var AllPermission = []Permission{
+	PermissionAllPermissions,
+	PermissionOrganizationModify,
+	PermissionOrganizationView,
+	PermissionOrganizationUserCreate,
+	PermissionOrganizationUserModify,
+	PermissionOrganizationUserRemove,
+	PermissionSoftwareListModify,
+	PermissionSoftwareListView,
+}
+
+func (e Permission) IsValid() bool {
+	switch e {
+	case PermissionAllPermissions, PermissionOrganizationModify, PermissionOrganizationView, PermissionOrganizationUserCreate, PermissionOrganizationUserModify, PermissionOrganizationUserRemove, PermissionSoftwareListModify, PermissionSoftwareListView:
+		return true
+	}
+	return false
+}
+
+func (e Permission) String() string {
+	return string(e)
+}
+
+func (e *Permission) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Permission(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Permission", str)
+	}
+	return nil
+}
+
+func (e Permission) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
