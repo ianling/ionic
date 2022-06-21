@@ -314,47 +314,6 @@ func (e NotificationFrequencyOption) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
-type ObjectType string
-
-const (
-	ObjectTypeOrganization ObjectType = "organization"
-	ObjectTypeSoftwareList ObjectType = "software_list"
-)
-
-var AllObjectType = []ObjectType{
-	ObjectTypeOrganization,
-	ObjectTypeSoftwareList,
-}
-
-func (e ObjectType) IsValid() bool {
-	switch e {
-	case ObjectTypeOrganization, ObjectTypeSoftwareList:
-		return true
-	}
-	return false
-}
-
-func (e ObjectType) String() string {
-	return string(e)
-}
-
-func (e *ObjectType) UnmarshalGQL(v interface{}) error {
-	str, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("enums must be strings")
-	}
-
-	*e = ObjectType(str)
-	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid ObjectType", str)
-	}
-	return nil
-}
-
-func (e ObjectType) MarshalGQL(w io.Writer) {
-	fmt.Fprint(w, strconv.Quote(e.String()))
-}
-
 type OrganizationRole string
 
 const (
@@ -401,14 +360,32 @@ func (e OrganizationRole) MarshalGQL(w io.Writer) {
 type Permission string
 
 const (
-	PermissionAllPermissions         Permission = "ALL_PERMISSIONS"
-	PermissionOrganizationModify     Permission = "ORGANIZATION_MODIFY"
-	PermissionOrganizationView       Permission = "ORGANIZATION_VIEW"
+	// Grants all permissions over all objects in the system.
+	// Reserved for System Admin role. Cannot be granted to or inherited by other roles.
+	PermissionAllPermissions Permission = "ALL_PERMISSIONS"
+	// Grants the ability to modify an organization's settings, including billing information.
+	PermissionOrganizationModify Permission = "ORGANIZATION_MODIFY"
+	// Grants the ability to view basic information about an organization, including its name,
+	// the date and time it was created, etc.
+	PermissionOrganizationView Permission = "ORGANIZATION_VIEW"
+	// Grants the ability to invite users to an organization.
 	PermissionOrganizationUserCreate Permission = "ORGANIZATION_USER_CREATE"
+	// Grants the ability to change the roles of existing users within an organization.
 	PermissionOrganizationUserModify Permission = "ORGANIZATION_USER_MODIFY"
+	// Grants the ability to remove users from an organization.
 	PermissionOrganizationUserRemove Permission = "ORGANIZATION_USER_REMOVE"
-	PermissionSoftwareListModify     Permission = "SOFTWARE_LIST_MODIFY"
-	PermissionSoftwareListView       Permission = "SOFTWARE_LIST_VIEW"
+	// Grants the ability to view a list of all the organization's members.
+	PermissionOrganizationUserView Permission = "ORGANIZATION_USER_VIEW"
+	// Grants the ability to create a new software list and add it to an organization's software inventory.
+	PermissionOrganizationSoftwareListCreate Permission = "ORGANIZATION_SOFTWARE_LIST_CREATE"
+	// Grants the ability to modify an organization's existing software lists,
+	// including adding, modifying, and removing components from individual software lists.
+	PermissionOrganizationSoftwareListModify Permission = "ORGANIZATION_SOFTWARE_LIST_MODIFY"
+	// Grants the ability to view an organization's software lists and any components they contain.
+	// This also includes the ability to export an SBOM for the software lists and view risk scoring data.
+	PermissionOrganizationSoftwareListView Permission = "ORGANIZATION_SOFTWARE_LIST_VIEW"
+	// Grants the ability to remove software lists from an organization's software inventory.
+	PermissionOrganizationSoftwareListRemove Permission = "ORGANIZATION_SOFTWARE_LIST_REMOVE"
 )
 
 var AllPermission = []Permission{
@@ -418,13 +395,16 @@ var AllPermission = []Permission{
 	PermissionOrganizationUserCreate,
 	PermissionOrganizationUserModify,
 	PermissionOrganizationUserRemove,
-	PermissionSoftwareListModify,
-	PermissionSoftwareListView,
+	PermissionOrganizationUserView,
+	PermissionOrganizationSoftwareListCreate,
+	PermissionOrganizationSoftwareListModify,
+	PermissionOrganizationSoftwareListView,
+	PermissionOrganizationSoftwareListRemove,
 }
 
 func (e Permission) IsValid() bool {
 	switch e {
-	case PermissionAllPermissions, PermissionOrganizationModify, PermissionOrganizationView, PermissionOrganizationUserCreate, PermissionOrganizationUserModify, PermissionOrganizationUserRemove, PermissionSoftwareListModify, PermissionSoftwareListView:
+	case PermissionAllPermissions, PermissionOrganizationModify, PermissionOrganizationView, PermissionOrganizationUserCreate, PermissionOrganizationUserModify, PermissionOrganizationUserRemove, PermissionOrganizationUserView, PermissionOrganizationSoftwareListCreate, PermissionOrganizationSoftwareListModify, PermissionOrganizationSoftwareListView, PermissionOrganizationSoftwareListRemove:
 		return true
 	}
 	return false

@@ -1,4 +1,4 @@
-## Schema version 0.0.13
+## Schema version 0.0.14
 schema { 
   query: Query 
   mutation: Mutation   
@@ -74,11 +74,6 @@ enum NotificationFrequencyOption {
   daily
 }
 
-enum ObjectType {
-  organization
-  software_list
-}
-
 type Organization {
   id: String!
   created_at: Time!
@@ -121,14 +116,58 @@ type PackageSearchResult implements SearchResult {
 }
 
 enum Permission {
+  """
+  Grants all permissions over all objects in the system.
+  Reserved for System Admin role. Cannot be granted to or inherited by other roles.
+  """
   ALL_PERMISSIONS
+
+  """
+  Grants the ability to modify an organization's settings, including billing information.
+  """
   ORGANIZATION_MODIFY
+
+  """
+  Grants the ability to view basic information about an organization, including its name,
+  the date and time it was created, etc.
+  """
   ORGANIZATION_VIEW
+
+  """Grants the ability to invite users to an organization."""
   ORGANIZATION_USER_CREATE
+
+  """
+  Grants the ability to change the roles of existing users within an organization.
+  """
   ORGANIZATION_USER_MODIFY
+
+  """Grants the ability to remove users from an organization."""
   ORGANIZATION_USER_REMOVE
-  SOFTWARE_LIST_MODIFY
-  SOFTWARE_LIST_VIEW
+
+  """Grants the ability to view a list of all the organization's members."""
+  ORGANIZATION_USER_VIEW
+
+  """
+  Grants the ability to create a new software list and add it to an organization's software inventory.
+  """
+  ORGANIZATION_SOFTWARE_LIST_CREATE
+
+  """
+  Grants the ability to modify an organization's existing software lists,
+  including adding, modifying, and removing components from individual software lists.
+  """
+  ORGANIZATION_SOFTWARE_LIST_MODIFY
+
+  """
+  Grants the ability to view an organization's software lists and any components they contain.
+  This also includes the ability to export an SBOM for the software lists and view risk scoring data.
+  """
+  ORGANIZATION_SOFTWARE_LIST_VIEW
+
+  """
+  Grants the ability to remove software lists from an organization's software inventory.
+  """
+  ORGANIZATION_SOFTWARE_LIST_REMOVE
 }
 
 type Preferences {
