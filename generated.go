@@ -9281,11 +9281,11 @@ func (ec *executionContext) unmarshalInputOrganizationMemberUpdate(ctx context.C
 			if err != nil {
 				return it, err
 			}
-		case "role":
+		case "role_id":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
-			it.Role, err = ec.unmarshalOOrganizationRole2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐOrganizationRole(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role_id"))
+			it.RoleID, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12080,22 +12080,6 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	}
 	res := graphql.MarshalInt(*v)
 	return res
-}
-
-func (ec *executionContext) unmarshalOOrganizationRole2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐOrganizationRole(ctx context.Context, v interface{}) (*OrganizationRole, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var res = new(OrganizationRole)
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOOrganizationRole2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐOrganizationRole(ctx context.Context, sel ast.SelectionSet, v *OrganizationRole) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return v
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {

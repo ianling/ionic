@@ -74,9 +74,9 @@ type OrganizationMember struct {
 }
 
 type OrganizationMemberUpdate struct {
-	UserID    string            `json:"user_id"`
-	Role      *OrganizationRole `json:"role"`
-	DeletedAt *time.Time        `json:"deleted_at"`
+	UserID    string     `json:"user_id"`
+	RoleID    *string    `json:"role_id"`
+	DeletedAt *time.Time `json:"deleted_at"`
 }
 
 type PackageSearchResult struct {

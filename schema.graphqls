@@ -1,4 +1,4 @@
-## Schema version 0.0.15
+## Schema version 0.0.16
 schema { 
   query: Query 
   mutation: Mutation   
@@ -94,7 +94,7 @@ type OrganizationMember {
 
 input OrganizationMemberUpdate {
   user_id: String!
-  role: OrganizationRole
+  role_id: String
   deleted_at: Time
 }
 
