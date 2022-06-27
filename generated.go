@@ -96,6 +96,7 @@ type ComplexityRoot struct {
 		CreatedAt func(childComplexity int) int
 		DeletedAt func(childComplexity int) int
 		Role      func(childComplexity int) int
+		RoleID    func(childComplexity int) int
 		UserID    func(childComplexity int) int
 		Username  func(childComplexity int) int
 	}
@@ -227,6 +228,7 @@ type ComplexityRoot struct {
 	UserOrganizationRole struct {
 		Organization func(childComplexity int) int
 		Role         func(childComplexity int) int
+		RoleID       func(childComplexity int) int
 	}
 
 	UserTeamRole struct {
@@ -501,6 +503,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.OrganizationMember.Role(childComplexity), true
+
+	case "OrganizationMember.role_id":
+		if e.complexity.OrganizationMember.RoleID == nil {
+			break
+		}
+
+		return e.complexity.OrganizationMember.RoleID(childComplexity), true
 
 	case "OrganizationMember.user_id":
 		if e.complexity.OrganizationMember.UserID == nil {
@@ -1134,6 +1143,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.UserOrganizationRole.Role(childComplexity), true
+
+	case "UserOrganizationRole.role_id":
+		if e.complexity.UserOrganizationRole.RoleID == nil {
+			break
+		}
+
+		return e.complexity.UserOrganizationRole.RoleID(childComplexity), true
 
 	case "UserTeamRole.role":
 		if e.complexity.UserTeamRole.Role == nil {
@@ -2754,6 +2770,8 @@ func (ec *executionContext) fieldContext_Organization_members(ctx context.Contex
 				return ec.fieldContext_OrganizationMember_user_id(ctx, field)
 			case "username":
 				return ec.fieldContext_OrganizationMember_username(ctx, field)
+			case "role_id":
+				return ec.fieldContext_OrganizationMember_role_id(ctx, field)
 			case "role":
 				return ec.fieldContext_OrganizationMember_role(ctx, field)
 			case "created_at":
@@ -2843,6 +2861,50 @@ func (ec *executionContext) _OrganizationMember_username(ctx context.Context, fi
 }
 
 func (ec *executionContext) fieldContext_OrganizationMember_username(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "OrganizationMember",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _OrganizationMember_role_id(ctx context.Context, field graphql.CollectedField, obj *OrganizationMember) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_OrganizationMember_role_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RoleID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_OrganizationMember_role_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "OrganizationMember",
 		Field:      field,
@@ -7030,6 +7092,8 @@ func (ec *executionContext) fieldContext_User_organizations(ctx context.Context,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
+			case "role_id":
+				return ec.fieldContext_UserOrganizationRole_role_id(ctx, field)
 			case "role":
 				return ec.fieldContext_UserOrganizationRole_role(ctx, field)
 			case "organization":
@@ -7086,6 +7150,50 @@ func (ec *executionContext) fieldContext_User_teams(ctx context.Context, field g
 				return ec.fieldContext_UserTeamRole_team_id(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type UserTeamRole", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UserOrganizationRole_role_id(ctx context.Context, field graphql.CollectedField, obj *UserOrganizationRole) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UserOrganizationRole_role_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RoleID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UserOrganizationRole_role_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UserOrganizationRole",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -9589,6 +9697,13 @@ func (ec *executionContext) _OrganizationMember(ctx context.Context, sel ast.Sel
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "role_id":
+
+			out.Values[i] = ec._OrganizationMember_role_id(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "role":
 
 			out.Values[i] = ec._OrganizationMember_role(ctx, field, obj)
@@ -10563,6 +10678,13 @@ func (ec *executionContext) _UserOrganizationRole(ctx context.Context, sel ast.S
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("UserOrganizationRole")
+		case "role_id":
+
+			out.Values[i] = ec._UserOrganizationRole_role_id(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "role":
 
 			out.Values[i] = ec._UserOrganizationRole_role(ctx, field, obj)

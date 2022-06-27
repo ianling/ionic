@@ -67,6 +67,7 @@ type Organization struct {
 type OrganizationMember struct {
 	UserID    string           `json:"user_id"`
 	Username  string           `json:"username"`
+	RoleID    string           `json:"role_id"`
 	Role      OrganizationRole `json:"role"`
 	CreatedAt time.Time        `json:"created_at"`
 	DeletedAt *time.Time       `json:"deleted_at"`
@@ -180,6 +181,7 @@ type User struct {
 }
 
 type UserOrganizationRole struct {
+	RoleID       string           `json:"role_id"`
 	Role         OrganizationRole `json:"role"`
 	Organization Organization     `json:"organization"`
 }

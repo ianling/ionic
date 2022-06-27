@@ -1,4 +1,4 @@
-## Schema version 0.0.14
+## Schema version 0.0.15
 schema { 
   query: Query 
   mutation: Mutation   
@@ -86,6 +86,7 @@ type Organization {
 type OrganizationMember {
   user_id: String!
   username: String!
+  role_id: String!
   role: OrganizationRole!
   created_at: Time!
   deleted_at: Time
@@ -307,6 +308,7 @@ type User {
 }
 
 type UserOrganizationRole {
+  role_id: String!
   role: OrganizationRole!
   organization: Organization!
 }
