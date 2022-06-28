@@ -1,4 +1,4 @@
-## Schema version 0.0.10
+## Schema version 0.0.16
 schema { 
   query: Query 
   mutation: Mutation   
@@ -62,7 +62,7 @@ type Mutation {
   """this is extended by other parts of the schema"""
   _placeholder: Int
   CreateOrganization(input: CreateOrganizationRequest!): Organization!
-  UpdateOrganizationMembers(input: [UpdateOrganizationMembersInput!]!): Boolean
+  UpdateOrganizationMembers(input: UpdateOrganizationMembersInput!): Boolean
   CreateSoftwareList(input: CreateSoftwareListRequest!): SoftwareList!
 }
 
@@ -86,6 +86,7 @@ type Organization {
 type OrganizationMember {
   user_id: String!
   username: String!
+  role_id: String!
   role: OrganizationRole!
   created_at: Time!
   deleted_at: Time
@@ -93,7 +94,7 @@ type OrganizationMember {
 
 input OrganizationMemberUpdate {
   user_id: String!
-  role: OrganizationRole
+  role_id: String
   deleted_at: Time
 }
 
@@ -113,6 +114,61 @@ type PackageSearchResult implements SearchResult {
   org: String!
   version: String!
   purl: String!
+}
+
+enum Permission {
+  """
+  Grants all permissions over all objects in the system.
+  Reserved for System Admin role. Cannot be granted to or inherited by other roles.
+  """
+  ALL_PERMISSIONS
+
+  """
+  Grants the ability to modify an organization's settings, including billing information.
+  """
+  ORGANIZATION_MODIFY
+
+  """
+  Grants the ability to view basic information about an organization, including its name,
+  the date and time it was created, etc.
+  """
+  ORGANIZATION_VIEW
+
+  """Grants the ability to invite users to an organization."""
+  ORGANIZATION_USER_CREATE
+
+  """
+  Grants the ability to change the roles of existing users within an organization.
+  """
+  ORGANIZATION_USER_MODIFY
+
+  """Grants the ability to remove users from an organization."""
+  ORGANIZATION_USER_REMOVE
+
+  """Grants the ability to view a list of all the organization's members."""
+  ORGANIZATION_USER_VIEW
+
+  """
+  Grants the ability to create a new software list and add it to an organization's software inventory.
+  """
+  ORGANIZATION_SOFTWARE_LIST_CREATE
+
+  """
+  Grants the ability to modify an organization's existing software lists,
+  including adding, modifying, and removing components from individual software lists.
+  """
+  ORGANIZATION_SOFTWARE_LIST_MODIFY
+
+  """
+  Grants the ability to view an organization's software lists and any components they contain.
+  This also includes the ability to export an SBOM for the software lists and view risk scoring data.
+  """
+  ORGANIZATION_SOFTWARE_LIST_VIEW
+
+  """
+  Grants the ability to remove software lists from an organization's software inventory.
+  """
+  ORGANIZATION_SOFTWARE_LIST_REMOVE
 }
 
 type Preferences {
@@ -252,6 +308,7 @@ type User {
 }
 
 type UserOrganizationRole {
+  role_id: String!
   role: OrganizationRole!
   organization: Organization!
 }

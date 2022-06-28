@@ -36,6 +36,7 @@ func (u User) String() string {
 }
 
 // IsMemberOfOrganization takes a team id and returns true if user is a member of that team.
+// Deprecated: Check permissions instead.
 func (u User) IsMemberOfOrganization(id string) bool {
 	for _, role := range u.Organizations {
 		if role.Organization.ID == id {
@@ -47,6 +48,7 @@ func (u User) IsMemberOfOrganization(id string) bool {
 }
 
 // IsAdminOfOrganization takes a team id and returns true if user is an admin of that team.
+// Deprecated: Check permissions instead.
 func (u User) IsAdminOfOrganization(id string) bool {
 	for _, role := range u.Organizations {
 		// "admin" is for backwards compatibility with the old role system.
