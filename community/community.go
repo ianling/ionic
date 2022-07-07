@@ -113,6 +113,6 @@ type MonthlyMttr struct {
 
 // MonthlyMttr defines the data needed for month and mttr
 type MonthlyContributingActorActivityRate struct {
-	Month                         string  `json:"month" xml:"month"`
-	ContributingActorActivityRate float32 `json:"contributing_actor_activity_rate" xml:"contributing_actor_activity_rate"`
+	Month string  `json:"month" xml:"month"`
+	Count float32 `json:"count" xml:"count"`
 }
