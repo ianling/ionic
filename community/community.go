@@ -20,20 +20,20 @@ const (
 // Repo is a representation of a github repo and corresponding metrics about
 // that repo pulled from github
 type Repo struct {
-	ID            string     `json:"id" xml:"id"`
-	Name          string     `json:"name" xml:"name"`
-	URL           string     `json:"url" xml:"url"`
-	Committers    int        `json:"committers" xml:"committers"`
-	TotalActors   int        `json:"total_actors,omitempty" xml:"total_actors,omitempty"`
-	Confidence    float64    `json:"confidence" xml:"confidence"`
-	OldNames      []string   `json:"old_names" xml:"old_names"`
-	DefaultBranch string     `json:"default_branch,omitempty" xml:"default_branch,omitempty"`
-	MasterBranch  string     `json:"master_branch,omitempty" xml:"master_branch,omitempty"`
-	Stars         int        `json:"stars" xml:"stars"`
-	Matches       []string   `json:"matches,omitempty" xml:"matches,omitempty"`
-	CommittedAt   time.Time  `json:"committed_at" xml:"committed_at"`
-	UpdatedAt     time.Time  `json:"updated_at" xml:"updated_at"`
-	CreatedAt     *time.Time `json:"created_at" xml:"created_at"`
+	ID                   string     `json:"id" xml:"id"`
+	Name                 string     `json:"name" xml:"name"`
+	URL                  string     `json:"url" xml:"url"`
+	CommittersTotalCount int        `json:"committers_total_count" xml:"committers_total_count"`
+	ActorsTotalCount     int        `json:"actors_total_count,omitempty" xml:"actors_total_count,omitempty"`
+	Confidence           float64    `json:"confidence" xml:"confidence"`
+	OldNames             []string   `json:"old_names" xml:"old_names"`
+	DefaultBranch        string     `json:"default_branch,omitempty" xml:"default_branch,omitempty"`
+	MasterBranch         string     `json:"master_branch,omitempty" xml:"master_branch,omitempty"`
+	Stars                int        `json:"stars" xml:"stars"`
+	Matches              []string   `json:"matches,omitempty" xml:"matches,omitempty"`
+	CommittedAt          time.Time  `json:"committed_at" xml:"committed_at"`
+	UpdatedAt            time.Time  `json:"updated_at" xml:"updated_at"`
+	CreatedAt            *time.Time `json:"created_at" xml:"created_at"`
 }
 
 // Metrics is a set of data points that represents the measure of a softwares
@@ -41,8 +41,8 @@ type Repo struct {
 type Metrics struct {
 	ID                                        string                                  `json:"id" xml:"id"`
 	Name                                      string                                  `json:"name" xml:"name"`
-	Committers                                int                                     `json:"committers" xml:"committers"`
-	TotalActors                               int                                     `json:"total_actors,omitempty" xml:"total_actors,omitempty"`
+	CommittersTotalCount                      int                                     `json:"committers_total_count" xml:"committers_total_count"`
+	ActorsTotalCount                          int                                     `json:"actors_total_count,omitempty" xml:"actors_total_count,omitempty"`
 	CommittersMonthlyCount                    *[]MonthlyCount                         `json:"committers_monthly_count" xml:"committers_monthly_count"`
 	ReleasesTotalCount                        *int                                    `json:"releases_total_count" xml:"releases_total_count"`
 	ReleasesMonthlyCount                      *[]MonthlyCount                         `json:"releases_monthly_count" xml:"releases_monthly_count"`
