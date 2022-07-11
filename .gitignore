@@ -4,3 +4,4 @@ coverage.txt
 docs/*.html
 docs/endpoints.md
 .idea
+.vscode/
