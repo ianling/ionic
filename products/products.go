@@ -40,6 +40,42 @@ type Product struct {
 	Matches            []string      `json:"matches,omitempty" xml:"matches,omitempty"`
 }
 
+type Count struct {
+	Count  int    `json:"count"`
+	Source string `json:"source"`
+}
+
+type MonthlyCount struct {
+	Count []Count `json:"count"`
+	Month string  `json:"month"`
+}
+
+type Metrics struct {
+	ID                                      string         `json:"id"`
+	VulnTotalCount                          []Count        `json:"vuln_total_count"`
+	CriticalSeverityVulnTotalCount          []Count        `json:"critical_severity_vuln_total_count"`
+	HighSeverityVulnTotalCount              []Count        `json:"high_severity_vuln_total_count"`
+	MediumSeverityVulnTotalCount            []Count        `json:"medium_severity_vuln_total_count"`
+	LowSeverityVulnTotalCount               []Count        `json:"low_severity_vuln_total_count"`
+	VulnMonthlyCount                        []MonthlyCount `json:"vuln_monthly_count"`
+	CriticalSeverityVulnMonthlyCount        []MonthlyCount `json:"critical_severity_vuln_monthly_count"`
+	HighSeverityVulnMonthlyCount            []MonthlyCount `json:"high_severity_vuln_monthly_count"`
+	MediumSeverityVulnMonthlyCount          []MonthlyCount `json:"medium_severity_vuln_monthly_count"`
+	LowSeverityVulnMonthlyCount             []MonthlyCount `json:"low_severity_vuln_monthly_count"`
+	AverageSeverity                         float64        `json:"average_severity"`
+	AverageHighSeverity                     float64        `json:"average_high_severity"`
+	AverageMediumSeverity                   float64        `json:"average_medium_severity"`
+	AverageLowSeverity                      float64        `json:"average_low_severity"`
+	AverageVulnMonthlyCount                 float64        `json:"average_vuln_monthly_count"`
+	AverageCriticalSeverityVulnMonthlyCount float64        `json:"average_critical_severity_vuln_monthly_count"`
+	AverageHighSeverityVulnMonthlyCount     float64        `json:"average_high_severity_vuln_monthly_count"`
+	AverageMediumSeverityVulnMonthlyCount   float64        `json:"average_medium_severity_vuln_monthly_count"`
+	AverageLowSeverityVulnMonthlyCount      float64        `json:"average_low_severity_vuln_monthly_count"`
+	OrgProductsCount                        float64        `json:"org_products_count"`
+	PrevVersionCount                        float64        `json:"prev_version_count"`
+	UpdatedAt                               time.Time      `json:"updated_at"`
+}
+
 // Source represents information about where the product data came from
 type Source struct {
 	ID           int       `json:"id" xml:"id"`
