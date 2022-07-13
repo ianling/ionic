@@ -1,7 +1,5 @@
 package risk
 
-import "time"
-
 const (
 	// GetScoresEnpoint location of the getscores endpoint
 	GetScoresEnpoint = "v1/score/getScores"
@@ -16,16 +14,24 @@ const (
 	TechnologyScope = "technology"
 )
 
-// MetricPoint defines the data needed for points on a single risk point
-type MetricPoint struct {
-	Name   string `json:"name" xml:"name"`
-	Points int    `json:"points" xml:"points"`
+type Metrics struct {
+	ID      string   `json:"id"`
+	Metrics []Metric `json:"metrics"`
 }
 
-// MetricPoints defines the data needed for points on a single risk point
-type MetricPoints struct {
-	Metrics     []MetricPoint `json:"metrics" xml:"metrics"`
-	ProcessedAt time.Time     `json:"processed_at" xml:"processed_at"`
+type Metric struct {
+	Name     string         `json:"name"`
+	Value    interface{}    `json:"value"`
+	Bindings []ScoreBinding `json:"bindings"`
+}
+
+// ScoreBinding a mapping from metric to which scope it falls into.
+type ScoreBinding struct {
+	Metric    string `json:"metric"`
+	Scope     string `json:"scope"`
+	Category  string `json:"category"`
+	Attribute string `json:"attribute"`
+	Source    string `json:"source"`
 }
 
 // Scores top level struct for modeling the score tree
