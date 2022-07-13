@@ -285,7 +285,7 @@ func (u *UntranslatedResults) UnmarshalJSON(b []byte) error {
 	err = json.Unmarshal(b, (*ur2)(u))
 	if err != nil {
 		// we have received invalid stringified json
-		return fmt.Errorf("unable to unmarshal json")
+		return fmt.Errorf("unable to unmarshal json - %v", err.Error())
 	}
 
 	return nil
