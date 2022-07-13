@@ -455,7 +455,7 @@ type ClamavDetails struct {
 
 // MetricsResults is a slice of
 type MetricsResults struct {
-	Metrics []risk.Metrics `json:"metrics" xml:"metrics"`
+	Metrics risk.Metrics `json:"metrics" xml:"metrics"`
 }
 
 // MarshalJSON meets the marshaller interface to custom wrangle a risk
@@ -467,7 +467,7 @@ func (e MetricsResults) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON meets the unmarshaller interface to custom wrangle the
 // risk scan into an risk result
 func (e *MetricsResults) UnmarshalJSON(b []byte) error {
-	var s []risk.Metrics
+	var s risk.Metrics
 	err := json.Unmarshal(b, &s)
 	if err != nil {
 		return fmt.Errorf("failed to unmarshal secrets result: %v", err.Error())
