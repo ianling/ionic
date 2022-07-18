@@ -1,5 +1,12 @@
 package risk
 
+import (
+	"time"
+
+	"github.com/ion-channel/ionic/community"
+	"github.com/ion-channel/ionic/products"
+)
+
 const (
 	// GetScoresEnpoint location of the getscores endpoint
 	GetScoresEnpoint = "v1/score/getScores"
@@ -8,21 +15,62 @@ const (
 	EcosystemScope = "ecosystem"
 
 	// SupplyChainScope constant with name of scope for supply chain
-	SupplyChainScope = "supply chain"
+	SupplyChainScope = "supply_chain"
 
 	// TechnologyScope constant with name of scope for technology
 	TechnologyScope = "technology"
 )
 
 type Metrics struct {
-	ID      string   `json:"id"`
-	Metrics []Metric `json:"metrics"`
+	ID                        string                     `json:"id"`
+	IntMetrics                []IntMetric                `json:"int_metrics"`
+	FloatMetrics              []FloatMetric              `json:"float_metrics"`
+	DateMetrics               []DateMetric               `json:"date_metrics"`
+	MonthlyCountMetrics       []MonthlyCountMetric       `json:"monthly_count_metrics"`
+	MonthlyMttrMetrics        []MonthlyMttrMetric        `json:"monthly_mttr_metrics"`
+	SourceMonthlyCountMetrics []SourceMonthlyCountMetric `json:"source_monthly_count_metrics"`
+	SourceCountMetrics        []SourceCountMetric        `json:"source_count_metrics"`
 }
 
 type Metric struct {
 	Name     string         `json:"name"`
 	Value    interface{}    `json:"value"`
 	Bindings []ScoreBinding `json:"bindings"`
+}
+
+type IntMetric struct {
+	Metric
+	Value int `json:"value"`
+}
+
+type FloatMetric struct {
+	Metric
+	Value float64 `json:"value"`
+}
+
+type DateMetric struct {
+	Metric
+	Value time.Time `json:"value"`
+}
+
+type MonthlyCountMetric struct {
+	Metric
+	Value []community.MonthlyCount `json:"value"`
+}
+
+type MonthlyMttrMetric struct {
+	Metric
+	Value []community.MonthlyMttr `json:"value"`
+}
+
+type SourceMonthlyCountMetric struct {
+	Metric
+	Value []products.MonthlyCount `json:"value"`
+}
+
+type SourceCountMetric struct {
+	Metric
+	Value []products.Count `json:"value"`
 }
 
 // ScoreBinding a mapping from metric to which scope it falls into.

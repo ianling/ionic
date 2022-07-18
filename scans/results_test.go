@@ -289,7 +289,7 @@ func TestScanResults(t *testing.T) {
 
 			e, ok := r.Data.(MetricsResults)
 			Expect(ok).To(Equal(true))
-			Expect(len(e.Metrics.Metrics)).To(Equal(1))
+			Expect(len(e.Metrics.IntMetrics)).To(Equal(1))
 		})
 
 		g.It("should marshal a scan result with metrics data", func() {
