@@ -298,7 +298,7 @@ func TestScanResults(t *testing.T) {
 
 			b, err := json.Marshal(r)
 			Expect(err).To(BeNil())
-			Expect(string(b)).To(Equal(SampleValidScanResultsMetrics))
+			Expect(string(b)).To(Equal("{\"type\":\"metrics\",\"data\":{\"id\":\"pkg:github/yuchi/java-npm-semver\",\"int_metrics\":[{\"name\":\"committers_total_count\",\"bindings\":[{\"metric\":\"committers_total_count\",\"scope\":\"ecosystem\",\"category\":\"maintenance\",\"attribute\":\"size\",\"source\":\"github\"}],\"value\":1}],\"float_metrics\":null,\"date_metrics\":null,\"monthly_count_metrics\":null,\"monthly_mttr_metrics\":null,\"source_monthly_count_metrics\":null,\"source_count_metrics\":null}}"))
 		})
 
 		g.It("should unmarshal a scan results with risk data", func() {
@@ -421,7 +421,7 @@ const (
 	SampleValidScanResultsDependency    = `{"type":"dependency","data":{"dependencies":[{"requirement":">1.0","latest_version":"2.0","org":"net.sourceforge.javacsv","name":"javacsv","type":"maven","package":"jar","version":"2.0","scope":"compile"},{"latest_version":"4.12","org":"junit","name":"junit","type":"maven","package":"jar","version":"4.11","scope":"test"},{"latest_version":"1.4-atlassian-1","org":"org.hamcrest","name":"hamcrest-core","type":"maven","package":"jar","version":"1.3","scope":"test"},{"latest_version":"4.5.2","org":"org.apache.httpcomponents","name":"httpclient","type":"maven","package":"jar","version":"4.3.4","scope":"compile"},{"latest_version":"4.4.5","org":"org.apache.httpcomponents","name":"httpcore","type":"maven","package":"jar","version":"4.3.2","scope":"compile"},{"latest_version":"99.0-does-not-exist","org":"commons-logging","name":"commons-logging","type":"maven","package":"jar","version":"1.1.3","scope":"compile"},{"latest_version":"20041127.091804","org":"commons-codec","name":"commons-codec","type":"maven","package":"jar","version":"1.6","scope":"compile"}],"meta":{"first_degree_count":3,"no_version_count":0,"total_unique_count":7,"update_available_count":2}}}`
 	SampleValidScanResultsEcosystems    = `{"type":"ecosystems","data":{"Java":2430,"Makefile":210,"Ruby":666}}`
 	SampleValidScanResultsLicense       = `{"type":"license","data":{"license":{"name":"Not found","type":[]}}}`
-	SampleValidScanResultsMetrics       = `{"type":"metrics","data":{"id":"pkg:github/yuchi/java-npm-semver","metrics":[{"name":"committers_total_count","value":1,"bindings":[{"metric":"committers_total_count","scope":"ecosystem","category":"maintenance","attribute":"size","source":"github"}]}]}}`
+	SampleValidScanResultsMetrics       = `{"type":"metrics","data":{"id":"pkg:github/yuchi/java-npm-semver","int_metrics":[{"name":"committers_total_count","value":1,"bindings":[{"metric":"committers_total_count","scope":"ecosystem","category":"maintenance","attribute":"size","source":"github"}]}]}}`
 	SampleValidScanResultsRisk          = `{"type":"risk","data":[{"name":"Software","value":0,"scopes":null}]}`
 	SampleValidScanResultsSecrets       = `{"type":"secrets","data":[{"rule":"Slack Webhook","match":"\t\t\thttps://hooks.slack.com/services/T0F0****************************************","confidence":1,"file":"text.txt"}]}`
 	SampleValidScanResultsVirus         = `{"type":"virus","data":{"known_viruses":10,"engine_version":"","scanned_directories":1,"scanned_files":2,"infected_files":1,"data_scanned":"some cool data was scanned","data_read":"we read some data","time":"10PM","file_notes": {"empty_file":["file1","file2","file3"], "file1": ["path/to/file"]},"clam_av_details":{"clamav_version":"1.0.0","clamav_db_version":"1.1.0"}}}`
