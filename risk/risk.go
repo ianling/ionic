@@ -65,7 +65,7 @@ type MonthlyMttrMetric struct {
 
 type SourceMonthlyCountMetric struct {
 	Metric
-	Value []products.MonthlyCount `json:"value"`
+	Value []products.MonthlyCounts `json:"value"`
 }
 
 type SourceCountMetric struct {
