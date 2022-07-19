@@ -1,7 +1,15 @@
-## Schema version 0.0.16
+## Schema version 0.0.23
 schema { 
   query: Query 
   mutation: Mutation   
+}
+
+type Bindings {
+  metric: String
+  scope: String
+  category: String
+  attribute: String
+  source: String
 }
 
 type Compliance {
@@ -52,10 +60,61 @@ input CreateSoftwareListRequest {
   monitor_frequency: String
 }
 
-type Metrics {
+type DateMetrics {
+  name: String
+  value: String
+  bindings: [String]
+}
+
+type FloatMetrics {
+  name: String
+  value: Float
+  bindings: [Bindings]
+}
+
+type IntMetrics {
+  name: String
+  value: Int
+  bindings: [Bindings]
+}
+
+type ListMetrics {
   risk: Risk!
   compliance: Compliance!
   resolution: Resolution!
+}
+
+type Metrics {
+  id: String
+  source_count_metrics: [SourceCountMetrics]
+  source_monthly_count_metrics: [SourceMonthlyCountMetrics]
+  monthly_mttr_metrics: [MonthlyMttrMetrics]
+  monthly_count_metrics: [MonthlyCountMetrics]
+  date_metrics: [DateMetrics]
+  float_metrics: [FloatMetrics]
+  int_metrics: [IntMetrics]
+}
+
+type MonthlyCount {
+  count: Float
+  month: String
+}
+
+type MonthlyCountMetrics {
+  name: String
+  value: [MonthlyCount]
+  bindings: [String]
+}
+
+type MonthlyMttr {
+  mttr: Float
+  month: String
+}
+
+type MonthlyMttrMetrics {
+  name: String
+  value: [MonthlyMttr]
+  bindings: [MonthlyMttr]
 }
 
 type Mutation {
@@ -193,6 +252,8 @@ type Query {
   """this is extended by other parts of the schema"""
   _placeholder: Int
   organizations(ids: [String!]): [Organization!]!
+  metrics(id: String!): Metrics!
+  scores(id: String!): Scores!
   software_lists(ids: [String!], org_id: String): [SoftwareList!]!
   self: User!
 }
@@ -223,6 +284,17 @@ type Risk {
 type RiskScope {
   name: String!
   value: Int
+}
+
+type Scope {
+  name: String
+  value: Float
+}
+
+type Scores {
+  name: String
+  value: Float
+  scopes: [Scope]
 }
 
 interface SearchResult {
@@ -278,6 +350,28 @@ enum SoftwareListStatus {
   created
   autocompletedone
   allconfirmed
+}
+
+type SourceCount {
+  count: Int
+  source: String
+}
+
+type SourceCountMetrics {
+  name: String
+  value: [SourceCount]
+  bindings: [Bindings]
+}
+
+type SourceMonthlyCount {
+  count: [SourceCount]
+  month: String
+}
+
+type SourceMonthlyCountMetrics {
+  name: String
+  value: [SourceMonthlyCount]
+  bindings: [String]
 }
 
 """
