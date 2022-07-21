@@ -45,14 +45,6 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
-	Bindings struct {
-		Attribute func(childComplexity int) int
-		Category  func(childComplexity int) int
-		Metric    func(childComplexity int) int
-		Scope     func(childComplexity int) int
-		Source    func(childComplexity int) int
-	}
-
 	Compliance struct {
 		Failing func(childComplexity int) int
 		Passing func(childComplexity int) int
@@ -78,19 +70,24 @@ type ComplexityRoot struct {
 		Value func(childComplexity int) int
 	}
 
-	DateMetrics struct {
+	Count struct {
+		Count  func(childComplexity int) int
+		Source func(childComplexity int) int
+	}
+
+	DateMetric struct {
 		Bindings func(childComplexity int) int
 		Name     func(childComplexity int) int
 		Value    func(childComplexity int) int
 	}
 
-	FloatMetrics struct {
+	FloatMetric struct {
 		Bindings func(childComplexity int) int
 		Name     func(childComplexity int) int
 		Value    func(childComplexity int) int
 	}
 
-	IntMetrics struct {
+	IntMetric struct {
 		Bindings func(childComplexity int) int
 		Name     func(childComplexity int) int
 		Value    func(childComplexity int) int
@@ -118,10 +115,15 @@ type ComplexityRoot struct {
 		Month func(childComplexity int) int
 	}
 
-	MonthlyCountMetrics struct {
+	MonthlyCountMetric struct {
 		Bindings func(childComplexity int) int
 		Name     func(childComplexity int) int
 		Value    func(childComplexity int) int
+	}
+
+	MonthlyCounts struct {
+		Count func(childComplexity int) int
+		Month func(childComplexity int) int
 	}
 
 	MonthlyMttr struct {
@@ -129,7 +131,7 @@ type ComplexityRoot struct {
 		Mttr  func(childComplexity int) int
 	}
 
-	MonthlyMttrMetrics struct {
+	MonthlyMttrMetric struct {
 		Bindings func(childComplexity int) int
 		Name     func(childComplexity int) int
 		Value    func(childComplexity int) int
@@ -191,10 +193,12 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Metrics       func(childComplexity int, id string) int
+		MetricsByID   func(childComplexity int, id string) int
+		MetricsByPurl func(childComplexity int, purl string) int
 		Organizations func(childComplexity int, ids []string) int
 		Placeholder   func(childComplexity int) int
-		Scores        func(childComplexity int, id string) int
+		ScoresByID    func(childComplexity int, id string) int
+		ScoresByPurl  func(childComplexity int, purl string) int
 		Self          func(childComplexity int) int
 		SoftwareLists func(childComplexity int, ids []string, orgID *string) int
 	}
@@ -230,6 +234,14 @@ type ComplexityRoot struct {
 	Scope struct {
 		Name  func(childComplexity int) int
 		Value func(childComplexity int) int
+	}
+
+	ScoreBinding struct {
+		Attribute func(childComplexity int) int
+		Category  func(childComplexity int) int
+		Metric    func(childComplexity int) int
+		Scope     func(childComplexity int) int
+		Source    func(childComplexity int) int
 	}
 
 	Scores struct {
@@ -281,23 +293,13 @@ type ComplexityRoot struct {
 		Version          func(childComplexity int) int
 	}
 
-	SourceCount struct {
-		Count  func(childComplexity int) int
-		Source func(childComplexity int) int
-	}
-
-	SourceCountMetrics struct {
+	SourceCountMetric struct {
 		Bindings func(childComplexity int) int
 		Name     func(childComplexity int) int
 		Value    func(childComplexity int) int
 	}
 
-	SourceMonthlyCount struct {
-		Count func(childComplexity int) int
-		Month func(childComplexity int) int
-	}
-
-	SourceMonthlyCountMetrics struct {
+	SourceMonthlyCountMetric struct {
 		Bindings func(childComplexity int) int
 		Name     func(childComplexity int) int
 		Value    func(childComplexity int) int
@@ -340,8 +342,10 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Placeholder(ctx context.Context) (*int, error)
 	Organizations(ctx context.Context, ids []string) ([]Organization, error)
-	Metrics(ctx context.Context, id string) (Metrics, error)
-	Scores(ctx context.Context, id string) (Scores, error)
+	MetricsByID(ctx context.Context, id string) (Metrics, error)
+	MetricsByPurl(ctx context.Context, purl string) (Metrics, error)
+	ScoresByID(ctx context.Context, id string) (Scores, error)
+	ScoresByPurl(ctx context.Context, purl string) (Scores, error)
 	SoftwareLists(ctx context.Context, ids []string, orgID *string) ([]SoftwareList, error)
 	Self(ctx context.Context) (User, error)
 }
@@ -360,41 +364,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
-
-	case "Bindings.attribute":
-		if e.complexity.Bindings.Attribute == nil {
-			break
-		}
-
-		return e.complexity.Bindings.Attribute(childComplexity), true
-
-	case "Bindings.category":
-		if e.complexity.Bindings.Category == nil {
-			break
-		}
-
-		return e.complexity.Bindings.Category(childComplexity), true
-
-	case "Bindings.metric":
-		if e.complexity.Bindings.Metric == nil {
-			break
-		}
-
-		return e.complexity.Bindings.Metric(childComplexity), true
-
-	case "Bindings.scope":
-		if e.complexity.Bindings.Scope == nil {
-			break
-		}
-
-		return e.complexity.Bindings.Scope(childComplexity), true
-
-	case "Bindings.source":
-		if e.complexity.Bindings.Source == nil {
-			break
-		}
-
-		return e.complexity.Bindings.Source(childComplexity), true
 
 	case "Compliance.failing":
 		if e.complexity.Compliance.Failing == nil {
@@ -508,68 +477,82 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ComponentSuggestion.Value(childComplexity), true
 
-	case "DateMetrics.bindings":
-		if e.complexity.DateMetrics.Bindings == nil {
+	case "Count.count":
+		if e.complexity.Count.Count == nil {
 			break
 		}
 
-		return e.complexity.DateMetrics.Bindings(childComplexity), true
+		return e.complexity.Count.Count(childComplexity), true
 
-	case "DateMetrics.name":
-		if e.complexity.DateMetrics.Name == nil {
+	case "Count.source":
+		if e.complexity.Count.Source == nil {
 			break
 		}
 
-		return e.complexity.DateMetrics.Name(childComplexity), true
+		return e.complexity.Count.Source(childComplexity), true
 
-	case "DateMetrics.value":
-		if e.complexity.DateMetrics.Value == nil {
+	case "DateMetric.bindings":
+		if e.complexity.DateMetric.Bindings == nil {
 			break
 		}
 
-		return e.complexity.DateMetrics.Value(childComplexity), true
+		return e.complexity.DateMetric.Bindings(childComplexity), true
 
-	case "FloatMetrics.bindings":
-		if e.complexity.FloatMetrics.Bindings == nil {
+	case "DateMetric.name":
+		if e.complexity.DateMetric.Name == nil {
 			break
 		}
 
-		return e.complexity.FloatMetrics.Bindings(childComplexity), true
+		return e.complexity.DateMetric.Name(childComplexity), true
 
-	case "FloatMetrics.name":
-		if e.complexity.FloatMetrics.Name == nil {
+	case "DateMetric.value":
+		if e.complexity.DateMetric.Value == nil {
 			break
 		}
 
-		return e.complexity.FloatMetrics.Name(childComplexity), true
+		return e.complexity.DateMetric.Value(childComplexity), true
 
-	case "FloatMetrics.value":
-		if e.complexity.FloatMetrics.Value == nil {
+	case "FloatMetric.bindings":
+		if e.complexity.FloatMetric.Bindings == nil {
 			break
 		}
 
-		return e.complexity.FloatMetrics.Value(childComplexity), true
+		return e.complexity.FloatMetric.Bindings(childComplexity), true
 
-	case "IntMetrics.bindings":
-		if e.complexity.IntMetrics.Bindings == nil {
+	case "FloatMetric.name":
+		if e.complexity.FloatMetric.Name == nil {
 			break
 		}
 
-		return e.complexity.IntMetrics.Bindings(childComplexity), true
+		return e.complexity.FloatMetric.Name(childComplexity), true
 
-	case "IntMetrics.name":
-		if e.complexity.IntMetrics.Name == nil {
+	case "FloatMetric.value":
+		if e.complexity.FloatMetric.Value == nil {
 			break
 		}
 
-		return e.complexity.IntMetrics.Name(childComplexity), true
+		return e.complexity.FloatMetric.Value(childComplexity), true
 
-	case "IntMetrics.value":
-		if e.complexity.IntMetrics.Value == nil {
+	case "IntMetric.bindings":
+		if e.complexity.IntMetric.Bindings == nil {
 			break
 		}
 
-		return e.complexity.IntMetrics.Value(childComplexity), true
+		return e.complexity.IntMetric.Bindings(childComplexity), true
+
+	case "IntMetric.name":
+		if e.complexity.IntMetric.Name == nil {
+			break
+		}
+
+		return e.complexity.IntMetric.Name(childComplexity), true
+
+	case "IntMetric.value":
+		if e.complexity.IntMetric.Value == nil {
+			break
+		}
+
+		return e.complexity.IntMetric.Value(childComplexity), true
 
 	case "ListMetrics.compliance":
 		if e.complexity.ListMetrics.Compliance == nil {
@@ -662,26 +645,40 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.MonthlyCount.Month(childComplexity), true
 
-	case "MonthlyCountMetrics.bindings":
-		if e.complexity.MonthlyCountMetrics.Bindings == nil {
+	case "MonthlyCountMetric.bindings":
+		if e.complexity.MonthlyCountMetric.Bindings == nil {
 			break
 		}
 
-		return e.complexity.MonthlyCountMetrics.Bindings(childComplexity), true
+		return e.complexity.MonthlyCountMetric.Bindings(childComplexity), true
 
-	case "MonthlyCountMetrics.name":
-		if e.complexity.MonthlyCountMetrics.Name == nil {
+	case "MonthlyCountMetric.name":
+		if e.complexity.MonthlyCountMetric.Name == nil {
 			break
 		}
 
-		return e.complexity.MonthlyCountMetrics.Name(childComplexity), true
+		return e.complexity.MonthlyCountMetric.Name(childComplexity), true
 
-	case "MonthlyCountMetrics.value":
-		if e.complexity.MonthlyCountMetrics.Value == nil {
+	case "MonthlyCountMetric.value":
+		if e.complexity.MonthlyCountMetric.Value == nil {
 			break
 		}
 
-		return e.complexity.MonthlyCountMetrics.Value(childComplexity), true
+		return e.complexity.MonthlyCountMetric.Value(childComplexity), true
+
+	case "MonthlyCounts.count":
+		if e.complexity.MonthlyCounts.Count == nil {
+			break
+		}
+
+		return e.complexity.MonthlyCounts.Count(childComplexity), true
+
+	case "MonthlyCounts.month":
+		if e.complexity.MonthlyCounts.Month == nil {
+			break
+		}
+
+		return e.complexity.MonthlyCounts.Month(childComplexity), true
 
 	case "MonthlyMttr.month":
 		if e.complexity.MonthlyMttr.Month == nil {
@@ -697,26 +694,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.MonthlyMttr.Mttr(childComplexity), true
 
-	case "MonthlyMttrMetrics.bindings":
-		if e.complexity.MonthlyMttrMetrics.Bindings == nil {
+	case "MonthlyMttrMetric.bindings":
+		if e.complexity.MonthlyMttrMetric.Bindings == nil {
 			break
 		}
 
-		return e.complexity.MonthlyMttrMetrics.Bindings(childComplexity), true
+		return e.complexity.MonthlyMttrMetric.Bindings(childComplexity), true
 
-	case "MonthlyMttrMetrics.name":
-		if e.complexity.MonthlyMttrMetrics.Name == nil {
+	case "MonthlyMttrMetric.name":
+		if e.complexity.MonthlyMttrMetric.Name == nil {
 			break
 		}
 
-		return e.complexity.MonthlyMttrMetrics.Name(childComplexity), true
+		return e.complexity.MonthlyMttrMetric.Name(childComplexity), true
 
-	case "MonthlyMttrMetrics.value":
-		if e.complexity.MonthlyMttrMetrics.Value == nil {
+	case "MonthlyMttrMetric.value":
+		if e.complexity.MonthlyMttrMetric.Value == nil {
 			break
 		}
 
-		return e.complexity.MonthlyMttrMetrics.Value(childComplexity), true
+		return e.complexity.MonthlyMttrMetric.Value(childComplexity), true
 
 	case "Mutation.CreateOrganization":
 		if e.complexity.Mutation.CreateOrganization == nil {
@@ -992,17 +989,29 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ProductSearchResult.Version(childComplexity), true
 
-	case "Query.metrics":
-		if e.complexity.Query.Metrics == nil {
+	case "Query.metricsById":
+		if e.complexity.Query.MetricsByID == nil {
 			break
 		}
 
-		args, err := ec.field_Query_metrics_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_metricsById_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.Metrics(childComplexity, args["id"].(string)), true
+		return e.complexity.Query.MetricsByID(childComplexity, args["id"].(string)), true
+
+	case "Query.metricsByPurl":
+		if e.complexity.Query.MetricsByPurl == nil {
+			break
+		}
+
+		args, err := ec.field_Query_metricsByPurl_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.MetricsByPurl(childComplexity, args["purl"].(string)), true
 
 	case "Query.organizations":
 		if e.complexity.Query.Organizations == nil {
@@ -1023,17 +1032,29 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Placeholder(childComplexity), true
 
-	case "Query.scores":
-		if e.complexity.Query.Scores == nil {
+	case "Query.scoresById":
+		if e.complexity.Query.ScoresByID == nil {
 			break
 		}
 
-		args, err := ec.field_Query_scores_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_scoresById_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.Scores(childComplexity, args["id"].(string)), true
+		return e.complexity.Query.ScoresByID(childComplexity, args["id"].(string)), true
+
+	case "Query.scoresByPurl":
+		if e.complexity.Query.ScoresByPurl == nil {
+			break
+		}
+
+		args, err := ec.field_Query_scoresByPurl_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.ScoresByPurl(childComplexity, args["purl"].(string)), true
 
 	case "Query.self":
 		if e.complexity.Query.Self == nil {
@@ -1179,6 +1200,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Scope.Value(childComplexity), true
+
+	case "ScoreBinding.attribute":
+		if e.complexity.ScoreBinding.Attribute == nil {
+			break
+		}
+
+		return e.complexity.ScoreBinding.Attribute(childComplexity), true
+
+	case "ScoreBinding.category":
+		if e.complexity.ScoreBinding.Category == nil {
+			break
+		}
+
+		return e.complexity.ScoreBinding.Category(childComplexity), true
+
+	case "ScoreBinding.metric":
+		if e.complexity.ScoreBinding.Metric == nil {
+			break
+		}
+
+		return e.complexity.ScoreBinding.Metric(childComplexity), true
+
+	case "ScoreBinding.scope":
+		if e.complexity.ScoreBinding.Scope == nil {
+			break
+		}
+
+		return e.complexity.ScoreBinding.Scope(childComplexity), true
+
+	case "ScoreBinding.source":
+		if e.complexity.ScoreBinding.Source == nil {
+			break
+		}
+
+		return e.complexity.ScoreBinding.Source(childComplexity), true
 
 	case "Scores.name":
 		if e.complexity.Scores.Name == nil {
@@ -1418,75 +1474,47 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.SoftwareList.Version(childComplexity), true
 
-	case "SourceCount.count":
-		if e.complexity.SourceCount.Count == nil {
+	case "SourceCountMetric.bindings":
+		if e.complexity.SourceCountMetric.Bindings == nil {
 			break
 		}
 
-		return e.complexity.SourceCount.Count(childComplexity), true
+		return e.complexity.SourceCountMetric.Bindings(childComplexity), true
 
-	case "SourceCount.source":
-		if e.complexity.SourceCount.Source == nil {
+	case "SourceCountMetric.name":
+		if e.complexity.SourceCountMetric.Name == nil {
 			break
 		}
 
-		return e.complexity.SourceCount.Source(childComplexity), true
+		return e.complexity.SourceCountMetric.Name(childComplexity), true
 
-	case "SourceCountMetrics.bindings":
-		if e.complexity.SourceCountMetrics.Bindings == nil {
+	case "SourceCountMetric.value":
+		if e.complexity.SourceCountMetric.Value == nil {
 			break
 		}
 
-		return e.complexity.SourceCountMetrics.Bindings(childComplexity), true
+		return e.complexity.SourceCountMetric.Value(childComplexity), true
 
-	case "SourceCountMetrics.name":
-		if e.complexity.SourceCountMetrics.Name == nil {
+	case "SourceMonthlyCountMetric.bindings":
+		if e.complexity.SourceMonthlyCountMetric.Bindings == nil {
 			break
 		}
 
-		return e.complexity.SourceCountMetrics.Name(childComplexity), true
+		return e.complexity.SourceMonthlyCountMetric.Bindings(childComplexity), true
 
-	case "SourceCountMetrics.value":
-		if e.complexity.SourceCountMetrics.Value == nil {
+	case "SourceMonthlyCountMetric.name":
+		if e.complexity.SourceMonthlyCountMetric.Name == nil {
 			break
 		}
 
-		return e.complexity.SourceCountMetrics.Value(childComplexity), true
+		return e.complexity.SourceMonthlyCountMetric.Name(childComplexity), true
 
-	case "SourceMonthlyCount.count":
-		if e.complexity.SourceMonthlyCount.Count == nil {
+	case "SourceMonthlyCountMetric.value":
+		if e.complexity.SourceMonthlyCountMetric.Value == nil {
 			break
 		}
 
-		return e.complexity.SourceMonthlyCount.Count(childComplexity), true
-
-	case "SourceMonthlyCount.month":
-		if e.complexity.SourceMonthlyCount.Month == nil {
-			break
-		}
-
-		return e.complexity.SourceMonthlyCount.Month(childComplexity), true
-
-	case "SourceMonthlyCountMetrics.bindings":
-		if e.complexity.SourceMonthlyCountMetrics.Bindings == nil {
-			break
-		}
-
-		return e.complexity.SourceMonthlyCountMetrics.Bindings(childComplexity), true
-
-	case "SourceMonthlyCountMetrics.name":
-		if e.complexity.SourceMonthlyCountMetrics.Name == nil {
-			break
-		}
-
-		return e.complexity.SourceMonthlyCountMetrics.Name(childComplexity), true
-
-	case "SourceMonthlyCountMetrics.value":
-		if e.complexity.SourceMonthlyCountMetrics.Value == nil {
-			break
-		}
-
-		return e.complexity.SourceMonthlyCountMetrics.Value(childComplexity), true
+		return e.complexity.SourceMonthlyCountMetric.Value(childComplexity), true
 
 	case "User.created_at":
 		if e.complexity.User.CreatedAt == nil {
@@ -1765,7 +1793,7 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_metrics_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_metricsById_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -1777,6 +1805,21 @@ func (ec *executionContext) field_Query_metrics_args(ctx context.Context, rawArg
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_metricsByPurl_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["purl"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("purl"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["purl"] = arg0
 	return args, nil
 }
 
@@ -1795,7 +1838,7 @@ func (ec *executionContext) field_Query_organizations_args(ctx context.Context, 
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_scores_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_scoresById_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -1807,6 +1850,21 @@ func (ec *executionContext) field_Query_scores_args(ctx context.Context, rawArgs
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_scoresByPurl_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["purl"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("purl"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["purl"] = arg0
 	return args, nil
 }
 
@@ -1871,211 +1929,6 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
-
-func (ec *executionContext) _Bindings_metric(ctx context.Context, field graphql.CollectedField, obj *Bindings) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Bindings_metric(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Metric, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Bindings_metric(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Bindings",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Bindings_scope(ctx context.Context, field graphql.CollectedField, obj *Bindings) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Bindings_scope(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Scope, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Bindings_scope(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Bindings",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Bindings_category(ctx context.Context, field graphql.CollectedField, obj *Bindings) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Bindings_category(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Category, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Bindings_category(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Bindings",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Bindings_attribute(ctx context.Context, field graphql.CollectedField, obj *Bindings) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Bindings_attribute(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Attribute, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Bindings_attribute(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Bindings",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Bindings_source(ctx context.Context, field graphql.CollectedField, obj *Bindings) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Bindings_source(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Source, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Bindings_source(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Bindings",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
 
 func (ec *executionContext) _Compliance_passing(ctx context.Context, field graphql.CollectedField, obj *Compliance) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Compliance_passing(ctx, field)
@@ -2789,8 +2642,90 @@ func (ec *executionContext) fieldContext_ComponentSuggestion_value(ctx context.C
 	return fc, nil
 }
 
-func (ec *executionContext) _DateMetrics_name(ctx context.Context, field graphql.CollectedField, obj *DateMetrics) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_DateMetrics_name(ctx, field)
+func (ec *executionContext) _Count_count(ctx context.Context, field graphql.CollectedField, obj *Count) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Count_count(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Count, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Count_count(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Count",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Count_source(ctx context.Context, field graphql.CollectedField, obj *Count) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Count_source(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Source, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Count_source(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Count",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DateMetric_name(ctx context.Context, field graphql.CollectedField, obj *DateMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateMetric_name(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2817,9 +2752,9 @@ func (ec *executionContext) _DateMetrics_name(ctx context.Context, field graphql
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_DateMetrics_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_DateMetric_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "DateMetrics",
+		Object:     "DateMetric",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -2830,8 +2765,8 @@ func (ec *executionContext) fieldContext_DateMetrics_name(ctx context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _DateMetrics_value(ctx context.Context, field graphql.CollectedField, obj *DateMetrics) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_DateMetrics_value(ctx, field)
+func (ec *executionContext) _DateMetric_value(ctx context.Context, field graphql.CollectedField, obj *DateMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateMetric_value(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2858,9 +2793,9 @@ func (ec *executionContext) _DateMetrics_value(ctx context.Context, field graphq
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_DateMetrics_value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_DateMetric_value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "DateMetrics",
+		Object:     "DateMetric",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -2871,8 +2806,8 @@ func (ec *executionContext) fieldContext_DateMetrics_value(ctx context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _DateMetrics_bindings(ctx context.Context, field graphql.CollectedField, obj *DateMetrics) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_DateMetrics_bindings(ctx, field)
+func (ec *executionContext) _DateMetric_bindings(ctx context.Context, field graphql.CollectedField, obj *DateMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DateMetric_bindings(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2894,26 +2829,38 @@ func (ec *executionContext) _DateMetrics_bindings(ctx context.Context, field gra
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*string)
+	res := resTmp.([]*ScoreBinding)
 	fc.Result = res
-	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+	return ec.marshalOScoreBinding2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐScoreBinding(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_DateMetrics_bindings(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_DateMetric_bindings(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "DateMetrics",
+		Object:     "DateMetric",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			switch field.Name {
+			case "metric":
+				return ec.fieldContext_ScoreBinding_metric(ctx, field)
+			case "scope":
+				return ec.fieldContext_ScoreBinding_scope(ctx, field)
+			case "category":
+				return ec.fieldContext_ScoreBinding_category(ctx, field)
+			case "attribute":
+				return ec.fieldContext_ScoreBinding_attribute(ctx, field)
+			case "source":
+				return ec.fieldContext_ScoreBinding_source(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ScoreBinding", field.Name)
 		},
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _FloatMetrics_name(ctx context.Context, field graphql.CollectedField, obj *FloatMetrics) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_FloatMetrics_name(ctx, field)
+func (ec *executionContext) _FloatMetric_name(ctx context.Context, field graphql.CollectedField, obj *FloatMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FloatMetric_name(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2940,9 +2887,9 @@ func (ec *executionContext) _FloatMetrics_name(ctx context.Context, field graphq
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_FloatMetrics_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_FloatMetric_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "FloatMetrics",
+		Object:     "FloatMetric",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -2953,8 +2900,8 @@ func (ec *executionContext) fieldContext_FloatMetrics_name(ctx context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _FloatMetrics_value(ctx context.Context, field graphql.CollectedField, obj *FloatMetrics) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_FloatMetrics_value(ctx, field)
+func (ec *executionContext) _FloatMetric_value(ctx context.Context, field graphql.CollectedField, obj *FloatMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FloatMetric_value(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2981,9 +2928,9 @@ func (ec *executionContext) _FloatMetrics_value(ctx context.Context, field graph
 	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_FloatMetrics_value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_FloatMetric_value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "FloatMetrics",
+		Object:     "FloatMetric",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -2994,8 +2941,8 @@ func (ec *executionContext) fieldContext_FloatMetrics_value(ctx context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _FloatMetrics_bindings(ctx context.Context, field graphql.CollectedField, obj *FloatMetrics) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_FloatMetrics_bindings(ctx, field)
+func (ec *executionContext) _FloatMetric_bindings(ctx context.Context, field graphql.CollectedField, obj *FloatMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FloatMetric_bindings(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3017,38 +2964,38 @@ func (ec *executionContext) _FloatMetrics_bindings(ctx context.Context, field gr
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*Bindings)
+	res := resTmp.([]*ScoreBinding)
 	fc.Result = res
-	return ec.marshalOBindings2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐBindings(ctx, field.Selections, res)
+	return ec.marshalOScoreBinding2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐScoreBinding(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_FloatMetrics_bindings(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_FloatMetric_bindings(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "FloatMetrics",
+		Object:     "FloatMetric",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "metric":
-				return ec.fieldContext_Bindings_metric(ctx, field)
+				return ec.fieldContext_ScoreBinding_metric(ctx, field)
 			case "scope":
-				return ec.fieldContext_Bindings_scope(ctx, field)
+				return ec.fieldContext_ScoreBinding_scope(ctx, field)
 			case "category":
-				return ec.fieldContext_Bindings_category(ctx, field)
+				return ec.fieldContext_ScoreBinding_category(ctx, field)
 			case "attribute":
-				return ec.fieldContext_Bindings_attribute(ctx, field)
+				return ec.fieldContext_ScoreBinding_attribute(ctx, field)
 			case "source":
-				return ec.fieldContext_Bindings_source(ctx, field)
+				return ec.fieldContext_ScoreBinding_source(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Bindings", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type ScoreBinding", field.Name)
 		},
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _IntMetrics_name(ctx context.Context, field graphql.CollectedField, obj *IntMetrics) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_IntMetrics_name(ctx, field)
+func (ec *executionContext) _IntMetric_name(ctx context.Context, field graphql.CollectedField, obj *IntMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_IntMetric_name(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3075,9 +3022,9 @@ func (ec *executionContext) _IntMetrics_name(ctx context.Context, field graphql.
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_IntMetrics_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_IntMetric_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "IntMetrics",
+		Object:     "IntMetric",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -3088,8 +3035,8 @@ func (ec *executionContext) fieldContext_IntMetrics_name(ctx context.Context, fi
 	return fc, nil
 }
 
-func (ec *executionContext) _IntMetrics_value(ctx context.Context, field graphql.CollectedField, obj *IntMetrics) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_IntMetrics_value(ctx, field)
+func (ec *executionContext) _IntMetric_value(ctx context.Context, field graphql.CollectedField, obj *IntMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_IntMetric_value(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3116,9 +3063,9 @@ func (ec *executionContext) _IntMetrics_value(ctx context.Context, field graphql
 	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_IntMetrics_value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_IntMetric_value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "IntMetrics",
+		Object:     "IntMetric",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -3129,8 +3076,8 @@ func (ec *executionContext) fieldContext_IntMetrics_value(ctx context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _IntMetrics_bindings(ctx context.Context, field graphql.CollectedField, obj *IntMetrics) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_IntMetrics_bindings(ctx, field)
+func (ec *executionContext) _IntMetric_bindings(ctx context.Context, field graphql.CollectedField, obj *IntMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_IntMetric_bindings(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3152,31 +3099,31 @@ func (ec *executionContext) _IntMetrics_bindings(ctx context.Context, field grap
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*Bindings)
+	res := resTmp.([]*ScoreBinding)
 	fc.Result = res
-	return ec.marshalOBindings2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐBindings(ctx, field.Selections, res)
+	return ec.marshalOScoreBinding2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐScoreBinding(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_IntMetrics_bindings(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_IntMetric_bindings(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "IntMetrics",
+		Object:     "IntMetric",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "metric":
-				return ec.fieldContext_Bindings_metric(ctx, field)
+				return ec.fieldContext_ScoreBinding_metric(ctx, field)
 			case "scope":
-				return ec.fieldContext_Bindings_scope(ctx, field)
+				return ec.fieldContext_ScoreBinding_scope(ctx, field)
 			case "category":
-				return ec.fieldContext_Bindings_category(ctx, field)
+				return ec.fieldContext_ScoreBinding_category(ctx, field)
 			case "attribute":
-				return ec.fieldContext_Bindings_attribute(ctx, field)
+				return ec.fieldContext_ScoreBinding_attribute(ctx, field)
 			case "source":
-				return ec.fieldContext_Bindings_source(ctx, field)
+				return ec.fieldContext_ScoreBinding_source(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Bindings", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type ScoreBinding", field.Name)
 		},
 	}
 	return fc, nil
@@ -3398,9 +3345,9 @@ func (ec *executionContext) _Metrics_source_count_metrics(ctx context.Context, f
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*SourceCountMetrics)
+	res := resTmp.([]*SourceCountMetric)
 	fc.Result = res
-	return ec.marshalOSourceCountMetrics2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSourceCountMetrics(ctx, field.Selections, res)
+	return ec.marshalOSourceCountMetric2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSourceCountMetric(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Metrics_source_count_metrics(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3412,13 +3359,13 @@ func (ec *executionContext) fieldContext_Metrics_source_count_metrics(ctx contex
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "name":
-				return ec.fieldContext_SourceCountMetrics_name(ctx, field)
+				return ec.fieldContext_SourceCountMetric_name(ctx, field)
 			case "value":
-				return ec.fieldContext_SourceCountMetrics_value(ctx, field)
+				return ec.fieldContext_SourceCountMetric_value(ctx, field)
 			case "bindings":
-				return ec.fieldContext_SourceCountMetrics_bindings(ctx, field)
+				return ec.fieldContext_SourceCountMetric_bindings(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type SourceCountMetrics", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type SourceCountMetric", field.Name)
 		},
 	}
 	return fc, nil
@@ -3447,9 +3394,9 @@ func (ec *executionContext) _Metrics_source_monthly_count_metrics(ctx context.Co
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*SourceMonthlyCountMetrics)
+	res := resTmp.([]*SourceMonthlyCountMetric)
 	fc.Result = res
-	return ec.marshalOSourceMonthlyCountMetrics2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSourceMonthlyCountMetrics(ctx, field.Selections, res)
+	return ec.marshalOSourceMonthlyCountMetric2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSourceMonthlyCountMetric(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Metrics_source_monthly_count_metrics(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3461,13 +3408,13 @@ func (ec *executionContext) fieldContext_Metrics_source_monthly_count_metrics(ct
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "name":
-				return ec.fieldContext_SourceMonthlyCountMetrics_name(ctx, field)
+				return ec.fieldContext_SourceMonthlyCountMetric_name(ctx, field)
 			case "value":
-				return ec.fieldContext_SourceMonthlyCountMetrics_value(ctx, field)
+				return ec.fieldContext_SourceMonthlyCountMetric_value(ctx, field)
 			case "bindings":
-				return ec.fieldContext_SourceMonthlyCountMetrics_bindings(ctx, field)
+				return ec.fieldContext_SourceMonthlyCountMetric_bindings(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type SourceMonthlyCountMetrics", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type SourceMonthlyCountMetric", field.Name)
 		},
 	}
 	return fc, nil
@@ -3496,9 +3443,9 @@ func (ec *executionContext) _Metrics_monthly_mttr_metrics(ctx context.Context, f
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*MonthlyMttrMetrics)
+	res := resTmp.([]*MonthlyMttrMetric)
 	fc.Result = res
-	return ec.marshalOMonthlyMttrMetrics2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMonthlyMttrMetrics(ctx, field.Selections, res)
+	return ec.marshalOMonthlyMttrMetric2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMonthlyMttrMetric(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Metrics_monthly_mttr_metrics(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3510,13 +3457,13 @@ func (ec *executionContext) fieldContext_Metrics_monthly_mttr_metrics(ctx contex
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "name":
-				return ec.fieldContext_MonthlyMttrMetrics_name(ctx, field)
+				return ec.fieldContext_MonthlyMttrMetric_name(ctx, field)
 			case "value":
-				return ec.fieldContext_MonthlyMttrMetrics_value(ctx, field)
+				return ec.fieldContext_MonthlyMttrMetric_value(ctx, field)
 			case "bindings":
-				return ec.fieldContext_MonthlyMttrMetrics_bindings(ctx, field)
+				return ec.fieldContext_MonthlyMttrMetric_bindings(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type MonthlyMttrMetrics", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type MonthlyMttrMetric", field.Name)
 		},
 	}
 	return fc, nil
@@ -3545,9 +3492,9 @@ func (ec *executionContext) _Metrics_monthly_count_metrics(ctx context.Context, 
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*MonthlyCountMetrics)
+	res := resTmp.([]*MonthlyCountMetric)
 	fc.Result = res
-	return ec.marshalOMonthlyCountMetrics2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMonthlyCountMetrics(ctx, field.Selections, res)
+	return ec.marshalOMonthlyCountMetric2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMonthlyCountMetric(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Metrics_monthly_count_metrics(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3559,13 +3506,13 @@ func (ec *executionContext) fieldContext_Metrics_monthly_count_metrics(ctx conte
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "name":
-				return ec.fieldContext_MonthlyCountMetrics_name(ctx, field)
+				return ec.fieldContext_MonthlyCountMetric_name(ctx, field)
 			case "value":
-				return ec.fieldContext_MonthlyCountMetrics_value(ctx, field)
+				return ec.fieldContext_MonthlyCountMetric_value(ctx, field)
 			case "bindings":
-				return ec.fieldContext_MonthlyCountMetrics_bindings(ctx, field)
+				return ec.fieldContext_MonthlyCountMetric_bindings(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type MonthlyCountMetrics", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type MonthlyCountMetric", field.Name)
 		},
 	}
 	return fc, nil
@@ -3594,9 +3541,9 @@ func (ec *executionContext) _Metrics_date_metrics(ctx context.Context, field gra
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*DateMetrics)
+	res := resTmp.([]*DateMetric)
 	fc.Result = res
-	return ec.marshalODateMetrics2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐDateMetrics(ctx, field.Selections, res)
+	return ec.marshalODateMetric2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐDateMetric(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Metrics_date_metrics(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3608,13 +3555,13 @@ func (ec *executionContext) fieldContext_Metrics_date_metrics(ctx context.Contex
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "name":
-				return ec.fieldContext_DateMetrics_name(ctx, field)
+				return ec.fieldContext_DateMetric_name(ctx, field)
 			case "value":
-				return ec.fieldContext_DateMetrics_value(ctx, field)
+				return ec.fieldContext_DateMetric_value(ctx, field)
 			case "bindings":
-				return ec.fieldContext_DateMetrics_bindings(ctx, field)
+				return ec.fieldContext_DateMetric_bindings(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type DateMetrics", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type DateMetric", field.Name)
 		},
 	}
 	return fc, nil
@@ -3643,9 +3590,9 @@ func (ec *executionContext) _Metrics_float_metrics(ctx context.Context, field gr
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*FloatMetrics)
+	res := resTmp.([]*FloatMetric)
 	fc.Result = res
-	return ec.marshalOFloatMetrics2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐFloatMetrics(ctx, field.Selections, res)
+	return ec.marshalOFloatMetric2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐFloatMetric(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Metrics_float_metrics(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3657,13 +3604,13 @@ func (ec *executionContext) fieldContext_Metrics_float_metrics(ctx context.Conte
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "name":
-				return ec.fieldContext_FloatMetrics_name(ctx, field)
+				return ec.fieldContext_FloatMetric_name(ctx, field)
 			case "value":
-				return ec.fieldContext_FloatMetrics_value(ctx, field)
+				return ec.fieldContext_FloatMetric_value(ctx, field)
 			case "bindings":
-				return ec.fieldContext_FloatMetrics_bindings(ctx, field)
+				return ec.fieldContext_FloatMetric_bindings(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type FloatMetrics", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type FloatMetric", field.Name)
 		},
 	}
 	return fc, nil
@@ -3692,9 +3639,9 @@ func (ec *executionContext) _Metrics_int_metrics(ctx context.Context, field grap
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*IntMetrics)
+	res := resTmp.([]*IntMetric)
 	fc.Result = res
-	return ec.marshalOIntMetrics2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐIntMetrics(ctx, field.Selections, res)
+	return ec.marshalOIntMetric2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐIntMetric(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Metrics_int_metrics(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3706,13 +3653,13 @@ func (ec *executionContext) fieldContext_Metrics_int_metrics(ctx context.Context
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "name":
-				return ec.fieldContext_IntMetrics_name(ctx, field)
+				return ec.fieldContext_IntMetric_name(ctx, field)
 			case "value":
-				return ec.fieldContext_IntMetrics_value(ctx, field)
+				return ec.fieldContext_IntMetric_value(ctx, field)
 			case "bindings":
-				return ec.fieldContext_IntMetrics_bindings(ctx, field)
+				return ec.fieldContext_IntMetric_bindings(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type IntMetrics", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type IntMetric", field.Name)
 		},
 	}
 	return fc, nil
@@ -3800,8 +3747,8 @@ func (ec *executionContext) fieldContext_MonthlyCount_month(ctx context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _MonthlyCountMetrics_name(ctx context.Context, field graphql.CollectedField, obj *MonthlyCountMetrics) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_MonthlyCountMetrics_name(ctx, field)
+func (ec *executionContext) _MonthlyCountMetric_name(ctx context.Context, field graphql.CollectedField, obj *MonthlyCountMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MonthlyCountMetric_name(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3828,9 +3775,9 @@ func (ec *executionContext) _MonthlyCountMetrics_name(ctx context.Context, field
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_MonthlyCountMetrics_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_MonthlyCountMetric_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "MonthlyCountMetrics",
+		Object:     "MonthlyCountMetric",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -3841,8 +3788,8 @@ func (ec *executionContext) fieldContext_MonthlyCountMetrics_name(ctx context.Co
 	return fc, nil
 }
 
-func (ec *executionContext) _MonthlyCountMetrics_value(ctx context.Context, field graphql.CollectedField, obj *MonthlyCountMetrics) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_MonthlyCountMetrics_value(ctx, field)
+func (ec *executionContext) _MonthlyCountMetric_value(ctx context.Context, field graphql.CollectedField, obj *MonthlyCountMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MonthlyCountMetric_value(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3869,9 +3816,9 @@ func (ec *executionContext) _MonthlyCountMetrics_value(ctx context.Context, fiel
 	return ec.marshalOMonthlyCount2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMonthlyCount(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_MonthlyCountMetrics_value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_MonthlyCountMetric_value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "MonthlyCountMetrics",
+		Object:     "MonthlyCountMetric",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -3888,8 +3835,8 @@ func (ec *executionContext) fieldContext_MonthlyCountMetrics_value(ctx context.C
 	return fc, nil
 }
 
-func (ec *executionContext) _MonthlyCountMetrics_bindings(ctx context.Context, field graphql.CollectedField, obj *MonthlyCountMetrics) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_MonthlyCountMetrics_bindings(ctx, field)
+func (ec *executionContext) _MonthlyCountMetric_bindings(ctx context.Context, field graphql.CollectedField, obj *MonthlyCountMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MonthlyCountMetric_bindings(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3911,14 +3858,114 @@ func (ec *executionContext) _MonthlyCountMetrics_bindings(ctx context.Context, f
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*string)
+	res := resTmp.([]*ScoreBinding)
 	fc.Result = res
-	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+	return ec.marshalOScoreBinding2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐScoreBinding(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_MonthlyCountMetrics_bindings(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_MonthlyCountMetric_bindings(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "MonthlyCountMetrics",
+		Object:     "MonthlyCountMetric",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "metric":
+				return ec.fieldContext_ScoreBinding_metric(ctx, field)
+			case "scope":
+				return ec.fieldContext_ScoreBinding_scope(ctx, field)
+			case "category":
+				return ec.fieldContext_ScoreBinding_category(ctx, field)
+			case "attribute":
+				return ec.fieldContext_ScoreBinding_attribute(ctx, field)
+			case "source":
+				return ec.fieldContext_ScoreBinding_source(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ScoreBinding", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MonthlyCounts_count(ctx context.Context, field graphql.CollectedField, obj *MonthlyCounts) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MonthlyCounts_count(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Count, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*Count)
+	fc.Result = res
+	return ec.marshalOCount2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐCount(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MonthlyCounts_count(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MonthlyCounts",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "count":
+				return ec.fieldContext_Count_count(ctx, field)
+			case "source":
+				return ec.fieldContext_Count_source(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Count", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MonthlyCounts_month(ctx context.Context, field graphql.CollectedField, obj *MonthlyCounts) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MonthlyCounts_month(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Month, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MonthlyCounts_month(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MonthlyCounts",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -4011,8 +4058,8 @@ func (ec *executionContext) fieldContext_MonthlyMttr_month(ctx context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _MonthlyMttrMetrics_name(ctx context.Context, field graphql.CollectedField, obj *MonthlyMttrMetrics) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_MonthlyMttrMetrics_name(ctx, field)
+func (ec *executionContext) _MonthlyMttrMetric_name(ctx context.Context, field graphql.CollectedField, obj *MonthlyMttrMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MonthlyMttrMetric_name(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4039,9 +4086,9 @@ func (ec *executionContext) _MonthlyMttrMetrics_name(ctx context.Context, field 
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_MonthlyMttrMetrics_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_MonthlyMttrMetric_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "MonthlyMttrMetrics",
+		Object:     "MonthlyMttrMetric",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -4052,8 +4099,8 @@ func (ec *executionContext) fieldContext_MonthlyMttrMetrics_name(ctx context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _MonthlyMttrMetrics_value(ctx context.Context, field graphql.CollectedField, obj *MonthlyMttrMetrics) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_MonthlyMttrMetrics_value(ctx, field)
+func (ec *executionContext) _MonthlyMttrMetric_value(ctx context.Context, field graphql.CollectedField, obj *MonthlyMttrMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MonthlyMttrMetric_value(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4080,9 +4127,9 @@ func (ec *executionContext) _MonthlyMttrMetrics_value(ctx context.Context, field
 	return ec.marshalOMonthlyMttr2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMonthlyMttr(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_MonthlyMttrMetrics_value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_MonthlyMttrMetric_value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "MonthlyMttrMetrics",
+		Object:     "MonthlyMttrMetric",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -4099,8 +4146,8 @@ func (ec *executionContext) fieldContext_MonthlyMttrMetrics_value(ctx context.Co
 	return fc, nil
 }
 
-func (ec *executionContext) _MonthlyMttrMetrics_bindings(ctx context.Context, field graphql.CollectedField, obj *MonthlyMttrMetrics) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_MonthlyMttrMetrics_bindings(ctx, field)
+func (ec *executionContext) _MonthlyMttrMetric_bindings(ctx context.Context, field graphql.CollectedField, obj *MonthlyMttrMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MonthlyMttrMetric_bindings(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4122,25 +4169,31 @@ func (ec *executionContext) _MonthlyMttrMetrics_bindings(ctx context.Context, fi
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*MonthlyMttr)
+	res := resTmp.([]*ScoreBinding)
 	fc.Result = res
-	return ec.marshalOMonthlyMttr2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMonthlyMttr(ctx, field.Selections, res)
+	return ec.marshalOScoreBinding2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐScoreBinding(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_MonthlyMttrMetrics_bindings(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_MonthlyMttrMetric_bindings(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "MonthlyMttrMetrics",
+		Object:     "MonthlyMttrMetric",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "mttr":
-				return ec.fieldContext_MonthlyMttr_mttr(ctx, field)
-			case "month":
-				return ec.fieldContext_MonthlyMttr_month(ctx, field)
+			case "metric":
+				return ec.fieldContext_ScoreBinding_metric(ctx, field)
+			case "scope":
+				return ec.fieldContext_ScoreBinding_scope(ctx, field)
+			case "category":
+				return ec.fieldContext_ScoreBinding_category(ctx, field)
+			case "attribute":
+				return ec.fieldContext_ScoreBinding_attribute(ctx, field)
+			case "source":
+				return ec.fieldContext_ScoreBinding_source(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type MonthlyMttr", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type ScoreBinding", field.Name)
 		},
 	}
 	return fc, nil
@@ -5969,8 +6022,8 @@ func (ec *executionContext) fieldContext_Query_organizations(ctx context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_metrics(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_metrics(ctx, field)
+func (ec *executionContext) _Query_metricsById(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_metricsById(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -5983,7 +6036,7 @@ func (ec *executionContext) _Query_metrics(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Metrics(rctx, fc.Args["id"].(string))
+		return ec.resolvers.Query().MetricsByID(rctx, fc.Args["id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6000,7 +6053,7 @@ func (ec *executionContext) _Query_metrics(ctx context.Context, field graphql.Co
 	return ec.marshalNMetrics2githubᚗcomᚋionᚑchannelᚋionicᚐMetrics(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_metrics(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_metricsById(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -6035,15 +6088,15 @@ func (ec *executionContext) fieldContext_Query_metrics(ctx context.Context, fiel
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_metrics_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_metricsById_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_scores(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_scores(ctx, field)
+func (ec *executionContext) _Query_metricsByPurl(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_metricsByPurl(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -6056,7 +6109,80 @@ func (ec *executionContext) _Query_scores(ctx context.Context, field graphql.Col
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Scores(rctx, fc.Args["id"].(string))
+		return ec.resolvers.Query().MetricsByPurl(rctx, fc.Args["purl"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(Metrics)
+	fc.Result = res
+	return ec.marshalNMetrics2githubᚗcomᚋionᚑchannelᚋionicᚐMetrics(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_metricsByPurl(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Metrics_id(ctx, field)
+			case "source_count_metrics":
+				return ec.fieldContext_Metrics_source_count_metrics(ctx, field)
+			case "source_monthly_count_metrics":
+				return ec.fieldContext_Metrics_source_monthly_count_metrics(ctx, field)
+			case "monthly_mttr_metrics":
+				return ec.fieldContext_Metrics_monthly_mttr_metrics(ctx, field)
+			case "monthly_count_metrics":
+				return ec.fieldContext_Metrics_monthly_count_metrics(ctx, field)
+			case "date_metrics":
+				return ec.fieldContext_Metrics_date_metrics(ctx, field)
+			case "float_metrics":
+				return ec.fieldContext_Metrics_float_metrics(ctx, field)
+			case "int_metrics":
+				return ec.fieldContext_Metrics_int_metrics(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Metrics", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_metricsByPurl_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_scoresById(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_scoresById(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ScoresByID(rctx, fc.Args["id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6073,7 +6199,7 @@ func (ec *executionContext) _Query_scores(ctx context.Context, field graphql.Col
 	return ec.marshalNScores2githubᚗcomᚋionᚑchannelᚋionicᚐScores(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_scores(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_scoresById(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -6098,7 +6224,70 @@ func (ec *executionContext) fieldContext_Query_scores(ctx context.Context, field
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_scores_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_scoresById_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_scoresByPurl(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_scoresByPurl(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ScoresByPurl(rctx, fc.Args["purl"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(Scores)
+	fc.Result = res
+	return ec.marshalNScores2githubᚗcomᚋionᚑchannelᚋionicᚐScores(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_scoresByPurl(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "name":
+				return ec.fieldContext_Scores_name(ctx, field)
+			case "value":
+				return ec.fieldContext_Scores_value(ctx, field)
+			case "scopes":
+				return ec.fieldContext_Scores_scopes(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Scores", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_scoresByPurl_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -7178,6 +7367,211 @@ func (ec *executionContext) fieldContext_Scope_value(ctx context.Context, field 
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ScoreBinding_metric(ctx context.Context, field graphql.CollectedField, obj *ScoreBinding) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ScoreBinding_metric(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Metric, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ScoreBinding_metric(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ScoreBinding",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ScoreBinding_scope(ctx context.Context, field graphql.CollectedField, obj *ScoreBinding) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ScoreBinding_scope(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Scope, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ScoreBinding_scope(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ScoreBinding",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ScoreBinding_category(ctx context.Context, field graphql.CollectedField, obj *ScoreBinding) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ScoreBinding_category(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Category, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ScoreBinding_category(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ScoreBinding",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ScoreBinding_attribute(ctx context.Context, field graphql.CollectedField, obj *ScoreBinding) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ScoreBinding_attribute(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Attribute, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ScoreBinding_attribute(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ScoreBinding",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ScoreBinding_source(ctx context.Context, field graphql.CollectedField, obj *ScoreBinding) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ScoreBinding_source(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Source, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ScoreBinding_source(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ScoreBinding",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -8828,90 +9222,8 @@ func (ec *executionContext) fieldContext_SoftwareList_ruleset_id(ctx context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _SourceCount_count(ctx context.Context, field graphql.CollectedField, obj *SourceCount) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_SourceCount_count(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Count, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*int)
-	fc.Result = res
-	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_SourceCount_count(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "SourceCount",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _SourceCount_source(ctx context.Context, field graphql.CollectedField, obj *SourceCount) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_SourceCount_source(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Source, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_SourceCount_source(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "SourceCount",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _SourceCountMetrics_name(ctx context.Context, field graphql.CollectedField, obj *SourceCountMetrics) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_SourceCountMetrics_name(ctx, field)
+func (ec *executionContext) _SourceCountMetric_name(ctx context.Context, field graphql.CollectedField, obj *SourceCountMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SourceCountMetric_name(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -8938,9 +9250,9 @@ func (ec *executionContext) _SourceCountMetrics_name(ctx context.Context, field 
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_SourceCountMetrics_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_SourceCountMetric_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "SourceCountMetrics",
+		Object:     "SourceCountMetric",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -8951,8 +9263,8 @@ func (ec *executionContext) fieldContext_SourceCountMetrics_name(ctx context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _SourceCountMetrics_value(ctx context.Context, field graphql.CollectedField, obj *SourceCountMetrics) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_SourceCountMetrics_value(ctx, field)
+func (ec *executionContext) _SourceCountMetric_value(ctx context.Context, field graphql.CollectedField, obj *SourceCountMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SourceCountMetric_value(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -8974,32 +9286,32 @@ func (ec *executionContext) _SourceCountMetrics_value(ctx context.Context, field
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*SourceCount)
+	res := resTmp.([]*Count)
 	fc.Result = res
-	return ec.marshalOSourceCount2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSourceCount(ctx, field.Selections, res)
+	return ec.marshalOCount2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐCount(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_SourceCountMetrics_value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_SourceCountMetric_value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "SourceCountMetrics",
+		Object:     "SourceCountMetric",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "count":
-				return ec.fieldContext_SourceCount_count(ctx, field)
+				return ec.fieldContext_Count_count(ctx, field)
 			case "source":
-				return ec.fieldContext_SourceCount_source(ctx, field)
+				return ec.fieldContext_Count_source(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type SourceCount", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Count", field.Name)
 		},
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _SourceCountMetrics_bindings(ctx context.Context, field graphql.CollectedField, obj *SourceCountMetrics) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_SourceCountMetrics_bindings(ctx, field)
+func (ec *executionContext) _SourceCountMetric_bindings(ctx context.Context, field graphql.CollectedField, obj *SourceCountMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SourceCountMetric_bindings(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -9021,126 +9333,38 @@ func (ec *executionContext) _SourceCountMetrics_bindings(ctx context.Context, fi
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*Bindings)
+	res := resTmp.([]*ScoreBinding)
 	fc.Result = res
-	return ec.marshalOBindings2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐBindings(ctx, field.Selections, res)
+	return ec.marshalOScoreBinding2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐScoreBinding(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_SourceCountMetrics_bindings(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_SourceCountMetric_bindings(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "SourceCountMetrics",
+		Object:     "SourceCountMetric",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "metric":
-				return ec.fieldContext_Bindings_metric(ctx, field)
+				return ec.fieldContext_ScoreBinding_metric(ctx, field)
 			case "scope":
-				return ec.fieldContext_Bindings_scope(ctx, field)
+				return ec.fieldContext_ScoreBinding_scope(ctx, field)
 			case "category":
-				return ec.fieldContext_Bindings_category(ctx, field)
+				return ec.fieldContext_ScoreBinding_category(ctx, field)
 			case "attribute":
-				return ec.fieldContext_Bindings_attribute(ctx, field)
+				return ec.fieldContext_ScoreBinding_attribute(ctx, field)
 			case "source":
-				return ec.fieldContext_Bindings_source(ctx, field)
+				return ec.fieldContext_ScoreBinding_source(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Bindings", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type ScoreBinding", field.Name)
 		},
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _SourceMonthlyCount_count(ctx context.Context, field graphql.CollectedField, obj *SourceMonthlyCount) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_SourceMonthlyCount_count(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Count, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*SourceCount)
-	fc.Result = res
-	return ec.marshalOSourceCount2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSourceCount(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_SourceMonthlyCount_count(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "SourceMonthlyCount",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "count":
-				return ec.fieldContext_SourceCount_count(ctx, field)
-			case "source":
-				return ec.fieldContext_SourceCount_source(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type SourceCount", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _SourceMonthlyCount_month(ctx context.Context, field graphql.CollectedField, obj *SourceMonthlyCount) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_SourceMonthlyCount_month(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Month, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_SourceMonthlyCount_month(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "SourceMonthlyCount",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _SourceMonthlyCountMetrics_name(ctx context.Context, field graphql.CollectedField, obj *SourceMonthlyCountMetrics) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_SourceMonthlyCountMetrics_name(ctx, field)
+func (ec *executionContext) _SourceMonthlyCountMetric_name(ctx context.Context, field graphql.CollectedField, obj *SourceMonthlyCountMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SourceMonthlyCountMetric_name(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -9167,9 +9391,9 @@ func (ec *executionContext) _SourceMonthlyCountMetrics_name(ctx context.Context,
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_SourceMonthlyCountMetrics_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_SourceMonthlyCountMetric_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "SourceMonthlyCountMetrics",
+		Object:     "SourceMonthlyCountMetric",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -9180,8 +9404,8 @@ func (ec *executionContext) fieldContext_SourceMonthlyCountMetrics_name(ctx cont
 	return fc, nil
 }
 
-func (ec *executionContext) _SourceMonthlyCountMetrics_value(ctx context.Context, field graphql.CollectedField, obj *SourceMonthlyCountMetrics) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_SourceMonthlyCountMetrics_value(ctx, field)
+func (ec *executionContext) _SourceMonthlyCountMetric_value(ctx context.Context, field graphql.CollectedField, obj *SourceMonthlyCountMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SourceMonthlyCountMetric_value(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -9203,32 +9427,32 @@ func (ec *executionContext) _SourceMonthlyCountMetrics_value(ctx context.Context
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*SourceMonthlyCount)
+	res := resTmp.([]*MonthlyCounts)
 	fc.Result = res
-	return ec.marshalOSourceMonthlyCount2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSourceMonthlyCount(ctx, field.Selections, res)
+	return ec.marshalOMonthlyCounts2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMonthlyCounts(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_SourceMonthlyCountMetrics_value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_SourceMonthlyCountMetric_value(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "SourceMonthlyCountMetrics",
+		Object:     "SourceMonthlyCountMetric",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "count":
-				return ec.fieldContext_SourceMonthlyCount_count(ctx, field)
+				return ec.fieldContext_MonthlyCounts_count(ctx, field)
 			case "month":
-				return ec.fieldContext_SourceMonthlyCount_month(ctx, field)
+				return ec.fieldContext_MonthlyCounts_month(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type SourceMonthlyCount", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type MonthlyCounts", field.Name)
 		},
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _SourceMonthlyCountMetrics_bindings(ctx context.Context, field graphql.CollectedField, obj *SourceMonthlyCountMetrics) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_SourceMonthlyCountMetrics_bindings(ctx, field)
+func (ec *executionContext) _SourceMonthlyCountMetric_bindings(ctx context.Context, field graphql.CollectedField, obj *SourceMonthlyCountMetric) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_SourceMonthlyCountMetric_bindings(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -9250,19 +9474,31 @@ func (ec *executionContext) _SourceMonthlyCountMetrics_bindings(ctx context.Cont
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*string)
+	res := resTmp.([]*ScoreBinding)
 	fc.Result = res
-	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+	return ec.marshalOScoreBinding2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐScoreBinding(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_SourceMonthlyCountMetrics_bindings(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_SourceMonthlyCountMetric_bindings(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
-		Object:     "SourceMonthlyCountMetrics",
+		Object:     "SourceMonthlyCountMetric",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			switch field.Name {
+			case "metric":
+				return ec.fieldContext_ScoreBinding_metric(ctx, field)
+			case "scope":
+				return ec.fieldContext_ScoreBinding_scope(ctx, field)
+			case "category":
+				return ec.fieldContext_ScoreBinding_category(ctx, field)
+			case "attribute":
+				return ec.fieldContext_ScoreBinding_attribute(ctx, field)
+			case "source":
+				return ec.fieldContext_ScoreBinding_source(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ScoreBinding", field.Name)
 		},
 	}
 	return fc, nil
@@ -12038,47 +12274,6 @@ func (ec *executionContext) unmarshalInputUpdateOrganizationMembersInput(ctx con
 
 // region    **************************** object.gotpl ****************************
 
-var bindingsImplementors = []string{"Bindings"}
-
-func (ec *executionContext) _Bindings(ctx context.Context, sel ast.SelectionSet, obj *Bindings) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, bindingsImplementors)
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("Bindings")
-		case "metric":
-
-			out.Values[i] = ec._Bindings_metric(ctx, field, obj)
-
-		case "scope":
-
-			out.Values[i] = ec._Bindings_scope(ctx, field, obj)
-
-		case "category":
-
-			out.Values[i] = ec._Bindings_category(ctx, field, obj)
-
-		case "attribute":
-
-			out.Values[i] = ec._Bindings_attribute(ctx, field, obj)
-
-		case "source":
-
-			out.Values[i] = ec._Bindings_source(ctx, field, obj)
-
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
 var complianceImplementors = []string{"Compliance"}
 
 func (ec *executionContext) _Compliance(ctx context.Context, sel ast.SelectionSet, obj *Compliance) graphql.Marshaler {
@@ -12248,27 +12443,23 @@ func (ec *executionContext) _ComponentSuggestion(ctx context.Context, sel ast.Se
 	return out
 }
 
-var dateMetricsImplementors = []string{"DateMetrics"}
+var countImplementors = []string{"Count"}
 
-func (ec *executionContext) _DateMetrics(ctx context.Context, sel ast.SelectionSet, obj *DateMetrics) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, dateMetricsImplementors)
+func (ec *executionContext) _Count(ctx context.Context, sel ast.SelectionSet, obj *Count) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, countImplementors)
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("DateMetrics")
-		case "name":
+			out.Values[i] = graphql.MarshalString("Count")
+		case "count":
 
-			out.Values[i] = ec._DateMetrics_name(ctx, field, obj)
+			out.Values[i] = ec._Count_count(ctx, field, obj)
 
-		case "value":
+		case "source":
 
-			out.Values[i] = ec._DateMetrics_value(ctx, field, obj)
-
-		case "bindings":
-
-			out.Values[i] = ec._DateMetrics_bindings(ctx, field, obj)
+			out.Values[i] = ec._Count_source(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -12281,27 +12472,27 @@ func (ec *executionContext) _DateMetrics(ctx context.Context, sel ast.SelectionS
 	return out
 }
 
-var floatMetricsImplementors = []string{"FloatMetrics"}
+var dateMetricImplementors = []string{"DateMetric"}
 
-func (ec *executionContext) _FloatMetrics(ctx context.Context, sel ast.SelectionSet, obj *FloatMetrics) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, floatMetricsImplementors)
+func (ec *executionContext) _DateMetric(ctx context.Context, sel ast.SelectionSet, obj *DateMetric) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, dateMetricImplementors)
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("FloatMetrics")
+			out.Values[i] = graphql.MarshalString("DateMetric")
 		case "name":
 
-			out.Values[i] = ec._FloatMetrics_name(ctx, field, obj)
+			out.Values[i] = ec._DateMetric_name(ctx, field, obj)
 
 		case "value":
 
-			out.Values[i] = ec._FloatMetrics_value(ctx, field, obj)
+			out.Values[i] = ec._DateMetric_value(ctx, field, obj)
 
 		case "bindings":
 
-			out.Values[i] = ec._FloatMetrics_bindings(ctx, field, obj)
+			out.Values[i] = ec._DateMetric_bindings(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -12314,27 +12505,60 @@ func (ec *executionContext) _FloatMetrics(ctx context.Context, sel ast.Selection
 	return out
 }
 
-var intMetricsImplementors = []string{"IntMetrics"}
+var floatMetricImplementors = []string{"FloatMetric"}
 
-func (ec *executionContext) _IntMetrics(ctx context.Context, sel ast.SelectionSet, obj *IntMetrics) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, intMetricsImplementors)
+func (ec *executionContext) _FloatMetric(ctx context.Context, sel ast.SelectionSet, obj *FloatMetric) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, floatMetricImplementors)
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("IntMetrics")
+			out.Values[i] = graphql.MarshalString("FloatMetric")
 		case "name":
 
-			out.Values[i] = ec._IntMetrics_name(ctx, field, obj)
+			out.Values[i] = ec._FloatMetric_name(ctx, field, obj)
 
 		case "value":
 
-			out.Values[i] = ec._IntMetrics_value(ctx, field, obj)
+			out.Values[i] = ec._FloatMetric_value(ctx, field, obj)
 
 		case "bindings":
 
-			out.Values[i] = ec._IntMetrics_bindings(ctx, field, obj)
+			out.Values[i] = ec._FloatMetric_bindings(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var intMetricImplementors = []string{"IntMetric"}
+
+func (ec *executionContext) _IntMetric(ctx context.Context, sel ast.SelectionSet, obj *IntMetric) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, intMetricImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("IntMetric")
+		case "name":
+
+			out.Values[i] = ec._IntMetric_name(ctx, field, obj)
+
+		case "value":
+
+			out.Values[i] = ec._IntMetric_value(ctx, field, obj)
+
+		case "bindings":
+
+			out.Values[i] = ec._IntMetric_bindings(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -12471,27 +12695,56 @@ func (ec *executionContext) _MonthlyCount(ctx context.Context, sel ast.Selection
 	return out
 }
 
-var monthlyCountMetricsImplementors = []string{"MonthlyCountMetrics"}
+var monthlyCountMetricImplementors = []string{"MonthlyCountMetric"}
 
-func (ec *executionContext) _MonthlyCountMetrics(ctx context.Context, sel ast.SelectionSet, obj *MonthlyCountMetrics) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, monthlyCountMetricsImplementors)
+func (ec *executionContext) _MonthlyCountMetric(ctx context.Context, sel ast.SelectionSet, obj *MonthlyCountMetric) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, monthlyCountMetricImplementors)
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("MonthlyCountMetrics")
+			out.Values[i] = graphql.MarshalString("MonthlyCountMetric")
 		case "name":
 
-			out.Values[i] = ec._MonthlyCountMetrics_name(ctx, field, obj)
+			out.Values[i] = ec._MonthlyCountMetric_name(ctx, field, obj)
 
 		case "value":
 
-			out.Values[i] = ec._MonthlyCountMetrics_value(ctx, field, obj)
+			out.Values[i] = ec._MonthlyCountMetric_value(ctx, field, obj)
 
 		case "bindings":
 
-			out.Values[i] = ec._MonthlyCountMetrics_bindings(ctx, field, obj)
+			out.Values[i] = ec._MonthlyCountMetric_bindings(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var monthlyCountsImplementors = []string{"MonthlyCounts"}
+
+func (ec *executionContext) _MonthlyCounts(ctx context.Context, sel ast.SelectionSet, obj *MonthlyCounts) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, monthlyCountsImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MonthlyCounts")
+		case "count":
+
+			out.Values[i] = ec._MonthlyCounts_count(ctx, field, obj)
+
+		case "month":
+
+			out.Values[i] = ec._MonthlyCounts_month(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -12533,27 +12786,27 @@ func (ec *executionContext) _MonthlyMttr(ctx context.Context, sel ast.SelectionS
 	return out
 }
 
-var monthlyMttrMetricsImplementors = []string{"MonthlyMttrMetrics"}
+var monthlyMttrMetricImplementors = []string{"MonthlyMttrMetric"}
 
-func (ec *executionContext) _MonthlyMttrMetrics(ctx context.Context, sel ast.SelectionSet, obj *MonthlyMttrMetrics) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, monthlyMttrMetricsImplementors)
+func (ec *executionContext) _MonthlyMttrMetric(ctx context.Context, sel ast.SelectionSet, obj *MonthlyMttrMetric) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, monthlyMttrMetricImplementors)
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("MonthlyMttrMetrics")
+			out.Values[i] = graphql.MarshalString("MonthlyMttrMetric")
 		case "name":
 
-			out.Values[i] = ec._MonthlyMttrMetrics_name(ctx, field, obj)
+			out.Values[i] = ec._MonthlyMttrMetric_name(ctx, field, obj)
 
 		case "value":
 
-			out.Values[i] = ec._MonthlyMttrMetrics_value(ctx, field, obj)
+			out.Values[i] = ec._MonthlyMttrMetric_value(ctx, field, obj)
 
 		case "bindings":
 
-			out.Values[i] = ec._MonthlyMttrMetrics_bindings(ctx, field, obj)
+			out.Values[i] = ec._MonthlyMttrMetric_bindings(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -13018,7 +13271,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "metrics":
+		case "metricsById":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -13027,7 +13280,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_metrics(ctx, field)
+				res = ec._Query_metricsById(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -13041,7 +13294,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "scores":
+		case "metricsByPurl":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -13050,7 +13303,53 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_scores(ctx, field)
+				res = ec._Query_metricsByPurl(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "scoresById":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_scoresById(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "scoresByPurl":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_scoresByPurl(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -13340,6 +13639,47 @@ func (ec *executionContext) _Scope(ctx context.Context, sel ast.SelectionSet, ob
 		case "value":
 
 			out.Values[i] = ec._Scope_value(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var scoreBindingImplementors = []string{"ScoreBinding"}
+
+func (ec *executionContext) _ScoreBinding(ctx context.Context, sel ast.SelectionSet, obj *ScoreBinding) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, scoreBindingImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ScoreBinding")
+		case "metric":
+
+			out.Values[i] = ec._ScoreBinding_metric(ctx, field, obj)
+
+		case "scope":
+
+			out.Values[i] = ec._ScoreBinding_scope(ctx, field, obj)
+
+		case "category":
+
+			out.Values[i] = ec._ScoreBinding_category(ctx, field, obj)
+
+		case "attribute":
+
+			out.Values[i] = ec._ScoreBinding_attribute(ctx, field, obj)
+
+		case "source":
+
+			out.Values[i] = ec._ScoreBinding_source(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -13680,56 +14020,27 @@ func (ec *executionContext) _SoftwareList(ctx context.Context, sel ast.Selection
 	return out
 }
 
-var sourceCountImplementors = []string{"SourceCount"}
+var sourceCountMetricImplementors = []string{"SourceCountMetric"}
 
-func (ec *executionContext) _SourceCount(ctx context.Context, sel ast.SelectionSet, obj *SourceCount) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, sourceCountImplementors)
+func (ec *executionContext) _SourceCountMetric(ctx context.Context, sel ast.SelectionSet, obj *SourceCountMetric) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, sourceCountMetricImplementors)
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("SourceCount")
-		case "count":
-
-			out.Values[i] = ec._SourceCount_count(ctx, field, obj)
-
-		case "source":
-
-			out.Values[i] = ec._SourceCount_source(ctx, field, obj)
-
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
-var sourceCountMetricsImplementors = []string{"SourceCountMetrics"}
-
-func (ec *executionContext) _SourceCountMetrics(ctx context.Context, sel ast.SelectionSet, obj *SourceCountMetrics) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, sourceCountMetricsImplementors)
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("SourceCountMetrics")
+			out.Values[i] = graphql.MarshalString("SourceCountMetric")
 		case "name":
 
-			out.Values[i] = ec._SourceCountMetrics_name(ctx, field, obj)
+			out.Values[i] = ec._SourceCountMetric_name(ctx, field, obj)
 
 		case "value":
 
-			out.Values[i] = ec._SourceCountMetrics_value(ctx, field, obj)
+			out.Values[i] = ec._SourceCountMetric_value(ctx, field, obj)
 
 		case "bindings":
 
-			out.Values[i] = ec._SourceCountMetrics_bindings(ctx, field, obj)
+			out.Values[i] = ec._SourceCountMetric_bindings(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -13742,56 +14053,27 @@ func (ec *executionContext) _SourceCountMetrics(ctx context.Context, sel ast.Sel
 	return out
 }
 
-var sourceMonthlyCountImplementors = []string{"SourceMonthlyCount"}
+var sourceMonthlyCountMetricImplementors = []string{"SourceMonthlyCountMetric"}
 
-func (ec *executionContext) _SourceMonthlyCount(ctx context.Context, sel ast.SelectionSet, obj *SourceMonthlyCount) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, sourceMonthlyCountImplementors)
+func (ec *executionContext) _SourceMonthlyCountMetric(ctx context.Context, sel ast.SelectionSet, obj *SourceMonthlyCountMetric) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, sourceMonthlyCountMetricImplementors)
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("SourceMonthlyCount")
-		case "count":
-
-			out.Values[i] = ec._SourceMonthlyCount_count(ctx, field, obj)
-
-		case "month":
-
-			out.Values[i] = ec._SourceMonthlyCount_month(ctx, field, obj)
-
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
-var sourceMonthlyCountMetricsImplementors = []string{"SourceMonthlyCountMetrics"}
-
-func (ec *executionContext) _SourceMonthlyCountMetrics(ctx context.Context, sel ast.SelectionSet, obj *SourceMonthlyCountMetrics) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, sourceMonthlyCountMetricsImplementors)
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("SourceMonthlyCountMetrics")
+			out.Values[i] = graphql.MarshalString("SourceMonthlyCountMetric")
 		case "name":
 
-			out.Values[i] = ec._SourceMonthlyCountMetrics_name(ctx, field, obj)
+			out.Values[i] = ec._SourceMonthlyCountMetric_name(ctx, field, obj)
 
 		case "value":
 
-			out.Values[i] = ec._SourceMonthlyCountMetrics_value(ctx, field, obj)
+			out.Values[i] = ec._SourceMonthlyCountMetric_value(ctx, field, obj)
 
 		case "bindings":
 
-			out.Values[i] = ec._SourceMonthlyCountMetrics_bindings(ctx, field, obj)
+			out.Values[i] = ec._SourceMonthlyCountMetric_bindings(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -15289,54 +15571,6 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
-func (ec *executionContext) marshalOBindings2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐBindings(ctx context.Context, sel ast.SelectionSet, v []*Bindings) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalOBindings2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐBindings(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	return ret
-}
-
-func (ec *executionContext) marshalOBindings2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐBindings(ctx context.Context, sel ast.SelectionSet, v *Bindings) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._Bindings(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -15363,7 +15597,7 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) marshalODateMetrics2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐDateMetrics(ctx context.Context, sel ast.SelectionSet, v []*DateMetrics) graphql.Marshaler {
+func (ec *executionContext) marshalOCount2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐCount(ctx context.Context, sel ast.SelectionSet, v []*Count) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -15390,7 +15624,7 @@ func (ec *executionContext) marshalODateMetrics2ᚕᚖgithubᚗcomᚋionᚑchann
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalODateMetrics2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐDateMetrics(ctx, sel, v[i])
+			ret[i] = ec.marshalOCount2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐCount(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -15404,11 +15638,59 @@ func (ec *executionContext) marshalODateMetrics2ᚕᚖgithubᚗcomᚋionᚑchann
 	return ret
 }
 
-func (ec *executionContext) marshalODateMetrics2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐDateMetrics(ctx context.Context, sel ast.SelectionSet, v *DateMetrics) graphql.Marshaler {
+func (ec *executionContext) marshalOCount2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐCount(ctx context.Context, sel ast.SelectionSet, v *Count) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	return ec._DateMetrics(ctx, sel, v)
+	return ec._Count(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalODateMetric2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐDateMetric(ctx context.Context, sel ast.SelectionSet, v []*DateMetric) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalODateMetric2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐDateMetric(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalODateMetric2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐDateMetric(ctx context.Context, sel ast.SelectionSet, v *DateMetric) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._DateMetric(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOFloat2ᚖfloat64(ctx context.Context, v interface{}) (*float64, error) {
@@ -15427,7 +15709,7 @@ func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel as
 	return graphql.WrapContextMarshaler(ctx, res)
 }
 
-func (ec *executionContext) marshalOFloatMetrics2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐFloatMetrics(ctx context.Context, sel ast.SelectionSet, v []*FloatMetrics) graphql.Marshaler {
+func (ec *executionContext) marshalOFloatMetric2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐFloatMetric(ctx context.Context, sel ast.SelectionSet, v []*FloatMetric) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -15454,7 +15736,7 @@ func (ec *executionContext) marshalOFloatMetrics2ᚕᚖgithubᚗcomᚋionᚑchan
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOFloatMetrics2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐFloatMetrics(ctx, sel, v[i])
+			ret[i] = ec.marshalOFloatMetric2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐFloatMetric(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -15468,11 +15750,11 @@ func (ec *executionContext) marshalOFloatMetrics2ᚕᚖgithubᚗcomᚋionᚑchan
 	return ret
 }
 
-func (ec *executionContext) marshalOFloatMetrics2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐFloatMetrics(ctx context.Context, sel ast.SelectionSet, v *FloatMetrics) graphql.Marshaler {
+func (ec *executionContext) marshalOFloatMetric2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐFloatMetric(ctx context.Context, sel ast.SelectionSet, v *FloatMetric) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	return ec._FloatMetrics(ctx, sel, v)
+	return ec._FloatMetric(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
@@ -15491,7 +15773,7 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
-func (ec *executionContext) marshalOIntMetrics2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐIntMetrics(ctx context.Context, sel ast.SelectionSet, v []*IntMetrics) graphql.Marshaler {
+func (ec *executionContext) marshalOIntMetric2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐIntMetric(ctx context.Context, sel ast.SelectionSet, v []*IntMetric) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -15518,7 +15800,7 @@ func (ec *executionContext) marshalOIntMetrics2ᚕᚖgithubᚗcomᚋionᚑchanne
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOIntMetrics2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐIntMetrics(ctx, sel, v[i])
+			ret[i] = ec.marshalOIntMetric2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐIntMetric(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -15532,11 +15814,11 @@ func (ec *executionContext) marshalOIntMetrics2ᚕᚖgithubᚗcomᚋionᚑchanne
 	return ret
 }
 
-func (ec *executionContext) marshalOIntMetrics2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐIntMetrics(ctx context.Context, sel ast.SelectionSet, v *IntMetrics) graphql.Marshaler {
+func (ec *executionContext) marshalOIntMetric2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐIntMetric(ctx context.Context, sel ast.SelectionSet, v *IntMetric) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	return ec._IntMetrics(ctx, sel, v)
+	return ec._IntMetric(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOMonthlyCount2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMonthlyCount(ctx context.Context, sel ast.SelectionSet, v []*MonthlyCount) graphql.Marshaler {
@@ -15587,7 +15869,7 @@ func (ec *executionContext) marshalOMonthlyCount2ᚖgithubᚗcomᚋionᚑchannel
 	return ec._MonthlyCount(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOMonthlyCountMetrics2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMonthlyCountMetrics(ctx context.Context, sel ast.SelectionSet, v []*MonthlyCountMetrics) graphql.Marshaler {
+func (ec *executionContext) marshalOMonthlyCountMetric2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMonthlyCountMetric(ctx context.Context, sel ast.SelectionSet, v []*MonthlyCountMetric) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -15614,7 +15896,7 @@ func (ec *executionContext) marshalOMonthlyCountMetrics2ᚕᚖgithubᚗcomᚋion
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOMonthlyCountMetrics2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMonthlyCountMetrics(ctx, sel, v[i])
+			ret[i] = ec.marshalOMonthlyCountMetric2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMonthlyCountMetric(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -15628,11 +15910,59 @@ func (ec *executionContext) marshalOMonthlyCountMetrics2ᚕᚖgithubᚗcomᚋion
 	return ret
 }
 
-func (ec *executionContext) marshalOMonthlyCountMetrics2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMonthlyCountMetrics(ctx context.Context, sel ast.SelectionSet, v *MonthlyCountMetrics) graphql.Marshaler {
+func (ec *executionContext) marshalOMonthlyCountMetric2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMonthlyCountMetric(ctx context.Context, sel ast.SelectionSet, v *MonthlyCountMetric) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	return ec._MonthlyCountMetrics(ctx, sel, v)
+	return ec._MonthlyCountMetric(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOMonthlyCounts2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMonthlyCounts(ctx context.Context, sel ast.SelectionSet, v []*MonthlyCounts) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOMonthlyCounts2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMonthlyCounts(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOMonthlyCounts2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMonthlyCounts(ctx context.Context, sel ast.SelectionSet, v *MonthlyCounts) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._MonthlyCounts(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOMonthlyMttr2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMonthlyMttr(ctx context.Context, sel ast.SelectionSet, v []*MonthlyMttr) graphql.Marshaler {
@@ -15683,7 +16013,7 @@ func (ec *executionContext) marshalOMonthlyMttr2ᚖgithubᚗcomᚋionᚑchannel�
 	return ec._MonthlyMttr(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOMonthlyMttrMetrics2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMonthlyMttrMetrics(ctx context.Context, sel ast.SelectionSet, v []*MonthlyMttrMetrics) graphql.Marshaler {
+func (ec *executionContext) marshalOMonthlyMttrMetric2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMonthlyMttrMetric(ctx context.Context, sel ast.SelectionSet, v []*MonthlyMttrMetric) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -15710,7 +16040,7 @@ func (ec *executionContext) marshalOMonthlyMttrMetrics2ᚕᚖgithubᚗcomᚋion�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOMonthlyMttrMetrics2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMonthlyMttrMetrics(ctx, sel, v[i])
+			ret[i] = ec.marshalOMonthlyMttrMetric2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMonthlyMttrMetric(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -15724,11 +16054,11 @@ func (ec *executionContext) marshalOMonthlyMttrMetrics2ᚕᚖgithubᚗcomᚋion�
 	return ret
 }
 
-func (ec *executionContext) marshalOMonthlyMttrMetrics2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMonthlyMttrMetrics(ctx context.Context, sel ast.SelectionSet, v *MonthlyMttrMetrics) graphql.Marshaler {
+func (ec *executionContext) marshalOMonthlyMttrMetric2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMonthlyMttrMetric(ctx context.Context, sel ast.SelectionSet, v *MonthlyMttrMetric) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	return ec._MonthlyMttrMetrics(ctx, sel, v)
+	return ec._MonthlyMttrMetric(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOScope2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐScope(ctx context.Context, sel ast.SelectionSet, v []*Scope) graphql.Marshaler {
@@ -15779,7 +16109,7 @@ func (ec *executionContext) marshalOScope2ᚖgithubᚗcomᚋionᚑchannelᚋioni
 	return ec._Scope(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOSourceCount2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSourceCount(ctx context.Context, sel ast.SelectionSet, v []*SourceCount) graphql.Marshaler {
+func (ec *executionContext) marshalOScoreBinding2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐScoreBinding(ctx context.Context, sel ast.SelectionSet, v []*ScoreBinding) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -15806,7 +16136,7 @@ func (ec *executionContext) marshalOSourceCount2ᚕᚖgithubᚗcomᚋionᚑchann
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOSourceCount2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSourceCount(ctx, sel, v[i])
+			ret[i] = ec.marshalOScoreBinding2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐScoreBinding(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -15820,14 +16150,14 @@ func (ec *executionContext) marshalOSourceCount2ᚕᚖgithubᚗcomᚋionᚑchann
 	return ret
 }
 
-func (ec *executionContext) marshalOSourceCount2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSourceCount(ctx context.Context, sel ast.SelectionSet, v *SourceCount) graphql.Marshaler {
+func (ec *executionContext) marshalOScoreBinding2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐScoreBinding(ctx context.Context, sel ast.SelectionSet, v *ScoreBinding) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	return ec._SourceCount(ctx, sel, v)
+	return ec._ScoreBinding(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOSourceCountMetrics2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSourceCountMetrics(ctx context.Context, sel ast.SelectionSet, v []*SourceCountMetrics) graphql.Marshaler {
+func (ec *executionContext) marshalOSourceCountMetric2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSourceCountMetric(ctx context.Context, sel ast.SelectionSet, v []*SourceCountMetric) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -15854,7 +16184,7 @@ func (ec *executionContext) marshalOSourceCountMetrics2ᚕᚖgithubᚗcomᚋion�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOSourceCountMetrics2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSourceCountMetrics(ctx, sel, v[i])
+			ret[i] = ec.marshalOSourceCountMetric2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSourceCountMetric(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -15868,14 +16198,14 @@ func (ec *executionContext) marshalOSourceCountMetrics2ᚕᚖgithubᚗcomᚋion�
 	return ret
 }
 
-func (ec *executionContext) marshalOSourceCountMetrics2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSourceCountMetrics(ctx context.Context, sel ast.SelectionSet, v *SourceCountMetrics) graphql.Marshaler {
+func (ec *executionContext) marshalOSourceCountMetric2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSourceCountMetric(ctx context.Context, sel ast.SelectionSet, v *SourceCountMetric) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	return ec._SourceCountMetrics(ctx, sel, v)
+	return ec._SourceCountMetric(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOSourceMonthlyCount2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSourceMonthlyCount(ctx context.Context, sel ast.SelectionSet, v []*SourceMonthlyCount) graphql.Marshaler {
+func (ec *executionContext) marshalOSourceMonthlyCountMetric2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSourceMonthlyCountMetric(ctx context.Context, sel ast.SelectionSet, v []*SourceMonthlyCountMetric) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -15902,7 +16232,7 @@ func (ec *executionContext) marshalOSourceMonthlyCount2ᚕᚖgithubᚗcomᚋion�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOSourceMonthlyCount2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSourceMonthlyCount(ctx, sel, v[i])
+			ret[i] = ec.marshalOSourceMonthlyCountMetric2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSourceMonthlyCountMetric(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -15916,59 +16246,11 @@ func (ec *executionContext) marshalOSourceMonthlyCount2ᚕᚖgithubᚗcomᚋion�
 	return ret
 }
 
-func (ec *executionContext) marshalOSourceMonthlyCount2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSourceMonthlyCount(ctx context.Context, sel ast.SelectionSet, v *SourceMonthlyCount) graphql.Marshaler {
+func (ec *executionContext) marshalOSourceMonthlyCountMetric2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSourceMonthlyCountMetric(ctx context.Context, sel ast.SelectionSet, v *SourceMonthlyCountMetric) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
-	return ec._SourceMonthlyCount(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalOSourceMonthlyCountMetrics2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSourceMonthlyCountMetrics(ctx context.Context, sel ast.SelectionSet, v []*SourceMonthlyCountMetrics) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalOSourceMonthlyCountMetrics2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSourceMonthlyCountMetrics(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	return ret
-}
-
-func (ec *executionContext) marshalOSourceMonthlyCountMetrics2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐSourceMonthlyCountMetrics(ctx context.Context, sel ast.SelectionSet, v *SourceMonthlyCountMetrics) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._SourceMonthlyCountMetrics(ctx, sel, v)
+	return ec._SourceMonthlyCountMetric(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
@@ -16004,38 +16286,6 @@ func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel
 		if e == graphql.Null {
 			return graphql.Null
 		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) unmarshalOString2ᚕᚖstring(ctx context.Context, v interface{}) ([]*string, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var vSlice []interface{}
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
-	var err error
-	res := make([]*string, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalOString2ᚖstring(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalOString2ᚕᚖstring(ctx context.Context, sel ast.SelectionSet, v []*string) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	for i := range v {
-		ret[i] = ec.marshalOString2ᚖstring(ctx, sel, v[i])
 	}
 
 	return ret
