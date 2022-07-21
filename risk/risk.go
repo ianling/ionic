@@ -124,3 +124,16 @@ type Attribute struct {
 	Name  string  `json:"name"`
 	Value float64 `json:"value"`
 }
+
+type RiskTag struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+type MetricMetadata struct {
+	Name           string         `json:"name"`
+	Definition     string         `json:"definition"`
+	Bindings       []ScoreBinding `json:"bindings"`
+	RiskTags       []RiskTag      `json:"risk_tags"`
+	RelatedMetrics []string       `json:"related_metrics"`
+	GraphYN        bool           `json:"graph_yn"`
+}

@@ -1,15 +1,7 @@
-## Schema version 0.0.23
+## Schema version 0.0.30
 schema { 
   query: Query 
   mutation: Mutation   
-}
-
-type Bindings {
-  metric: String
-  scope: String
-  category: String
-  attribute: String
-  source: String
 }
 
 type Compliance {
@@ -45,6 +37,11 @@ type ComponentSuggestion {
   value: String!
 }
 
+type Count {
+  count: Int
+  source: String
+}
+
 input CreateOrganizationRequest {
   name: String!
 }
@@ -60,22 +57,22 @@ input CreateSoftwareListRequest {
   monitor_frequency: String
 }
 
-type DateMetrics {
+type DateMetric {
   name: String
   value: String
-  bindings: [String]
+  bindings: [ScoreBinding]
 }
 
-type FloatMetrics {
+type FloatMetric {
   name: String
   value: Float
-  bindings: [Bindings]
+  bindings: [ScoreBinding]
 }
 
-type IntMetrics {
+type IntMetric {
   name: String
   value: Int
-  bindings: [Bindings]
+  bindings: [ScoreBinding]
 }
 
 type ListMetrics {
@@ -86,13 +83,13 @@ type ListMetrics {
 
 type Metrics {
   id: String
-  source_count_metrics: [SourceCountMetrics]
-  source_monthly_count_metrics: [SourceMonthlyCountMetrics]
-  monthly_mttr_metrics: [MonthlyMttrMetrics]
-  monthly_count_metrics: [MonthlyCountMetrics]
-  date_metrics: [DateMetrics]
-  float_metrics: [FloatMetrics]
-  int_metrics: [IntMetrics]
+  source_count_metrics: [SourceCountMetric]
+  source_monthly_count_metrics: [SourceMonthlyCountMetric]
+  monthly_mttr_metrics: [MonthlyMttrMetric]
+  monthly_count_metrics: [MonthlyCountMetric]
+  date_metrics: [DateMetric]
+  float_metrics: [FloatMetric]
+  int_metrics: [IntMetric]
 }
 
 type MonthlyCount {
@@ -100,10 +97,15 @@ type MonthlyCount {
   month: String
 }
 
-type MonthlyCountMetrics {
+type MonthlyCountMetric {
   name: String
   value: [MonthlyCount]
-  bindings: [String]
+  bindings: [ScoreBinding]
+}
+
+type MonthlyCounts {
+  count: [Count]
+  month: String
 }
 
 type MonthlyMttr {
@@ -111,10 +113,10 @@ type MonthlyMttr {
   month: String
 }
 
-type MonthlyMttrMetrics {
+type MonthlyMttrMetric {
   name: String
   value: [MonthlyMttr]
-  bindings: [MonthlyMttr]
+  bindings: [ScoreBinding]
 }
 
 type Mutation {
@@ -252,8 +254,10 @@ type Query {
   """this is extended by other parts of the schema"""
   _placeholder: Int
   organizations(ids: [String!]): [Organization!]!
-  metrics(id: String!): Metrics!
-  scores(id: String!): Scores!
+  metricsById(id: String!): Metrics!
+  metricsByPurl(purl: String!): Metrics!
+  scoresById(id: String!): Scores!
+  scoresByPurl(purl: String!): Scores!
   software_lists(ids: [String!], org_id: String): [SoftwareList!]!
   self: User!
 }
@@ -289,6 +293,14 @@ type RiskScope {
 type Scope {
   name: String
   value: Float
+}
+
+type ScoreBinding {
+  metric: String
+  scope: String
+  category: String
+  attribute: String
+  source: String
 }
 
 type Scores {
@@ -352,26 +364,16 @@ enum SoftwareListStatus {
   allconfirmed
 }
 
-type SourceCount {
-  count: Int
-  source: String
-}
-
-type SourceCountMetrics {
+type SourceCountMetric {
   name: String
-  value: [SourceCount]
-  bindings: [Bindings]
+  value: [Count]
+  bindings: [ScoreBinding]
 }
 
-type SourceMonthlyCount {
-  count: [SourceCount]
-  month: String
-}
-
-type SourceMonthlyCountMetrics {
+type SourceMonthlyCountMetric {
   name: String
-  value: [SourceMonthlyCount]
-  bindings: [String]
+  value: [MonthlyCounts]
+  bindings: [ScoreBinding]
 }
 
 """
