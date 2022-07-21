@@ -9,6 +9,14 @@ import (
 	"time"
 )
 
+type Bindings struct {
+	Metric    *string `json:"metric"`
+	Scope     *string `json:"scope"`
+	Category  *string `json:"category"`
+	Attribute *string `json:"attribute"`
+	Source    *string `json:"source"`
+}
+
 type Compliance struct {
 	Passing int `json:"passing"`
 	Failing int `json:"failing"`
@@ -49,10 +57,61 @@ type CreateSoftwareListRequest struct {
 	MonitorFrequency *string `json:"monitor_frequency"`
 }
 
-type Metrics struct {
+type DateMetrics struct {
+	Name     *string   `json:"name"`
+	Value    *string   `json:"value"`
+	Bindings []*string `json:"bindings"`
+}
+
+type FloatMetrics struct {
+	Name     *string     `json:"name"`
+	Value    *float64    `json:"value"`
+	Bindings []*Bindings `json:"bindings"`
+}
+
+type IntMetrics struct {
+	Name     *string     `json:"name"`
+	Value    *int        `json:"value"`
+	Bindings []*Bindings `json:"bindings"`
+}
+
+type ListMetrics struct {
 	Risk       Risk       `json:"risk"`
 	Compliance Compliance `json:"compliance"`
 	Resolution Resolution `json:"resolution"`
+}
+
+type Metrics struct {
+	ID                        *string                      `json:"id"`
+	SourceCountMetrics        []*SourceCountMetrics        `json:"source_count_metrics"`
+	SourceMonthlyCountMetrics []*SourceMonthlyCountMetrics `json:"source_monthly_count_metrics"`
+	MonthlyMttrMetrics        []*MonthlyMttrMetrics        `json:"monthly_mttr_metrics"`
+	MonthlyCountMetrics       []*MonthlyCountMetrics       `json:"monthly_count_metrics"`
+	DateMetrics               []*DateMetrics               `json:"date_metrics"`
+	FloatMetrics              []*FloatMetrics              `json:"float_metrics"`
+	IntMetrics                []*IntMetrics                `json:"int_metrics"`
+}
+
+type MonthlyCount struct {
+	Count *float64 `json:"count"`
+	Month *string  `json:"month"`
+}
+
+type MonthlyCountMetrics struct {
+	Name     *string         `json:"name"`
+	Value    []*MonthlyCount `json:"value"`
+	Bindings []*string       `json:"bindings"`
+}
+
+type MonthlyMttr struct {
+	Mttr  *float64 `json:"mttr"`
+	Month *string  `json:"month"`
+}
+
+type MonthlyMttrMetrics struct {
+	Name     *string        `json:"name"`
+	Value    []*MonthlyMttr `json:"value"`
+	Bindings []*MonthlyMttr `json:"bindings"`
 }
 
 type Organization struct {
@@ -116,6 +175,17 @@ type RiskScope struct {
 	Value *int   `json:"value"`
 }
 
+type Scope struct {
+	Name  *string  `json:"name"`
+	Value *float64 `json:"value"`
+}
+
+type Scores struct {
+	Name   *string  `json:"name"`
+	Value  *float64 `json:"value"`
+	Scopes []*Scope `json:"scopes"`
+}
+
 type SearchResult struct {
 	ID                    string  `json:"id"`
 	Confidence            float64 `json:"confidence"`
@@ -157,6 +227,28 @@ type SoftwareList struct {
 	TeamID           string             `json:"team_id"`
 	OrgID            string             `json:"org_id"`
 	RulesetID        string             `json:"ruleset_id"`
+}
+
+type SourceCount struct {
+	Count  *int    `json:"count"`
+	Source *string `json:"source"`
+}
+
+type SourceCountMetrics struct {
+	Name     *string        `json:"name"`
+	Value    []*SourceCount `json:"value"`
+	Bindings []*Bindings    `json:"bindings"`
+}
+
+type SourceMonthlyCount struct {
+	Count []*SourceCount `json:"count"`
+	Month *string        `json:"month"`
+}
+
+type SourceMonthlyCountMetrics struct {
+	Name     *string               `json:"name"`
+	Value    []*SourceMonthlyCount `json:"value"`
+	Bindings []*string             `json:"bindings"`
 }
 
 type UpdateOrganizationMembersInput struct {
