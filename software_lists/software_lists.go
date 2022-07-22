@@ -7,6 +7,12 @@ import (
 	"time"
 )
 
+type SoftwareInventory struct {
+	ID            string         `json:"id"`
+	Organization  Metrics        `json:"organization"`
+	SoftwareLists []SoftwareList `json:"softwareLists"`
+}
+
 type SoftwareList struct {
 	ID               string             `json:"id"`
 	Name             string             `json:"name"`
