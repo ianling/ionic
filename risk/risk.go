@@ -27,7 +27,7 @@ type Metrics struct {
 	FloatMetrics              []FloatMetric              `json:"float_metrics"`
 	DateMetrics               []DateMetric               `json:"date_metrics"`
 	MonthlyCountMetrics       []MonthlyCountMetric       `json:"monthly_count_metrics"`
-	MonthlyMttrMetrics        []MonthlyMttrMetric        `json:"monthly_mttr_metrics"`
+	MonthlyMttrMetrics        []MonthlyFloatMetric       `json:"monthly_mttr_metrics"`
 	SourceMonthlyCountMetrics []SourceMonthlyCountMetric `json:"source_monthly_count_metrics"`
 	SourceCountMetrics        []SourceCountMetric        `json:"source_count_metrics"`
 }
@@ -58,9 +58,9 @@ type MonthlyCountMetric struct {
 	Value []community.MonthlyCount `json:"value"`
 }
 
-type MonthlyMttrMetric struct {
+type MonthlyFloatMetric struct {
 	Metric
-	Value []community.MonthlyMttr `json:"value"`
+	Value []community.MonthlyFloat `json:"value"`
 }
 
 type SourceMonthlyCountMetric struct {
@@ -136,4 +136,16 @@ type MetricMetadata struct {
 	RiskTags       []RiskTag      `json:"risk_tags"`
 	RelatedMetrics []string       `json:"related_metrics"`
 	GraphYN        bool           `json:"graph_yn"`
+}
+
+// MetricPoint defines the data needed for points on a single risk point
+type MetricPoint struct {
+	Name   string `json:"name" xml:"name"`
+	Points int    `json:"points" xml:"points"`
+}
+
+// MetricPoints defines the data needed for points on a single risk point
+type MetricPoints struct {
+	Metrics     []MetricPoint `json:"metrics" xml:"metrics"`
+	ProcessedAt time.Time     `json:"processed_at" xml:"processed_at"`
 }
