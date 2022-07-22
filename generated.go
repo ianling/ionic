@@ -57,6 +57,7 @@ type ComplexityRoot struct {
 		ID            func(childComplexity int) int
 		Name          func(childComplexity int) int
 		Org           func(childComplexity int) int
+		ProjectID     func(childComplexity int) int
 		SbomID        func(childComplexity int) int
 		SearchResults func(childComplexity int) int
 		Status        func(childComplexity int) int
@@ -97,6 +98,15 @@ type ComplexityRoot struct {
 		Compliance func(childComplexity int) int
 		Resolution func(childComplexity int) int
 		Risk       func(childComplexity int) int
+	}
+
+	MetricMetadata struct {
+		Bindings       func(childComplexity int) int
+		Definition     func(childComplexity int) int
+		GraphYn        func(childComplexity int) int
+		Name           func(childComplexity int) int
+		RelatedMetrics func(childComplexity int) int
+		RiskTags       func(childComplexity int) int
 	}
 
 	Metrics struct {
@@ -193,14 +203,16 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		MetricsByID   func(childComplexity int, id string) int
-		MetricsByPurl func(childComplexity int, purl string) int
-		Organizations func(childComplexity int, ids []string) int
-		Placeholder   func(childComplexity int) int
-		ScoresByID    func(childComplexity int, id string) int
-		ScoresByPurl  func(childComplexity int, purl string) int
-		Self          func(childComplexity int) int
-		SoftwareLists func(childComplexity int, ids []string, orgID *string) int
+		MetadataByID   func(childComplexity int, id string) int
+		MetadataByPurl func(childComplexity int, purl string) int
+		MetricsByID    func(childComplexity int, id string) int
+		MetricsByPurl  func(childComplexity int, purl string) int
+		Organizations  func(childComplexity int, ids []string) int
+		Placeholder    func(childComplexity int) int
+		ScoresByID     func(childComplexity int, id string) int
+		ScoresByPurl   func(childComplexity int, purl string) int
+		Self           func(childComplexity int) int
+		SoftwareLists  func(childComplexity int, ids []string, orgID *string) int
 	}
 
 	RepoSearchResult struct {
@@ -229,6 +241,11 @@ type ComplexityRoot struct {
 	RiskScope struct {
 		Name  func(childComplexity int) int
 		Value func(childComplexity int) int
+	}
+
+	RiskTag struct {
+		Description func(childComplexity int) int
+		Name        func(childComplexity int) int
 	}
 
 	Scope struct {
@@ -342,6 +359,8 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Placeholder(ctx context.Context) (*int, error)
 	Organizations(ctx context.Context, ids []string) ([]Organization, error)
+	MetadataByID(ctx context.Context, id string) ([]*MetricMetadata, error)
+	MetadataByPurl(ctx context.Context, purl string) ([]*MetricMetadata, error)
 	MetricsByID(ctx context.Context, id string) (Metrics, error)
 	MetricsByPurl(ctx context.Context, purl string) (Metrics, error)
 	ScoresByID(ctx context.Context, id string) (Scores, error)
@@ -420,6 +439,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Component.Org(childComplexity), true
+
+	case "Component.project_id":
+		if e.complexity.Component.ProjectID == nil {
+			break
+		}
+
+		return e.complexity.Component.ProjectID(childComplexity), true
 
 	case "Component.sbom_id":
 		if e.complexity.Component.SbomID == nil {
@@ -574,6 +600,48 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ListMetrics.Risk(childComplexity), true
+
+	case "MetricMetadata.bindings":
+		if e.complexity.MetricMetadata.Bindings == nil {
+			break
+		}
+
+		return e.complexity.MetricMetadata.Bindings(childComplexity), true
+
+	case "MetricMetadata.definition":
+		if e.complexity.MetricMetadata.Definition == nil {
+			break
+		}
+
+		return e.complexity.MetricMetadata.Definition(childComplexity), true
+
+	case "MetricMetadata.graph_yn":
+		if e.complexity.MetricMetadata.GraphYn == nil {
+			break
+		}
+
+		return e.complexity.MetricMetadata.GraphYn(childComplexity), true
+
+	case "MetricMetadata.name":
+		if e.complexity.MetricMetadata.Name == nil {
+			break
+		}
+
+		return e.complexity.MetricMetadata.Name(childComplexity), true
+
+	case "MetricMetadata.related_metrics":
+		if e.complexity.MetricMetadata.RelatedMetrics == nil {
+			break
+		}
+
+		return e.complexity.MetricMetadata.RelatedMetrics(childComplexity), true
+
+	case "MetricMetadata.risk_tags":
+		if e.complexity.MetricMetadata.RiskTags == nil {
+			break
+		}
+
+		return e.complexity.MetricMetadata.RiskTags(childComplexity), true
 
 	case "Metrics.date_metrics":
 		if e.complexity.Metrics.DateMetrics == nil {
@@ -989,6 +1057,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ProductSearchResult.Version(childComplexity), true
 
+	case "Query.metadataById":
+		if e.complexity.Query.MetadataByID == nil {
+			break
+		}
+
+		args, err := ec.field_Query_metadataById_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.MetadataByID(childComplexity, args["id"].(string)), true
+
+	case "Query.metadataByPurl":
+		if e.complexity.Query.MetadataByPurl == nil {
+			break
+		}
+
+		args, err := ec.field_Query_metadataByPurl_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.MetadataByPurl(childComplexity, args["purl"].(string)), true
+
 	case "Query.metricsById":
 		if e.complexity.Query.MetricsByID == nil {
 			break
@@ -1186,6 +1278,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.RiskScope.Value(childComplexity), true
+
+	case "RiskTag.description":
+		if e.complexity.RiskTag.Description == nil {
+			break
+		}
+
+		return e.complexity.RiskTag.Description(childComplexity), true
+
+	case "RiskTag.name":
+		if e.complexity.RiskTag.Name == nil {
+			break
+		}
+
+		return e.complexity.RiskTag.Name(childComplexity), true
 
 	case "Scope.name":
 		if e.complexity.Scope.Name == nil {
@@ -1793,6 +1899,36 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_metadataById_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_metadataByPurl_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["purl"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("purl"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["purl"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_metricsById_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -2094,6 +2230,47 @@ func (ec *executionContext) _Component_sbom_id(ctx context.Context, field graphq
 }
 
 func (ec *executionContext) fieldContext_Component_sbom_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Component",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Component_project_id(ctx context.Context, field graphql.CollectedField, obj *Component) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Component_project_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ProjectID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Component_project_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Component",
 		Field:      field,
@@ -3276,6 +3453,270 @@ func (ec *executionContext) fieldContext_ListMetrics_resolution(ctx context.Cont
 				return ec.fieldContext_Resolution_unresolved(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Resolution", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MetricMetadata_name(ctx context.Context, field graphql.CollectedField, obj *MetricMetadata) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MetricMetadata_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MetricMetadata_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MetricMetadata",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MetricMetadata_definition(ctx context.Context, field graphql.CollectedField, obj *MetricMetadata) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MetricMetadata_definition(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Definition, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MetricMetadata_definition(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MetricMetadata",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MetricMetadata_graph_yn(ctx context.Context, field graphql.CollectedField, obj *MetricMetadata) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MetricMetadata_graph_yn(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.GraphYn, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*bool)
+	fc.Result = res
+	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MetricMetadata_graph_yn(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MetricMetadata",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MetricMetadata_related_metrics(ctx context.Context, field graphql.CollectedField, obj *MetricMetadata) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MetricMetadata_related_metrics(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RelatedMetrics, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*string)
+	fc.Result = res
+	return ec.marshalOString2ᚕᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MetricMetadata_related_metrics(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MetricMetadata",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MetricMetadata_risk_tags(ctx context.Context, field graphql.CollectedField, obj *MetricMetadata) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MetricMetadata_risk_tags(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.RiskTags, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*RiskTag)
+	fc.Result = res
+	return ec.marshalORiskTag2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐRiskTag(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MetricMetadata_risk_tags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MetricMetadata",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "name":
+				return ec.fieldContext_RiskTag_name(ctx, field)
+			case "description":
+				return ec.fieldContext_RiskTag_description(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type RiskTag", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MetricMetadata_bindings(ctx context.Context, field graphql.CollectedField, obj *MetricMetadata) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MetricMetadata_bindings(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Bindings, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ScoreBinding)
+	fc.Result = res
+	return ec.marshalOScoreBinding2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐScoreBinding(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MetricMetadata_bindings(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MetricMetadata",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "metric":
+				return ec.fieldContext_ScoreBinding_metric(ctx, field)
+			case "scope":
+				return ec.fieldContext_ScoreBinding_scope(ctx, field)
+			case "category":
+				return ec.fieldContext_ScoreBinding_category(ctx, field)
+			case "attribute":
+				return ec.fieldContext_ScoreBinding_attribute(ctx, field)
+			case "source":
+				return ec.fieldContext_ScoreBinding_source(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ScoreBinding", field.Name)
 		},
 	}
 	return fc, nil
@@ -6022,6 +6463,138 @@ func (ec *executionContext) fieldContext_Query_organizations(ctx context.Context
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_metadataById(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_metadataById(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().MetadataByID(rctx, fc.Args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*MetricMetadata)
+	fc.Result = res
+	return ec.marshalOMetricMetadata2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMetricMetadata(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_metadataById(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "name":
+				return ec.fieldContext_MetricMetadata_name(ctx, field)
+			case "definition":
+				return ec.fieldContext_MetricMetadata_definition(ctx, field)
+			case "graph_yn":
+				return ec.fieldContext_MetricMetadata_graph_yn(ctx, field)
+			case "related_metrics":
+				return ec.fieldContext_MetricMetadata_related_metrics(ctx, field)
+			case "risk_tags":
+				return ec.fieldContext_MetricMetadata_risk_tags(ctx, field)
+			case "bindings":
+				return ec.fieldContext_MetricMetadata_bindings(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MetricMetadata", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_metadataById_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_metadataByPurl(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_metadataByPurl(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().MetadataByPurl(rctx, fc.Args["purl"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*MetricMetadata)
+	fc.Result = res
+	return ec.marshalOMetricMetadata2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMetricMetadata(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_metadataByPurl(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "name":
+				return ec.fieldContext_MetricMetadata_name(ctx, field)
+			case "definition":
+				return ec.fieldContext_MetricMetadata_definition(ctx, field)
+			case "graph_yn":
+				return ec.fieldContext_MetricMetadata_graph_yn(ctx, field)
+			case "related_metrics":
+				return ec.fieldContext_MetricMetadata_related_metrics(ctx, field)
+			case "risk_tags":
+				return ec.fieldContext_MetricMetadata_risk_tags(ctx, field)
+			case "bindings":
+				return ec.fieldContext_MetricMetadata_bindings(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MetricMetadata", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_metadataByPurl_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_metricsById(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_metricsById(ctx, field)
 	if err != nil {
@@ -7285,6 +7858,88 @@ func (ec *executionContext) fieldContext_RiskScope_value(ctx context.Context, fi
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RiskTag_name(ctx context.Context, field graphql.CollectedField, obj *RiskTag) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_RiskTag_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_RiskTag_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RiskTag",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _RiskTag_description(ctx context.Context, field graphql.CollectedField, obj *RiskTag) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_RiskTag_description(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_RiskTag_description(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "RiskTag",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -9063,6 +9718,8 @@ func (ec *executionContext) fieldContext_SoftwareList_entries(ctx context.Contex
 				return ec.fieldContext_Component_id(ctx, field)
 			case "sbom_id":
 				return ec.fieldContext_Component_sbom_id(ctx, field)
+			case "project_id":
+				return ec.fieldContext_Component_project_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Component_name(ctx, field)
 			case "version":
@@ -12333,6 +12990,10 @@ func (ec *executionContext) _Component(ctx context.Context, sel ast.SelectionSet
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "project_id":
+
+			out.Values[i] = ec._Component_project_id(ctx, field, obj)
+
 		case "name":
 
 			out.Values[i] = ec._Component_name(ctx, field, obj)
@@ -12602,6 +13263,51 @@ func (ec *executionContext) _ListMetrics(ctx context.Context, sel ast.SelectionS
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var metricMetadataImplementors = []string{"MetricMetadata"}
+
+func (ec *executionContext) _MetricMetadata(ctx context.Context, sel ast.SelectionSet, obj *MetricMetadata) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, metricMetadataImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MetricMetadata")
+		case "name":
+
+			out.Values[i] = ec._MetricMetadata_name(ctx, field, obj)
+
+		case "definition":
+
+			out.Values[i] = ec._MetricMetadata_definition(ctx, field, obj)
+
+		case "graph_yn":
+
+			out.Values[i] = ec._MetricMetadata_graph_yn(ctx, field, obj)
+
+		case "related_metrics":
+
+			out.Values[i] = ec._MetricMetadata_related_metrics(ctx, field, obj)
+
+		case "risk_tags":
+
+			out.Values[i] = ec._MetricMetadata_risk_tags(ctx, field, obj)
+
+		case "bindings":
+
+			out.Values[i] = ec._MetricMetadata_bindings(ctx, field, obj)
+
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -13271,6 +13977,46 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "metadataById":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_metadataById(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "metadataByPurl":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_metadataByPurl(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "metricsById":
 			field := field
 
@@ -13610,6 +14356,35 @@ func (ec *executionContext) _RiskScope(ctx context.Context, sel ast.SelectionSet
 		case "value":
 
 			out.Values[i] = ec._RiskScope_value(ctx, field, obj)
+
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var riskTagImplementors = []string{"RiskTag"}
+
+func (ec *executionContext) _RiskTag(ctx context.Context, sel ast.SelectionSet, obj *RiskTag) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, riskTagImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("RiskTag")
+		case "name":
+
+			out.Values[i] = ec._RiskTag_name(ctx, field, obj)
+
+		case "description":
+
+			out.Values[i] = ec._RiskTag_description(ctx, field, obj)
 
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -15821,6 +16596,54 @@ func (ec *executionContext) marshalOIntMetric2ᚖgithubᚗcomᚋionᚑchannelᚋ
 	return ec._IntMetric(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalOMetricMetadata2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMetricMetadata(ctx context.Context, sel ast.SelectionSet, v []*MetricMetadata) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOMetricMetadata2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMetricMetadata(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOMetricMetadata2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMetricMetadata(ctx context.Context, sel ast.SelectionSet, v *MetricMetadata) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._MetricMetadata(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalOMonthlyCount2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐMonthlyCount(ctx context.Context, sel ast.SelectionSet, v []*MonthlyCount) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -16061,6 +16884,54 @@ func (ec *executionContext) marshalOMonthlyMttrMetric2ᚖgithubᚗcomᚋionᚑch
 	return ec._MonthlyMttrMetric(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalORiskTag2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐRiskTag(ctx context.Context, sel ast.SelectionSet, v []*RiskTag) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalORiskTag2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐRiskTag(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalORiskTag2ᚖgithubᚗcomᚋionᚑchannelᚋionicᚐRiskTag(ctx context.Context, sel ast.SelectionSet, v *RiskTag) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._RiskTag(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalOScope2ᚕᚖgithubᚗcomᚋionᚑchannelᚋionicᚐScope(ctx context.Context, sel ast.SelectionSet, v []*Scope) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -16286,6 +17157,38 @@ func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel
 		if e == graphql.Null {
 			return graphql.Null
 		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOString2ᚕᚖstring(ctx context.Context, v interface{}) ([]*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOString2ᚖstring(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOString2ᚕᚖstring(ctx context.Context, sel ast.SelectionSet, v []*string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalOString2ᚖstring(ctx, sel, v[i])
 	}
 
 	return ret

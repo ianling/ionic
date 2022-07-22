@@ -17,6 +17,7 @@ type Compliance struct {
 type Component struct {
 	ID            string                `json:"id"`
 	SbomID        string                `json:"sbom_id"`
+	ProjectID     *string               `json:"project_id"`
 	Name          string                `json:"name"`
 	Version       string                `json:"version"`
 	Org           string                `json:"org"`
@@ -76,6 +77,15 @@ type ListMetrics struct {
 	Risk       Risk       `json:"risk"`
 	Compliance Compliance `json:"compliance"`
 	Resolution Resolution `json:"resolution"`
+}
+
+type MetricMetadata struct {
+	Name           *string         `json:"name"`
+	Definition     *string         `json:"definition"`
+	GraphYn        *bool           `json:"graph_yn"`
+	RelatedMetrics []*string       `json:"related_metrics"`
+	RiskTags       []*RiskTag      `json:"risk_tags"`
+	Bindings       []*ScoreBinding `json:"bindings"`
 }
 
 type Metrics struct {
@@ -175,6 +185,11 @@ type Risk struct {
 type RiskScope struct {
 	Name  string `json:"name"`
 	Value *int   `json:"value"`
+}
+
+type RiskTag struct {
+	Name        *string `json:"name"`
+	Description *string `json:"description"`
 }
 
 type Scope struct {

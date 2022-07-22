@@ -1,4 +1,4 @@
-## Schema version 0.0.30
+## Schema version 0.0.33
 schema { 
   query: Query 
   mutation: Mutation   
@@ -12,6 +12,7 @@ type Compliance {
 type Component {
   id: String!
   sbom_id: String!
+  project_id: String
   name: String!
   version: String!
   org: String!
@@ -79,6 +80,15 @@ type ListMetrics {
   risk: Risk!
   compliance: Compliance!
   resolution: Resolution!
+}
+
+type MetricMetadata {
+  name: String
+  definition: String
+  graph_yn: Boolean
+  related_metrics: [String]
+  risk_tags: [RiskTag]
+  bindings: [ScoreBinding]
 }
 
 type Metrics {
@@ -254,6 +264,8 @@ type Query {
   """this is extended by other parts of the schema"""
   _placeholder: Int
   organizations(ids: [String!]): [Organization!]!
+  metadataById(id: String!): [MetricMetadata]
+  metadataByPurl(purl: String!): [MetricMetadata]
   metricsById(id: String!): Metrics!
   metricsByPurl(purl: String!): Metrics!
   scoresById(id: String!): Scores!
@@ -288,6 +300,11 @@ type Risk {
 type RiskScope {
   name: String!
   value: Int
+}
+
+type RiskTag {
+  name: String
+  description: String
 }
 
 type Scope {
