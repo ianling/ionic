@@ -27,7 +27,7 @@ type Metrics struct {
 	FloatMetrics              []FloatMetric              `json:"float_metrics"`
 	DateMetrics               []DateMetric               `json:"date_metrics"`
 	MonthlyCountMetrics       []MonthlyCountMetric       `json:"monthly_count_metrics"`
-	MonthlyMttrMetrics        []MonthlyMttrMetric        `json:"monthly_mttr_metrics"`
+	MonthlyMttrMetrics        []MonthlyFloatMetric       `json:"monthly_mttr_metrics"`
 	SourceMonthlyCountMetrics []SourceMonthlyCountMetric `json:"source_monthly_count_metrics"`
 	SourceCountMetrics        []SourceCountMetric        `json:"source_count_metrics"`
 }
@@ -58,9 +58,9 @@ type MonthlyCountMetric struct {
 	Value []community.MonthlyCount `json:"value"`
 }
 
-type MonthlyMttrMetric struct {
+type MonthlyFloatMetric struct {
 	Metric
-	Value []community.MonthlyMttr `json:"value"`
+	Value []community.MonthlyFloat `json:"value"`
 }
 
 type SourceMonthlyCountMetric struct {
