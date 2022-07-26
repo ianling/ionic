@@ -22,14 +22,8 @@ const (
 )
 
 type Metrics struct {
-	ID                        string                     `json:"id"`
-	IntMetrics                []IntMetric                `json:"int_metrics"`
-	FloatMetrics              []FloatMetric              `json:"float_metrics"`
-	DateMetrics               []DateMetric               `json:"date_metrics"`
-	MonthlyCountMetrics       []MonthlyCountMetric       `json:"monthly_count_metrics"`
-	MonthlyMttrMetrics        []MonthlyFloatMetric       `json:"monthly_mttr_metrics"`
-	SourceMonthlyCountMetrics []SourceMonthlyCountMetric `json:"source_monthly_count_metrics"`
-	SourceCountMetrics        []SourceCountMetric        `json:"source_count_metrics"`
+	ID      string   `json:"id"`
+	Metrics []Metric `json:"metrics"`
 }
 
 type Metric struct {
