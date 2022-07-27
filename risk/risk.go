@@ -1,10 +1,8 @@
 package risk
 
 import (
+	"encoding/json"
 	"time"
-
-	"github.com/ion-channel/ionic/community"
-	"github.com/ion-channel/ionic/products"
 )
 
 const (
@@ -26,45 +24,27 @@ type Metrics struct {
 	Metrics []Metric `json:"metrics"`
 }
 
+type MetricsJson struct {
+	ID      string       `json:"id"`
+	Metrics []MetricJson `json:"metrics"`
+}
+
 type Metric struct {
-	Name     string         `json:"name"`
-	Value    interface{}    `json:"value"`
-	Bindings []ScoreBinding `json:"bindings"`
+	Name         string         `json:"name"`
+	Bindings     []ScoreBinding `json:"bindings"`
+	Severity     string         `json:"severity"`
+	SeverityRank int            `json:"severity_rank"`
+	Value        string         `json:"value"`
+	Type         string         `json:"type"`
 }
 
-type IntMetric struct {
-	Metric
-	Value int `json:"value"`
-}
-
-type FloatMetric struct {
-	Metric
-	Value float64 `json:"value"`
-}
-
-type DateMetric struct {
-	Metric
-	Value time.Time `json:"value"`
-}
-
-type MonthlyCountMetric struct {
-	Metric
-	Value []community.MonthlyCount `json:"value"`
-}
-
-type MonthlyFloatMetric struct {
-	Metric
-	Value []community.MonthlyFloat `json:"value"`
-}
-
-type SourceMonthlyCountMetric struct {
-	Metric
-	Value []products.MonthlyCounts `json:"value"`
-}
-
-type SourceCountMetric struct {
-	Metric
-	Value []products.Count `json:"value"`
+type MetricJson struct {
+	Name         string           `json:"name"`
+	Bindings     []ScoreBinding   `json:"bindings"`
+	Severity     string           `json:"severity"`
+	SeverityRank int              `json:"severity_rank"`
+	Value        *json.RawMessage `json:"value"`
+	Type         string           `json:"type"`
 }
 
 // ScoreBinding a mapping from metric to which scope it falls into.
