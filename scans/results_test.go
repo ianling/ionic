@@ -298,7 +298,7 @@ func TestScanResults(t *testing.T) {
 
 			b, err := json.Marshal(r)
 			Expect(err).To(BeNil())
-			Expect(string(b)).To(Equal("{\"type\":\"metrics\",\"data\":{\"id\":\"pkg:github/yuchi/java-npm-semver\",\"metrics\":[{\"name\":\"committers_total_count\",\"value\":1,\"bindings\":[{\"metric\":\"committers_total_count\",\"scope\":\"ecosystem\",\"category\":\"maintenance\",\"attribute\":\"size\",\"source\":\"github\"}]}]}}"))
+			Expect(string(b)).To(Equal("{\"type\":\"metrics\",\"data\":{\"id\":\"pkg:github/yuchi/java-npm-semver\",\"metrics\":[{\"name\":\"committers_total_count\",\"bindings\":[{\"metric\":\"committers_total_count\",\"scope\":\"ecosystem\",\"category\":\"maintenance\",\"attribute\":\"size\",\"source\":\"github\"}],\"value\":1}]}}"))
 		})
 
 		g.It("should unmarshal a scan results with risk data", func() {
