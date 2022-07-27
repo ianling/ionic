@@ -1,10 +1,8 @@
 package risk
 
 import (
+	"encoding/json"
 	"time"
-
-	"github.com/ion-channel/ionic/community"
-	"github.com/ion-channel/ionic/products"
 )
 
 const (
@@ -22,55 +20,17 @@ const (
 )
 
 type Metrics struct {
-	ID                        string                     `json:"id"`
-	IntMetrics                []IntMetric                `json:"int_metrics"`
-	FloatMetrics              []FloatMetric              `json:"float_metrics"`
-	DateMetrics               []DateMetric               `json:"date_metrics"`
-	MonthlyCountMetrics       []MonthlyCountMetric       `json:"monthly_count_metrics"`
-	MonthlyMttrMetrics        []MonthlyFloatMetric       `json:"monthly_mttr_metrics"`
-	SourceMonthlyCountMetrics []SourceMonthlyCountMetric `json:"source_monthly_count_metrics"`
-	SourceCountMetrics        []SourceCountMetric        `json:"source_count_metrics"`
+	ID      string   `json:"id"`
+	Metrics []Metric `json:"metrics"`
 }
 
 type Metric struct {
-	Name     string         `json:"name"`
-	Value    interface{}    `json:"value"`
-	Bindings []ScoreBinding `json:"bindings"`
-}
-
-type IntMetric struct {
-	Metric
-	Value int `json:"value"`
-}
-
-type FloatMetric struct {
-	Metric
-	Value float64 `json:"value"`
-}
-
-type DateMetric struct {
-	Metric
-	Value time.Time `json:"value"`
-}
-
-type MonthlyCountMetric struct {
-	Metric
-	Value []community.MonthlyCount `json:"value"`
-}
-
-type MonthlyFloatMetric struct {
-	Metric
-	Value []community.MonthlyFloat `json:"value"`
-}
-
-type SourceMonthlyCountMetric struct {
-	Metric
-	Value []products.MonthlyCounts `json:"value"`
-}
-
-type SourceCountMetric struct {
-	Metric
-	Value []products.Count `json:"value"`
+	Name         string           `json:"name"`
+	Bindings     []ScoreBinding   `json:"bindings"`
+	Severity     string           `json:"severity"`
+	SeverityRank int              `json:"severity_rank"`
+	Value        *json.RawMessage `json:"value"`
+	Type         string           `json:"type"`
 }
 
 // ScoreBinding a mapping from metric to which scope it falls into.
