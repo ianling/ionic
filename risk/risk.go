@@ -24,21 +24,7 @@ type Metrics struct {
 	Metrics []Metric `json:"metrics"`
 }
 
-type MetricsJson struct {
-	ID      string       `json:"id"`
-	Metrics []MetricJson `json:"metrics"`
-}
-
 type Metric struct {
-	Name         string         `json:"name"`
-	Bindings     []ScoreBinding `json:"bindings"`
-	Severity     string         `json:"severity"`
-	SeverityRank int            `json:"severity_rank"`
-	Value        string         `json:"value"`
-	Type         string         `json:"type"`
-}
-
-type MetricJson struct {
 	Name         string           `json:"name"`
 	Bindings     []ScoreBinding   `json:"bindings"`
 	Severity     string           `json:"severity"`
