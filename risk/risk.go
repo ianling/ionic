@@ -89,13 +89,15 @@ type RiskTag struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 }
+
 type MetricMetadata struct {
-	Name           string         `json:"name"`
-	Definition     string         `json:"definition"`
-	Bindings       []ScoreBinding `json:"bindings"`
-	RiskTags       []RiskTag      `json:"risk_tags"`
-	RelatedMetrics []string       `json:"related_metrics"`
-	GraphYN        bool           `json:"graph_yn"`
+	Name           string    `json:"name"`
+	InternalName   string    `json:"internal_name"`
+	Definition     string    `json:"definition"`
+	Scopes         []string  `json:"scopes"`
+	RiskTags       []RiskTag `json:"risk_tags"`
+	RelatedMetrics []string  `json:"related_metrics"`
+	GraphYN        bool      `json:"graph_yn"`
 }
 
 // MetricPoint defines the data needed for points on a single risk point
