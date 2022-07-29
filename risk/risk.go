@@ -111,3 +111,26 @@ type MetricPoints struct {
 	Metrics     []MetricPoint `json:"metrics" xml:"metrics"`
 	ProcessedAt time.Time     `json:"processed_at" xml:"processed_at"`
 }
+
+type ComponentOverview struct {
+	ID               string             `json:"id"`
+	Name             string             `json:"name"`
+	Org              string             `json:"org"`
+	Version          string             `json:"version"`
+	Sources          []ComponentSource  `json:"sources"`
+	Scores           Scores             `json:"score"`
+	ComponentSummary string             `json:"summary"`
+	RiskTags         []ComponentRiskTag `json:"risk_tags"`
+}
+
+type ComponentRiskTag struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Severity    string `json:"severity"`
+}
+
+type ComponentSource struct {
+	Type   string   `json:"type"`
+	Source []string `json:"source"`
+	ID     string   `json:"id"`
+}
