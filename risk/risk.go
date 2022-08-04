@@ -31,6 +31,7 @@ type Metric struct {
 	SeverityRank int              `json:"severity_rank"`
 	Value        *json.RawMessage `json:"value"`
 	Type         string           `json:"type"`
+	Sources      []string         `json:"sources"`
 }
 
 // ScoreBinding a mapping from metric to which scope it falls into.
