@@ -328,13 +328,13 @@ type BuildsystemResults struct {
 // CommunityResults represents the data collected from a community scan.  It
 // represents all known data regarding the open community of a software project
 type CommunityResults struct {
-	Committers  int       `json:"committers" xml:"committers"`
-	Name        string    `json:"name" xml:"name"`
-	URL         string    `json:"url" xml:"url"`
-	CommittedAt time.Time `json:"committed_at" xml:"committed_at"`
-	OldNames    []string  `json:"old_names" xml:"old_names"`
-	Stars       int       `json:"stars" xml:"stars"`
-	NameChanged bool      `json:"name_changed" xml:"name_changed"`
+	CommittersTotalCount int       `json:"committers_total_count" xml:"committers_total_count"`
+	Name                 string    `json:"name" xml:"name"`
+	URL                  string    `json:"url" xml:"url"`
+	CommitsLastAt        time.Time `json:"commits_last_at" xml:"commits_last_at"`
+	OldNames             []string  `json:"old_names" xml:"old_names"`
+	StarsTotalCount      int       `json:"stars_total_count" xml:"stars_total_count"`
+	NameChanged          bool      `json:"name_changed" xml:"name_changed"`
 }
 
 // CoverageResults represents the data collected from a code coverage scan.  It

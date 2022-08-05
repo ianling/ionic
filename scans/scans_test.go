@@ -178,9 +178,9 @@ func TestScan(t *testing.T) {
 					TranslatedResults: &TranslatedResults{
 						Type: "community",
 						Data: &CommunityResults{
-							Committers: 5,
-							Name:       "reponame",
-							URL:        "http://github.com/reponame",
+							CommittersTotalCount: 5,
+							Name:                 "reponame",
+							URL:                  "http://github.com/reponame",
 						},
 					},
 				}
@@ -190,7 +190,7 @@ func TestScan(t *testing.T) {
 
 				body := string(b)
 				Expect(body).To(ContainSubstring("team_id\": \"cuketest\""))
-				Expect(body).To(ContainSubstring("committers\": 5"))
+				Expect(body).To(ContainSubstring("committers_total_count\": 5"))
 				Expect(body).NotTo(ContainSubstring("about_yml"))
 				Expect(body).NotTo(ContainSubstring("coverage"))
 				Expect(body).NotTo(ContainSubstring("dependency"))
