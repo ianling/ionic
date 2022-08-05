@@ -150,9 +150,9 @@ func TestSummary(t *testing.T) {
 					TranslatedResults: &TranslatedResults{
 						Type: "community",
 						Data: &CommunityResults{
-							Committers: 5,
-							Name:       "reponame",
-							URL:        "http://github.com/reponame",
+							CommittersTotalCount: 5,
+							Name:                 "reponame",
+							URL:                  "http://github.com/reponame",
 						},
 					},
 				}

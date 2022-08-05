@@ -41,7 +41,7 @@ func TestScanResults(t *testing.T) {
 			// validate the json parsing
 			Expect(err).NotTo(HaveOccurred())
 			Expect(untranslatedCommunityResult.Community).NotTo(BeNil())
-			Expect(untranslatedCommunityResult.Community.Stars).To(Equal(2))
+			Expect(untranslatedCommunityResult.Community.StarsTotalCount).To(Equal(2))
 
 			var untranslatedMetricsResult UntranslatedResults
 			err = json.Unmarshal([]byte(SampleValidUntranslatedScanResultsMetrics), &untranslatedMetricsResult)
@@ -124,10 +124,10 @@ func TestScanResults(t *testing.T) {
 
 			a, ok := r.Data.(CommunityResults)
 			Expect(ok).To(Equal(true))
-			Expect(a.Committers).To(Equal(7))
+			Expect(a.CommittersTotalCount).To(Equal(7))
 			Expect(a.Name).To(Equal("ion-channel/ion-connect"))
 			Expect(a.URL).To(Equal("https://github.com/ion-channel/ion-connect"))
-			Expect(a.Stars).To(Equal(2))
+			Expect(a.StarsTotalCount).To(Equal(2))
 			Expect(a.OldNames).To(Equal([]string{"old/name"}))
 		})
 
