@@ -108,17 +108,17 @@ type NotEvaluatedSummary struct {
 
 // ExportData is the data representation of a scan's exported data
 type ExportData struct {
-	AnalysisID          string `json:"analysis_id"`
-	ProjectID           string `json:"project_id"`
-	CPE                 string `json:"cpe"`
-	Status              string `json:"status"`
-	Source              string `json:"source"`
-	CommitterCount      int    `json:"committer_count"`
-	DaysSinceLastCommit int    `json:"days_since_last_commit"`
-	VirusCount          int    `json:"virus_count"`
-	VulnerabilityCount  int    `json:"vulnerability_count"`
-	HighVulnCount       int    `json:"high_vulnerability_count"`
-	CritVulnCount       int    `json:"critical_vulnerability_count"`
+	AnalysisID           string `json:"analysis_id"`
+	ProjectID            string `json:"project_id"`
+	CPE                  string `json:"cpe"`
+	Status               string `json:"status"`
+	Source               string `json:"source"`
+	CommittersTotalCount int    `json:"committers_total_count"`
+	DaysSinceLastCommit  int    `json:"days_since_last_commit"`
+	VirusCount           int    `json:"virus_count"`
+	VulnerabilityCount   int    `json:"vulnerability_count"`
+	HighVulnCount        int    `json:"high_vulnerability_count"`
+	CritVulnCount        int    `json:"critical_vulnerability_count"`
 }
 
 // VulnerabilityScore is just a normal float64, but it is rounded down to one decimal place when marshaled to JSON
