@@ -190,7 +190,7 @@ func TestScan(t *testing.T) {
 
 				body := string(b)
 				Expect(body).To(ContainSubstring("team_id\": \"cuketest\""))
-				Expect(body).To(ContainSubstring("committers\": 5"))
+				Expect(body).To(ContainSubstring("committers_total_count\": 5"))
 				Expect(body).NotTo(ContainSubstring("about_yml"))
 				Expect(body).NotTo(ContainSubstring("coverage"))
 				Expect(body).NotTo(ContainSubstring("dependency"))
