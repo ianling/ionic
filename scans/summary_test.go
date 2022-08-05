@@ -162,7 +162,7 @@ func TestSummary(t *testing.T) {
 
 				body := string(b)
 				Expect(body).To(ContainSubstring("team_id\": \"cuketest\""))
-				Expect(body).To(ContainSubstring("committers\": 5"))
+				Expect(body).To(ContainSubstring("committers_total_count\": 5"))
 				Expect(body).NotTo(ContainSubstring("about_yml"))
 				Expect(body).NotTo(ContainSubstring("coverage"))
 				Expect(body).NotTo(ContainSubstring("dependency"))
@@ -185,7 +185,7 @@ const (
                     "data": [
                         {
                             "url": "https://github.com/simon/putty",
-                            "committers": 0,
+                            "committers_total_count": 0,
                             "name": "simon/putty"
                         }
                     ],
@@ -237,7 +237,7 @@ const (
   "results": {
     "type": "community",
     "data": {
-      "committers": 5,
+      "_total_count": 5,
       "name": "reponame",
       "url": "http://github.com/reponame"
     }
