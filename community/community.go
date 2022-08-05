@@ -29,9 +29,9 @@ type Repo struct {
 	OldNames             []string   `json:"old_names" xml:"old_names"`
 	DefaultBranch        string     `json:"default_branch,omitempty" xml:"default_branch,omitempty"`
 	MasterBranch         string     `json:"master_branch,omitempty" xml:"master_branch,omitempty"`
-	Stars                int        `json:"stars" xml:"stars"`
+	StarsTotalCount      int        `json:"stars_total_count" xml:"stars_total_count"`
 	Matches              []string   `json:"matches,omitempty" xml:"matches,omitempty"`
-	CommittedAt          time.Time  `json:"committed_at" xml:"committed_at"`
+	CommitsLastAt        time.Time  `json:"commits_last_at" xml:"commits_last_at"`
 	UpdatedAt            time.Time  `json:"updated_at" xml:"updated_at"`
 	CreatedAt            *time.Time `json:"created_at" xml:"created_at"`
 }
