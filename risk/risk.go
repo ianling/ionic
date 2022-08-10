@@ -19,6 +19,13 @@ const (
 	TechnologyScope = "technology"
 )
 
+type VerifiedEntity struct {
+	RepoID     string   `json:"repo_id"`
+	ProductIDs []string `json:"product_ids"`
+	// In The Future
+	PackageIDs []string `json:"package_ids"`
+}
+
 type Metrics struct {
 	ID      string   `json:"id"`
 	Metrics []Metric `json:"metrics"`
