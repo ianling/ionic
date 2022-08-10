@@ -97,6 +97,7 @@ type Metrics struct {
 	PassiveActionsMonthlyCount                *[]MonthlyCount `json:"passive_actions_monthly_count" xml:"passive_actions_monthly_count"`
 	NewContributingActorsMonthlyCount         *[]MonthlyCount `json:"new_contributing_actors_monthly_count" xml:"new_contributing_actors_monthly_count"`
 	PrCommentMonthlyCount                     *[]MonthlyCount `json:"pr_comment_monthly_count" xml:"pr_comment_monthly_count"`
+	StarsTotalCount                           *int            `json:"stars_total_count" xml:"stars_total_count"`
 }
 
 // MonthlyCount defines the data needed for month and count
