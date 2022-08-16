@@ -32,13 +32,14 @@ type Metrics struct {
 }
 
 type Metric struct {
-	Name         string           `json:"name"`
-	Bindings     []ScoreBinding   `json:"bindings"`
-	Severity     string           `json:"severity"`
-	SeverityRank int              `json:"severity_rank"`
-	Value        *json.RawMessage `json:"value"`
-	Type         string           `json:"type"`
-	Sources      []string         `json:"sources"`
+	Name           string           `json:"name"`
+	Bindings       []ScoreBinding   `json:"bindings"`
+	Severity       string           `json:"severity"`
+	SeverityRank   int              `json:"severity_rank"`
+	Value          *json.RawMessage `json:"value"`
+	Type           string           `json:"type"`
+	Sources        []string         `json:"sources"`
+	RelatedMetrics []RelatedMetric  `json:"related_metrics"`
 }
 
 // ScoreBinding a mapping from metric to which scope it falls into.
@@ -101,6 +102,7 @@ type RiskTag struct {
 type RelatedMetric struct {
 	Name         string `json:"name"`
 	InternalName string `json:"internal_name"`
+	Severity     string `json:"severity"`
 }
 
 type MetricMetadata struct {
