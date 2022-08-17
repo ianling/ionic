@@ -69,6 +69,7 @@ func (ic *IonClient) ResolveDependenciesInFile(o dependencies.DependencyResoluti
 		strings.Contains(path.Base(o.File), "Pipfile") ||
 		strings.Contains(path.Base(o.File), "requirements.txt") ||
 		strings.Contains(path.Base(o.File), "yarn.lock") ||
+		strings.Contains(path.Base(o.File), "nuget") ||
 		ecosystems[o.Ecosystem]:
 		endpoint = dependencies.ResolveFromFileEndpoint
 	default:
