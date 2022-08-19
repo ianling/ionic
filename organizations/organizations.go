@@ -27,6 +27,7 @@ type OrganizationMember struct {
 	RoleID    string           `json:"role_id"`
 	Role      OrganizationRole `json:"role"`
 	CreatedAt time.Time        `json:"created_at"`
+	JoinedAt  time.Time        `json:"joined_at"`
 	DeletedAt *time.Time       `json:"deleted_at"`
 }
 
