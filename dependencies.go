@@ -9,8 +9,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"path"
-	"strings"
 
 	"github.com/hashicorp/go-version"
 	"github.com/ion-channel/ionic/pagination"
@@ -61,15 +59,16 @@ func (ic *IonClient) ResolveDependenciesInFile(o dependencies.DependencyResoluti
 	w.Close()
 
 	var endpoint string
-	switch {
-	case strings.Contains(path.Base(o.File), "Gemfile.lock") ||
-		strings.Contains(path.Base(o.File), "go.mod") ||
-		strings.Contains(path.Base(o.File), "package.json") ||
-		strings.Contains(path.Base(o.File), "package-lock.json") ||
-		strings.Contains(path.Base(o.File), "Pipfile") ||
-		strings.Contains(path.Base(o.File), "requirements.txt") ||
-		strings.Contains(path.Base(o.File), "yarn.lock") ||
-		ecosystems[o.Ecosystem]:
+	switch o.Ecosystem {
+	// case strings.Contains(path.Base(o.E), "Gemfile.lock") ||
+	// 	strings.Contains(path.Base(o.File), "go.mod") ||
+	// 	strings.Contains(path.Base(o.File), "package.json") ||
+	// 	strings.Contains(path.Base(o.File), "package-lock.json") ||
+	// 	strings.Contains(path.Base(o.File), "Pipfile") ||
+	// 	strings.Contains(path.Base(o.File), "requirements.txt") ||
+	// 	strings.Contains(path.Base(o.File), "yarn.lock") ||
+	// 	strings.Contains(path.Base(o.File), "nuget") ||
+	case "gomod", "package-json", "package", "package-lock", "pipfile", "maven", "requirements", "yarnlock", "nuget":
 		endpoint = dependencies.ResolveFromFileEndpoint
 	default:
 		endpoint = dependencies.ResolveDependenciesInFileEndpoint
