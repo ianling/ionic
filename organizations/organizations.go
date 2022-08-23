@@ -45,6 +45,7 @@ type UpdateOrganizationMembersInput struct {
 type UserOrganizationRole struct {
 	RoleID       string           `json:"role_id"`
 	Role         OrganizationRole `json:"role"`
+	Description  string           `json:"description"`
 	Organization Organization     `json:"organization"`
 }
 

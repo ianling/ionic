@@ -142,6 +142,7 @@ type OrganizationMember struct {
 	Role      OrganizationRole `json:"role"`
 	CreatedAt time.Time        `json:"created_at"`
 	DeletedAt *time.Time       `json:"deleted_at"`
+	JoinedAt  *time.Time       `json:"joined_at"`
 }
 
 type OrganizationMemberUpdate struct {
@@ -291,6 +292,7 @@ type UserOrganizationRole struct {
 	RoleID       string           `json:"role_id"`
 	Role         OrganizationRole `json:"role"`
 	Organization Organization     `json:"organization"`
+	Description  string           `json:"description"`
 }
 
 type UserTeamRole struct {

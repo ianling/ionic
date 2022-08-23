@@ -7,6 +7,7 @@ import (
 	"net/url"
 
 	"github.com/ion-channel/ionic/pagination"
+
 	"github.com/ion-channel/ionic/users"
 
 	"github.com/ion-channel/ionic/errors"
