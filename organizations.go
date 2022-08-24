@@ -157,13 +157,13 @@ func (ic *IonClient) DisableOrganization(id string, token string) error {
 }
 
 // AddMemberToOrganization takes an organization ID, a user ID, and a role, and returns any errors that occurred.
-func (ic *IonClient) AddMemberToOrganization(organizationID string, userID string, role organizations.OrganizationRole, token string) error {
+func (ic *IonClient) AddMemberToOrganization(organizationID string, userID string, roleID string, token string) error {
 	req := struct {
-		UserID string                         `json:"user_id"`
-		Role   organizations.OrganizationRole `json:"role"`
+		UserID string `json:"user_id"`
+		RoleID string `json:"role"`
 	}{
 		UserID: userID,
-		Role:   role,
+		RoleID: roleID,
 	}
 
 	b, err := json.Marshal(req)
