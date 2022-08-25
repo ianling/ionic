@@ -161,6 +161,7 @@ type OrganizationMember {
   role: OrganizationRole!
   created_at: Time!
   deleted_at: Time
+  joined_at: Time
 }
 
 input OrganizationMemberUpdate {
@@ -424,6 +425,7 @@ type UserOrganizationRole {
   role_id: String!
   role: OrganizationRole!
   organization: Organization!
+  description: String!
 }
 
 enum UserStatus {

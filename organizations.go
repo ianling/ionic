@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/ion-channel/ionic/organizations"
 	"github.com/ion-channel/ionic/pagination"
 	"github.com/ion-channel/ionic/requests"
 )
@@ -37,7 +38,7 @@ type CreateOrganizationOptions struct {
 // CreateOrganization takes a create team options, validates the minimum info is
 // present, and makes the calls to create the team. It returns the ID of the created organization
 // and any errors it encounters with the API.
-func (ic *IonClient) CreateOrganization(opts CreateOrganizationOptions, token string) (*Organization, error) {
+func (ic *IonClient) CreateOrganization(opts CreateOrganizationOptions, token string) (*organizations.Organization, error) {
 	if opts.Name == "" {
 		return nil, fmt.Errorf("name missing from options")
 	}
@@ -54,7 +55,7 @@ func (ic *IonClient) CreateOrganization(opts CreateOrganizationOptions, token st
 		return nil, fmt.Errorf("failed to create organization: %v", err.Error())
 	}
 
-	var org Organization
+	var org organizations.Organization
 	err = json.Unmarshal(b, &org)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse organization from response: %v", err.Error())
@@ -64,13 +65,13 @@ func (ic *IonClient) CreateOrganization(opts CreateOrganizationOptions, token st
 }
 
 // GetOwnOrganizations takes a token and returns a list of organizations the user belongs to.
-func (ic *IonClient) GetOwnOrganizations(token string) (*[]UserOrganizationRole, error) {
+func (ic *IonClient) GetOwnOrganizations(token string) (*[]organizations.UserOrganizationRole, error) {
 	resp, _, err := ic.Get(OrganizationsGetOwnEndpoint, token, nil, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get own organizations: %v", err.Error())
 	}
 
-	var orgs []UserOrganizationRole
+	var orgs []organizations.UserOrganizationRole
 	err = json.Unmarshal(resp, &orgs)
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse own organizations: %v", err.Error())
@@ -80,13 +81,13 @@ func (ic *IonClient) GetOwnOrganizations(token string) (*[]UserOrganizationRole,
 }
 
 // GetOrganization takes an organization id and returns the Ion Channel representation of that organization.
-func (ic *IonClient) GetOrganization(id, token string) (*Organization, error) {
+func (ic *IonClient) GetOrganization(id, token string) (*organizations.Organization, error) {
 	b, _, err := ic.Get(fmt.Sprintf("%s/%s", OrganizationsGetEndpoint, id), token, nil, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get organization: %v", err.Error())
 	}
 
-	var organization Organization
+	var organization organizations.Organization
 	err = json.Unmarshal(b, &organization)
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse organization: %v", err.Error())
@@ -96,7 +97,7 @@ func (ic *IonClient) GetOrganization(id, token string) (*Organization, error) {
 }
 
 // GetOrganizations takes one or more IDs and returns those organizations.
-func (ic *IonClient) GetOrganizations(ids requests.ByIDs, token string) (*[]Organization, error) {
+func (ic *IonClient) GetOrganizations(ids requests.ByIDs, token string) (*[]organizations.Organization, error) {
 	b, err := json.Marshal(ids)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request body: %v", err.Error())
@@ -109,7 +110,7 @@ func (ic *IonClient) GetOrganizations(ids requests.ByIDs, token string) (*[]Orga
 		return nil, fmt.Errorf("failed to get organizations: %v", err.Error())
 	}
 
-	var orgs []Organization
+	var orgs []organizations.Organization
 	err = json.Unmarshal(resp, &orgs)
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse organizations: %v", err.Error())
@@ -119,7 +120,7 @@ func (ic *IonClient) GetOrganizations(ids requests.ByIDs, token string) (*[]Orga
 }
 
 // UpdateOrganization takes an organization ID, and the fields to update, returns the updated organization.
-func (ic *IonClient) UpdateOrganization(id string, name string, token string) (*Organization, error) {
+func (ic *IonClient) UpdateOrganization(id string, name string, token string) (*organizations.Organization, error) {
 	req := struct {
 		Name string `json:"name"`
 	}{Name: name}
@@ -136,7 +137,7 @@ func (ic *IonClient) UpdateOrganization(id string, name string, token string) (*
 		return nil, fmt.Errorf("failed to update organization: %v", err.Error())
 	}
 
-	var org Organization
+	var org organizations.Organization
 	err = json.Unmarshal(resp, &org)
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse organization: %v", err.Error())
@@ -156,13 +157,13 @@ func (ic *IonClient) DisableOrganization(id string, token string) error {
 }
 
 // AddMemberToOrganization takes an organization ID, a user ID, and a role, and returns any errors that occurred.
-func (ic *IonClient) AddMemberToOrganization(organizationID string, userID string, role OrganizationRole, token string) error {
+func (ic *IonClient) AddMemberToOrganization(organizationID string, userID string, roleID string, token string) error {
 	req := struct {
-		UserID string           `json:"user_id"`
-		Role   OrganizationRole `json:"role"`
+		UserID string `json:"user_id"`
+		RoleID string `json:"role"`
 	}{
 		UserID: userID,
-		Role:   role,
+		RoleID: roleID,
 	}
 
 	b, err := json.Marshal(req)
@@ -181,7 +182,7 @@ func (ic *IonClient) AddMemberToOrganization(organizationID string, userID strin
 }
 
 // UpdateOrganizationMembers takes an organization ID and a slice of UpdateOrganizationMemberInput, and returns any errors that occurred.
-func (ic *IonClient) UpdateOrganizationMembers(organizationID string, usersToUpdate []OrganizationMemberUpdate, token string) error {
+func (ic *IonClient) UpdateOrganizationMembers(organizationID string, usersToUpdate []organizations.OrganizationMemberUpdate, token string) error {
 	b, err := json.Marshal(usersToUpdate)
 	if err != nil {
 		return fmt.Errorf("failed to marshal request body: %v", err.Error())

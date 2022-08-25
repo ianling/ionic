@@ -4,8 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/ion-channel/ionic/pagination"
 	"net/url"
+
+	"github.com/ion-channel/ionic/pagination"
+
+	"github.com/ion-channel/ionic/users"
 
 	"github.com/ion-channel/ionic/errors"
 	"github.com/ion-channel/ionic/requests"
@@ -26,63 +29,6 @@ const (
 	UsersUpdatePreferencesEndpoint = "v1/users/userPreferences"
 )
 
-// String returns a JSON formatted string of the user object
-func (u User) String() string {
-	b, err := json.Marshal(u)
-	if err != nil {
-		return fmt.Sprintf("failed to format user: %v", err.Error())
-	}
-	return string(b)
-}
-
-// IsMemberOfOrganization takes a team id and returns true if user is a member of that team.
-// Deprecated: Check permissions instead.
-func (u User) IsMemberOfOrganization(id string) bool {
-	for _, role := range u.Organizations {
-		if role.Organization.ID == id {
-			return true
-		}
-	}
-
-	return false
-}
-
-// IsAdminOfOrganization takes a team id and returns true if user is an admin of that team.
-// Deprecated: Check permissions instead.
-func (u User) IsAdminOfOrganization(id string) bool {
-	for _, role := range u.Organizations {
-		// "admin" is for backwards compatibility with the old role system.
-		// It can be removed when that role is no longer used.
-		if role.Organization.ID == id && (role.Role == "admin" || role.Role == OrganizationRoleManager || role.Role == OrganizationRoleOwner) {
-			return true
-		}
-	}
-
-	return false
-}
-
-// IsMemberOfTeam takes a team id and returns true if user is a member of that team.
-func (u User) IsMemberOfTeam(id string) bool {
-	for _, role := range u.Teams {
-		if role.TeamID == id {
-			return true
-		}
-	}
-
-	return false
-}
-
-// IsAdminOfTeam takes a team id and returns true if user is an admin of that team.
-func (u User) IsAdminOfTeam(id string) bool {
-	for _, role := range u.Teams {
-		if role.TeamID == id && role.Role == "admin" {
-			return true
-		}
-	}
-
-	return false
-}
-
 type CreateUserOptions struct {
 	Email                string `json:"email"`
 	Username             string `json:"username"`
@@ -94,27 +40,27 @@ type CreateUserOptions struct {
 // are not required, and can be left blank if so chosen.  It will return the
 // instantiated user object from the API or an error if it encounters one with
 // the API.
-func (ic *IonClient) CreateUser(opts CreateUserOptions, token string) (User, error) {
+func (ic *IonClient) CreateUser(opts CreateUserOptions, token string) (users.User, error) {
 	if opts.Email == "" {
-		return User{}, fmt.Errorf("create user: email is required")
+		return users.User{}, fmt.Errorf("create user: email is required")
 	}
 
 	b, err := json.Marshal(opts)
 	if err != nil {
-		return User{}, errors.Prepend("create user: failed to marshal request", err)
+		return users.User{}, errors.Prepend("create user: failed to marshal request", err)
 	}
 
 	buff := bytes.NewBuffer(b)
 
 	b, err = ic.Post(UsersCreateUserEndpoint, token, nil, *buff, nil)
 	if err != nil {
-		return User{}, errors.Prepend("create user", err)
+		return users.User{}, errors.Prepend("create user", err)
 	}
 
-	var u User
+	var u users.User
 	err = json.Unmarshal(b, &u)
 	if err != nil {
-		return User{}, errors.Prepend("create user: failed to unmarshal user", err)
+		return users.User{}, errors.Prepend("create user: failed to unmarshal user", err)
 	}
 
 	return u, nil
@@ -123,13 +69,13 @@ func (ic *IonClient) CreateUser(opts CreateUserOptions, token string) (User, err
 // GetSelf returns the user object associated with the bearer token provided.
 // An error is returned if the client cannot talk to the API or the returned
 // user object is nil or blank
-func (ic *IonClient) GetSelf(token string) (User, error) {
+func (ic *IonClient) GetSelf(token string) (users.User, error) {
 	b, _, err := ic.Get(UsersGetSelfEndpoint, token, nil, nil, pagination.Pagination{})
 	if err != nil {
-		return User{}, errors.Prepend("get self", err)
+		return users.User{}, errors.Prepend("get self", err)
 	}
 
-	var user User
+	var user users.User
 	err = json.Unmarshal(b, &user)
 	if err != nil {
 		return user, errors.Prepend("get self: failed unmarshaling user", err)
@@ -141,32 +87,32 @@ func (ic *IonClient) GetSelf(token string) (User, error) {
 // GetUser returns the user object associated with the bearer token provided.
 // An error is returned if the client cannot talk to the API or the returned
 // user object is nil or blank
-func (ic *IonClient) GetUser(id, token string) (User, error) {
+func (ic *IonClient) GetUser(id, token string) (users.User, error) {
 	params := url.Values{}
 	params.Set("id", id)
 
 	b, _, err := ic.Get(UsersGetUserEndpoint, token, params, nil, pagination.Pagination{})
 	if err != nil {
-		return User{}, errors.Prepend("get user", err)
+		return users.User{}, errors.Prepend("get user", err)
 	}
 
-	var user User
+	var user users.User
 	err = json.Unmarshal(b, &user)
 	if err != nil {
-		return User{}, errors.Prepend("get user: failed unmarshaling user", err)
+		return users.User{}, errors.Prepend("get user: failed unmarshaling user", err)
 	}
 
 	return user, nil
 }
 
 // GetUsers requests and returns all users for a given installation
-func (ic *IonClient) GetUsers(token string) ([]User, error) {
+func (ic *IonClient) GetUsers(token string) ([]users.User, error) {
 	b, _, err := ic.Get(UsersGetUsers, token, nil, nil, pagination.Pagination{})
 	if err != nil {
 		return nil, errors.Prepend("get users", err)
 	}
 
-	var us []User
+	var us []users.User
 	err = json.Unmarshal(b, &us)
 	if err != nil {
 		return nil, errors.Prepend("get users: failed unmarshaling users", err)
