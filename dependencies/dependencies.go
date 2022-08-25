@@ -42,7 +42,7 @@ type Dependency struct {
 type Metrics struct {
 	ID                     string    `json:"id"`
 	DependenciesTotalCount int       `json:"dependencies_total_count"`
-	License                string    `json:"license"`
+	License                string    `json:"license_yn"`
 	OrgPackageCount        int       `json:"org_package_count"`
 	PrevVersionCount       int       `json:"prev_version_count"`
 	UpdatedAt              time.Time `json:"updated_at"`

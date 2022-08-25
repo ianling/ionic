@@ -82,7 +82,7 @@ type Metrics struct {
 	AverageMonthlyNewActors                   *float64        `json:"average_monthly_new_actors" xml:"average_monthly_new_actors"`
 	AverageMonthlyPassiveActions              *float64        `json:"average_monthly_passive_actions" xml:"average_monthly_passive_actions"`
 	AverageMonthlyPassiveActors               *float64        `json:"average_monthly_passive_actors" xml:"average_monthly_passive_actors"`
-	AverageMonthlyPrComments                  *float64        `json:"average_monthly_pr_comments" xml:"average_monthly_pr_comments"`
+	AverageMonthlyPrComments                  *float64        `json:"average_monthly_pr_comment" xml:"average_monthly_pr_comment"`
 	AverageMonthlyPullRequests                *float64        `json:"average_monthly_pull_requests" xml:"average_monthly_pull_requests"`
 	AverageMonthlyReleases                    *float64        `json:"average_monthly_releases" xml:"average_monthly_releases"`
 	ContributingActorActivityRate             *float64        `json:"contributing_actor_activity_rate" xml:"contributing_actor_activity_rate"`
