@@ -39,6 +39,15 @@ type Dependency struct {
 	Matches         []string     `json:"matches,omitempty" xml:"matches,omitempty"`
 }
 
+type Metrics struct {
+	ID                     string    `json:"id"`
+	DependenciesTotalCount int       `json:"dependencies_total_count"`
+	License                string    `json:"license"`
+	OrgPackageCount        int       `json:"org_package_count"`
+	PrevVersionCount       int       `json:"prev_version_count"`
+	UpdatedAt              time.Time `json:"updated_at"`
+}
+
 // OutdatedMeta is used to represent the number of versions behind a dependency is
 type OutdatedMeta struct {
 	MajorBehind int `json:"major_behind" xml:"major_behind"`
