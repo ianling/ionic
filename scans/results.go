@@ -479,7 +479,7 @@ func (e *MetricsResults) UnmarshalJSON(b []byte) error {
 
 // RiskResults is a slice of
 type RiskResults struct {
-	Risk []risk.Scores `json:"risk" xml:"risk"`
+	Risk risk.EntityOverview `json:"risk" xml:"risk"`
 }
 
 // MarshalJSON meets the marshaller interface to custom wrangle a risk
@@ -491,7 +491,7 @@ func (e RiskResults) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON meets the unmarshaller interface to custom wrangle the
 // risk scan into an risk result
 func (e *RiskResults) UnmarshalJSON(b []byte) error {
-	var s []risk.Scores
+	var s risk.EntityOverview
 	err := json.Unmarshal(b, &s)
 	if err != nil {
 		return fmt.Errorf("failed to unmarshal secrets result: %v", err.Error())
