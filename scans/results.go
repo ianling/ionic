@@ -494,7 +494,7 @@ func (e *RiskResults) UnmarshalJSON(b []byte) error {
 	var s risk.EntityOverview
 	err := json.Unmarshal(b, &s)
 	if err != nil {
-		return fmt.Errorf("failed to unmarshal secrets result: %v", err.Error())
+		s = risk.EntityOverview{}
 	}
 
 	e.Risk = s
