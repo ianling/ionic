@@ -8,7 +8,8 @@ import (
 )
 
 type CreateOrganizationRequest struct {
-	Name string `json:"name"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
 }
 
 type Organization struct {
