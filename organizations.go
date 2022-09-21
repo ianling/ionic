@@ -32,7 +32,8 @@ const (
 // CreateOrganizationOptions represents all the values that can be provided for an organization
 // at the time of creation
 type CreateOrganizationOptions struct {
-	Name string `json:"name"`
+	Name     string `json:"name"`
+	Username string `json:"username"`
 }
 
 // CreateOrganization takes a create team options, validates the minimum info is
