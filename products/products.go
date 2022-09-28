@@ -63,9 +63,6 @@ type Metrics struct {
 	MediumSeverityVulnMonthlyCount          []MonthlyCounts `json:"medium_severity_vuln_monthly_count"`
 	LowSeverityVulnMonthlyCount             []MonthlyCounts `json:"low_severity_vuln_monthly_count"`
 	AverageSeverity                         float64         `json:"average_severity"`
-	AverageHighSeverity                     float64         `json:"average_high_severity"`
-	AverageMediumSeverity                   float64         `json:"average_medium_severity"`
-	AverageLowSeverity                      float64         `json:"average_low_severity"`
 	AverageVulnMonthlyCount                 float64         `json:"average_vuln_monthly_count"`
 	AverageCriticalSeverityVulnMonthlyCount float64         `json:"average_critical_severity_vuln_monthly_count"`
 	AverageHighSeverityVulnMonthlyCount     float64         `json:"average_high_severity_vuln_monthly_count"`
