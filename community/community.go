@@ -50,6 +50,9 @@ type Metrics struct {
 	PullRequestsTotalCount                    *int            `json:"pull_requests_total_count" xml:"pull_requests_total_count"`
 	PullRequestsLastAt                        *time.Time      `json:"pull_requests_last_at" xml:"pull_requests_last_at"`
 	PullRequestsMonthlyCount                  *[]MonthlyCount `json:"pull_requests_monthly_count" xml:"pull_requests_monthly_count"`
+	PushesTotalCount                          *int            `json:"pushes_total_count" xml:"pushes_total_count"`
+	PushesLastAt                              *time.Time      `json:"pushes_last_at" xml:"pushes_last_at"`
+	PushesMonthlyCount                        *[]MonthlyCount `json:"pushes_monthly_count" xml:"pushes_monthly_count"`
 	IssuesLastAt                              *time.Time      `json:"issues_last_at" xml:"issues_last_at"`
 	IssuesOpenMonthlyCount                    *[]MonthlyCount `json:"issues_open_monthly_count" xml:"issues_open_monthly_count"`
 	IssuesClosedMonthlyCount                  *[]MonthlyCount `json:"issues_closed_monthly_count" xml:"issues_closed_monthly_count"`
