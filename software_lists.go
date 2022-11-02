@@ -1,10 +1,13 @@
 package ionic
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/ion-channel/ionic/pagination"
 	"net/url"
+
+	"github.com/ion-channel/ionic/pagination"
+	"github.com/ion-channel/ionic/software_lists"
 )
 
 const (
@@ -12,6 +15,10 @@ const (
 	GetSoftwareListEndpoint = "v1/project/getSBOM"
 	// GetSoftwareListsEndpoint is the path to the endpoint for retrieving an organization's Software Lists
 	GetSoftwareListsEndpoint = "v1/project/getSBOMs"
+	// GetSoftwareListEndpoint is the path to the endpoint for deleting an organization's Software List
+	DeleteSoftwareListEndpoint = "/v1/project/deleteSBOM"
+	// UpdateSoftwareListEndpoint is the path to the endpoint for updating an organization's Software List
+	UpdateSoftwareListEndpoint = "/v1/project/updateSBOM"
 )
 
 // GetSoftwareListRequest defines the parameters available for a GetSoftwareList request.
@@ -28,9 +35,43 @@ type GetSoftwareListsRequest struct {
 	Status string
 }
 
+// DeleteSoftwareList deletes the requested Software List or any error that occurred.
+func (ic *IonClient) DeleteSoftwareList(id string, token string) error {
+	params := url.Values{}
+	params.Set("id", id)
+
+	_, err := ic.Delete(DeleteSoftwareListEndpoint, token, params, nil)
+	if err != nil {
+		return fmt.Errorf("failed to delete SoftwareList: %s", err.Error())
+	}
+
+	return nil
+}
+
+// UpdateSoftwareList updates the requested Software List or any error that occurred.
+func (ic *IonClient) UpdateSoftwareList(sbom software_lists.SoftwareList, token string) (*software_lists.SoftwareList, error) {
+	b, err := json.Marshal(sbom)
+	if err != nil {
+		return nil, fmt.Errorf("session: failed to marshal login body: %v", err.Error())
+	}
+
+	buff := bytes.NewBuffer(b)
+	b, err = ic.Put(UpdateSoftwareListEndpoint, token, nil, *buff, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to delete SoftwareList: %s", err.Error())
+	}
+
+	err = json.Unmarshal(b, &sbom)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal delete response: %s", err.Error())
+	}
+
+	return &sbom, nil
+}
+
 // GetSoftwareList returns the requested Software List or any error that occurred.
-func (ic *IonClient) GetSoftwareList(req GetSoftwareListRequest, token string) (SoftwareList, error) {
-	var sbom SoftwareList
+func (ic *IonClient) GetSoftwareList(req GetSoftwareListRequest, token string) (software_lists.SoftwareList, error) {
+	var sbom software_lists.SoftwareList
 
 	params := url.Values{}
 	params.Set("id", req.ID)
@@ -49,7 +90,7 @@ func (ic *IonClient) GetSoftwareList(req GetSoftwareListRequest, token string) (
 }
 
 // GetSoftwareLists retrieves an organization's Software Lists, filtered on the status, if given, or any error that occurred.
-func (ic *IonClient) GetSoftwareLists(req GetSoftwareListsRequest, token string) ([]SoftwareList, error) {
+func (ic *IonClient) GetSoftwareLists(req GetSoftwareListsRequest, token string) ([]software_lists.SoftwareList, error) {
 	params := url.Values{}
 	params.Set("org_id", req.OrganizationID)
 	params.Set("status", req.Status)
@@ -59,7 +100,7 @@ func (ic *IonClient) GetSoftwareLists(req GetSoftwareListsRequest, token string)
 		return nil, fmt.Errorf("failed to get SBOMs: %s", err.Error())
 	}
 
-	var sboms []SoftwareList
+	var sboms []software_lists.SoftwareList
 	err = json.Unmarshal(b, &sboms)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal SBOMs: %s", err.Error())

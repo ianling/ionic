@@ -26,6 +26,164 @@ type User struct {
 	Teams             []UserTeamRole                       `json:"teams"`
 }
 
+type Preferences struct {
+	Flip                bool                        `json:"flip"`
+	NotificationChannel NotificationChannelOption   `json:"notification_channel"`
+	Frequency           NotificationFrequencyOption `json:"frequency"`
+}
+
+type NotificationChannelOption string
+
+const (
+	NotificationChannelOptionEmail NotificationChannelOption = "email"
+)
+
+var AllNotificationChannelOption = []NotificationChannelOption{
+	NotificationChannelOptionEmail,
+}
+
+func (e NotificationChannelOption) IsValid() bool {
+	switch e {
+	case NotificationChannelOptionEmail:
+		return true
+	}
+	return false
+}
+
+func (e NotificationChannelOption) String() string {
+	return string(e)
+}
+
+func (e *NotificationChannelOption) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = NotificationChannelOption(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid NotificationChannelOption", str)
+	}
+	return nil
+}
+
+func (e NotificationChannelOption) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type NotificationFrequencyOption string
+
+const (
+	NotificationFrequencyOptionDaily NotificationFrequencyOption = "daily"
+)
+
+var AllNotificationFrequencyOption = []NotificationFrequencyOption{
+	NotificationFrequencyOptionDaily,
+}
+
+func (e NotificationFrequencyOption) IsValid() bool {
+	switch e {
+	case NotificationFrequencyOptionDaily:
+		return true
+	}
+	return false
+}
+
+func (e NotificationFrequencyOption) String() string {
+	return string(e)
+}
+
+func (e *NotificationFrequencyOption) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = NotificationFrequencyOption(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid NotificationFrequencyOption", str)
+	}
+	return nil
+}
+
+func (e NotificationFrequencyOption) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type Permission string
+
+const (
+	// Grants all permissions over all objects in the system.
+	// Reserved for System Admin role. Cannot be granted to or inherited by other roles.
+	PermissionAllPermissions Permission = "ALL_PERMISSIONS"
+	// Grants the ability to modify an organization's settings, including billing information.
+	PermissionOrganizationModify Permission = "ORGANIZATION_MODIFY"
+	// Grants the ability to view basic information about an organization, including its name,
+	// the date and time it was created, etc.
+	PermissionOrganizationView Permission = "ORGANIZATION_VIEW"
+	// Grants the ability to invite users to an organization.
+	PermissionOrganizationUserCreate Permission = "ORGANIZATION_USER_CREATE"
+	// Grants the ability to change the roles of existing users within an organization.
+	PermissionOrganizationUserModify Permission = "ORGANIZATION_USER_MODIFY"
+	// Grants the ability to remove users from an organization.
+	PermissionOrganizationUserRemove Permission = "ORGANIZATION_USER_REMOVE"
+	// Grants the ability to view a list of all the organization's members.
+	PermissionOrganizationUserView Permission = "ORGANIZATION_USER_VIEW"
+	// Grants the ability to create a new software list and add it to an organization's software inventory.
+	PermissionOrganizationSoftwareListCreate Permission = "ORGANIZATION_SOFTWARE_LIST_CREATE"
+	// Grants the ability to modify an organization's existing software lists,
+	// including adding, modifying, and removing components from individual software lists.
+	PermissionOrganizationSoftwareListModify Permission = "ORGANIZATION_SOFTWARE_LIST_MODIFY"
+	// Grants the ability to view an organization's software lists and any components they contain.
+	// This also includes the ability to export an SBOM for the software lists and view risk scoring data.
+	PermissionOrganizationSoftwareListView Permission = "ORGANIZATION_SOFTWARE_LIST_VIEW"
+	// Grants the ability to remove software lists from an organization's software inventory.
+	PermissionOrganizationSoftwareListRemove Permission = "ORGANIZATION_SOFTWARE_LIST_REMOVE"
+)
+
+var AllPermission = []Permission{
+	PermissionAllPermissions,
+	PermissionOrganizationModify,
+	PermissionOrganizationView,
+	PermissionOrganizationUserCreate,
+	PermissionOrganizationUserModify,
+	PermissionOrganizationUserRemove,
+	PermissionOrganizationUserView,
+	PermissionOrganizationSoftwareListCreate,
+	PermissionOrganizationSoftwareListModify,
+	PermissionOrganizationSoftwareListView,
+	PermissionOrganizationSoftwareListRemove,
+}
+
+func (e Permission) IsValid() bool {
+	switch e {
+	case PermissionAllPermissions, PermissionOrganizationModify, PermissionOrganizationView, PermissionOrganizationUserCreate, PermissionOrganizationUserModify, PermissionOrganizationUserRemove, PermissionOrganizationUserView, PermissionOrganizationSoftwareListCreate, PermissionOrganizationSoftwareListModify, PermissionOrganizationSoftwareListView, PermissionOrganizationSoftwareListRemove:
+		return true
+	}
+	return false
+}
+
+func (e Permission) String() string {
+	return string(e)
+}
+
+func (e *Permission) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Permission(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Permission", str)
+	}
+	return nil
+}
+
+func (e Permission) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 // String returns a JSON formatted string of the user object
 func (u User) String() string {
 	b, err := json.Marshal(u)
