@@ -87,6 +87,7 @@ type Metrics struct {
 	AverageMonthlyPassiveActors               *float64        `json:"average_monthly_passive_actors" xml:"average_monthly_passive_actors"`
 	AverageMonthlyPrComments                  *float64        `json:"average_monthly_pr_comment" xml:"average_monthly_pr_comment"`
 	AverageMonthlyPullRequests                *float64        `json:"average_monthly_pull_requests" xml:"average_monthly_pull_requests"`
+	AverageMonthlyPushes                      *float64        `json:"average_monthly_pushes" xml:"average_monthly_pushes"`
 	AverageMonthlyReleases                    *float64        `json:"average_monthly_releases" xml:"average_monthly_releases"`
 	ContributingActorActivityRate             *float64        `json:"contributing_actor_activity_rate" xml:"contributing_actor_activity_rate"`
 	MedianWorkingHourDiversityIndex           *float64        `json:"median_working_hour_diversity_index" xml:"median_working_hour_diversity_index"`
