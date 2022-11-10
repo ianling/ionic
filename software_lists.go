@@ -91,6 +91,8 @@ func (ic *IonClient) GetSoftwareList(req GetSoftwareListRequest, token string) (
 
 // GetSoftwareLists retrieves an organization's Software Lists, filtered on the status, if given, or any error that occurred.
 func (ic *IonClient) GetSoftwareLists(req GetSoftwareListsRequest, token string) ([]software_lists.SoftwareList, error) {
+	var sboms []software_lists.SoftwareList
+
 	params := url.Values{}
 	params.Set("org_id", req.OrganizationID)
 	params.Set("status", req.Status)
@@ -100,11 +102,19 @@ func (ic *IonClient) GetSoftwareLists(req GetSoftwareListsRequest, token string)
 		return nil, fmt.Errorf("failed to get SBOMs: %s", err.Error())
 	}
 
-	var sboms []software_lists.SoftwareList
-	err = json.Unmarshal(b, &sboms)
+	/* TODO GetSoftwareListsEndpoint should return SoftwareList, not SoftwareInventory.
+
+	   Then we can simply unmarshal a SoftwareList and
+	   no need to extract sboms from Inventory.
+	*/
+	inventory := software_lists.SoftwareInventory{}
+	err = json.Unmarshal(b, &inventory)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal SBOMs: %s", err.Error())
+		return nil, fmt.Errorf("failed to unmarshal into sbom: %s %s", err.Error(), b)
 	}
+
+	// Extract software list from inventory
+	sboms = inventory.SoftwareLists
 
 	return sboms, nil
 }
