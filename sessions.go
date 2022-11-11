@@ -20,7 +20,7 @@ type Session struct {
 	User        users.User `json:"user"`
 }
 
-type loginRequest struct {
+type LoginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
@@ -34,7 +34,7 @@ func (ic *IonClient) Login(username, password string) (Session, error) {
 	headers.Add("Authorization", fmt.Sprintf("Basic %v", base64.StdEncoding.EncodeToString([]byte(auth))))
 	headers.Add("Content-Type", "application/json; charset=UTF-8")
 
-	login := loginRequest{username, password}
+	login := LoginRequest{username, password}
 	b, err := json.Marshal(login)
 	if err != nil {
 		return Session{}, fmt.Errorf("session: failed to marshal login body: %v", err.Error())
