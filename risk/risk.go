@@ -148,4 +148,5 @@ type EntitySource struct {
 	Type   string   `json:"type"`
 	Source []string `json:"source"`
 	ID     string   `json:"id"`
+	Link string 	`json:"link"`
 }
