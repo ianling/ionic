@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/ion-channel/ionic/pagination"
 	"github.com/ion-channel/ionic/teamusers"
 )
 
@@ -87,4 +88,23 @@ func (ic *IonClient) DeleteTeamUser(teamuser *teamusers.TeamUser, token string) 
 	}
 
 	return nil
+}
+
+func (ic *IonClient) GetTeamUsers(id string, token string) ([]teamusers.TeamUserRole, error) {
+	teamUsers := []teamusers.TeamUserRole{}
+
+	params := url.Values{}
+	params.Set("team_id", id)
+
+	b, _, err := ic.Get(teamusers.TeamsGetTeamUserEndpoint, token, params, nil, pagination.Pagination{})
+	if err != nil {
+		return teamUsers, fmt.Errorf("failed to get Team Users: %s", err.Error())
+	}
+
+	err = json.Unmarshal(b, &teamUsers)
+	if err != nil {
+		return teamUsers, fmt.Errorf("failed to unmarshal Team Users: %s", err.Error())
+	}
+
+	return teamUsers, nil
 }
