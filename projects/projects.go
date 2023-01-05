@@ -448,33 +448,14 @@ func (pf *Filter) Param() string {
 
 // ProjectSliceContains checks if a given []Project contains a Project matching the given Project.
 // This is used to prevent duplicate Projects from appearing in a slice of Projects.
-// This function checks the project's aliases (if available), as well as the source location.
-// Returns true if a match is found.
+// Returns true if the given Project has an alias that matches an alias of any other project in the slice.
 func ProjectSliceContains(projects []Project, projectToFind Project) bool {
-	// don't bother checking aliases if the project we're looking for doesn't have any
-	var useAliases bool
-	if len(projectToFind.Aliases) > 0 {
-		useAliases = true
-	}
-
 	for _, project := range projects {
-		// if both projects contain aliases, check all the aliases against each other to see if any are equivalent
-		if useAliases {
-			for _, alias := range project.Aliases {
-				for _, aliasToFind := range projectToFind.Aliases {
-					if alias.Equal(aliasToFind) {
-						return true
-					}
+		for _, alias := range project.Aliases {
+			for _, aliasToFind := range projectToFind.Aliases {
+				if alias.Equal(aliasToFind) {
+					return true
 				}
-			}
-		}
-
-		// check if both projects contain the same source information
-		if project.Type != nil && projectToFind.Type != nil && *project.Type != "" &&
-			*project.Type == *projectToFind.Type {
-			if project.Source != nil && projectToFind.Source != nil && *project.Source != "" &&
-				*project.Source == *projectToFind.Source {
-				return true
 			}
 		}
 	}

@@ -402,7 +402,7 @@ func TestProject(t *testing.T) {
 				Expect(ProjectSliceContains(projectList, project2)).To(BeFalse())
 			})
 
-			g.It("should return true when project with matching source found in slice", func() {
+			g.It("should return false when project with matching source found in slice", func() {
 				pType := "git"
 				pSource := "https://github.com/ion-channel/ionic"
 				project := Project{
@@ -412,7 +412,7 @@ func TestProject(t *testing.T) {
 
 				projectList := []Project{project}
 
-				Expect(ProjectSliceContains(projectList, project)).To(BeTrue())
+				Expect(ProjectSliceContains(projectList, project)).To(BeFalse())
 			})
 
 			g.It("should return false when no projects with matching source found in slice", func() {
