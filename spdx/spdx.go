@@ -41,9 +41,9 @@ func packageInfoFromPackage(spdxPackage interface{}) packageInfo {
 		}
 
 		for _, externalRef := range packageTyped.PackageExternalReferences {
-			if externalRef.Category == "SECURITY" && (externalRef.RefType == "cpe22Type" || externalRef.RefType == "cpe23Type") {
+			if externalRef.Category == "SECURITY" && externalRefIsCPE(externalRef.RefType) {
 				cpe = externalRef.Locator
-			} else if externalRef.Category == "PACKAGE-MANAGER" && externalRef.RefType == "purl" {
+			} else if externalRef.Category == "PACKAGE-MANAGER" && externalRefIsPURL(externalRef.RefType) {
 				purl = externalRef.Locator
 			}
 		}
@@ -59,9 +59,9 @@ func packageInfoFromPackage(spdxPackage interface{}) packageInfo {
 		}
 
 		for _, externalRef := range packageTyped.PackageExternalReferences {
-			if externalRef.Category == "SECURITY" && (externalRef.RefType == "cpe22Type" || externalRef.RefType == "cpe23Type") {
+			if externalRef.Category == "SECURITY" && externalRefIsCPE(externalRef.RefType) {
 				cpe = externalRef.Locator
-			} else if externalRef.Category == "PACKAGE-MANAGER" && externalRef.RefType == "purl" {
+			} else if externalRef.Category == "PACKAGE-MANAGER" && externalRefIsPURL(externalRef.RefType) {
 				purl = externalRef.Locator
 			}
 		}
@@ -215,6 +215,19 @@ func ProjectsFromSPDX(doc interface{}, includeDependencies bool) ([]projects.Pro
 	}
 
 	return projs, nil
+}
+
+// externalRefIsCPE returns true if the given external reference type refers to a CPE.
+func externalRefIsCPE(externalRefType string) bool {
+	return externalRefType == "cpe23type" ||
+		externalRefType == "cpe22type" ||
+		externalRefType == "http://spdx.org/rdf/references/cpe23Type" ||
+		externalRefType == "http://spdx.org/rdf/references/cpe22Type"
+}
+
+// externalRefIsPURL returns true if the given external reference type refers to a PURL.
+func externalRefIsPURL(externalRefType string) bool {
+	return externalRefType == "purl" || externalRefType == "http://spdx.org/rdf/references/purl"
 }
 
 // Helper function to parse email from SPDX Creator info
