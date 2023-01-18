@@ -59,9 +59,9 @@ func packageInfoFromPackage(spdxPackage interface{}) packageInfo {
 		}
 
 		for _, externalRef := range packageTyped.PackageExternalReferences {
-			if externalRef.Category == "SECURITY" && externalRefIsCPE(externalRef.RefType) {
+			if externalRefIsCPE(externalRef.RefType) {
 				cpe = externalRef.Locator
-			} else if externalRef.Category == "PACKAGE-MANAGER" && externalRefIsPURL(externalRef.RefType) {
+			} else if externalRefIsPURL(externalRef.RefType) {
 				purl = externalRef.Locator
 			}
 		}
