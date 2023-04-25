@@ -2,9 +2,10 @@ package spdx
 
 import (
 	"fmt"
-	"github.com/ion-channel/ionic/util"
 	"regexp"
 	"strings"
+
+	"github.com/ion-channel/ionic/util"
 
 	"github.com/google/uuid"
 	"github.com/ion-channel/ionic/aliases"
@@ -219,8 +220,8 @@ func ProjectsFromSPDX(doc interface{}, includeDependencies bool) ([]projects.Pro
 
 // externalRefIsCPE returns true if the given external reference type refers to a CPE.
 func externalRefIsCPE(externalRefType string) bool {
-	return externalRefType == "cpe23type" ||
-		externalRefType == "cpe22type" ||
+	return strings.ToLower(externalRefType) == "cpe23type" ||
+		strings.ToLower(externalRefType) == "cpe22type" ||
 		externalRefType == "http://spdx.org/rdf/references/cpe23Type" ||
 		externalRefType == "http://spdx.org/rdf/references/cpe22Type"
 }
