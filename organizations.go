@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/ion-channel/ionic/organizations"
 	"github.com/ion-channel/ionic/pagination"
@@ -40,8 +41,9 @@ type CreateOrganizationOptions struct {
 // present, and makes the calls to create the team. It returns the ID of the created organization
 // and any errors it encounters with the API.
 func (ic *IonClient) CreateOrganization(opts CreateOrganizationOptions, token string) (*organizations.Organization, error) {
-	if opts.Name == "" {
-		return nil, fmt.Errorf("name missing from options")
+	//no empty or whitespace-only names
+	if len(strings.TrimSpace(opts.Name)) == 0 {
+		return nil, fmt.Errorf("name cannot be empty or whitespace")
 	}
 
 	b, err := json.Marshal(opts)
