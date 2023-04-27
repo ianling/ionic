@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/ion-channel/ionic/pagination"
 	"net/url"
+	"strings"
+
+	"github.com/ion-channel/ionic/pagination"
 
 	"github.com/ion-channel/ionic/teams"
 )
@@ -23,8 +25,9 @@ type CreateTeamOptions struct {
 // present, and makes the calls to create the team. It returns the team created
 // and any errors it encounters with the API.
 func (ic *IonClient) CreateTeam(opts CreateTeamOptions, token string) (*teams.Team, error) {
-	if opts.Name == "" {
-		return nil, fmt.Errorf("name missing from options")
+	//no empty or whitespace-only names
+	if len(strings.TrimSpace(opts.Name)) == 0 {
+		return nil, fmt.Errorf("name cannot be empty or whitespace")
 	}
 
 	b, err := json.Marshal(opts)
